@@ -11,7 +11,7 @@ import dev.jfxde.api.PermissionEntry;
 import javafx.scene.Node;
 import javafx.util.FXPermission;
 
-@AppManifest(fqn = "org.jb.WebBrowser", name = "Web Browser", version = "1.0.0", altText = "WB", vendor = "JB", uriSchemes = {"http", "https"})
+@AppManifest(fqn = "dev.jfxde.webbrowser", name = "Web Browser", version = "1.0.0", altText = "WB", vendor = "JFXDE", uriSchemes = {"http", "https"})
 @PermissionEntry(type = SocketPermission.class, target = "*", actions = "connect,accept,listen")
 @PermissionEntry(type = NetPermission.class, target = "*")
 @PermissionEntry(type = PropertyPermission.class, target = "*", actions = "read,write")

@@ -6,7 +6,7 @@ import dev.jfxde.api.AppScope;
 import dev.jfxde.logic.SystemApp;
 import javafx.scene.Node;
 
-@AppManifest(fqn = "org.jb.Console", name = "Console", version = "1.0.0", altText = "C", scope = AppScope.SINGLETON, vendor = "JB")
+@AppManifest(fqn = "dev.jfxde.console", name = "Console", version = "1.0.0", altText = "C", scope = AppScope.SINGLETON, vendor = "JFXDE")
 public class ConsoleApp implements SystemApp {
 
 	private ConsoleContent content;

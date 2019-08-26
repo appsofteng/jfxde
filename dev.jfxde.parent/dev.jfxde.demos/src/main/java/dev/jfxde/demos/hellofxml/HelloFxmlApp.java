@@ -10,7 +10,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 
-@AppManifest(fqn = "org.jb.HelloFxml", name = "Hello FXML", version = "1.0.0", vendor = "JB", website = "http://www.duckduckgo.org?q=hello")
+@AppManifest(fqn = "dev.jfxde.hellofxml", name = "Hello FXML", version = "1.0.0", vendor = "JFXDE", website = "http://www.duckduckgo.org?q=hello")
 @PermissionEntry(type = PropertyPermission.class, target = "user.name", actions = "read")
 @PermissionEntry(type = PropertyPermission.class, target = "user.home", actions = "read")
 public class HelloFxmlApp implements App {

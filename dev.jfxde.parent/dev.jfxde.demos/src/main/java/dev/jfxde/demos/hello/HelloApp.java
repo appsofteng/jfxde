@@ -9,7 +9,7 @@ import dev.jfxde.api.PermissionEntry;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 
-@AppManifest(fqn = "org.jb.Hello", name = "hello", version = "1.0.0", vendor = "JB", website = "http://www.duckduckgo.org?q=hello")
+@AppManifest(fqn = "dev.jfxde.hello", name = "hello", version = "1.0.0", vendor = "JFXDE", website = "http://www.duckduckgo.org?q=hello")
 @PermissionEntry(type = PropertyPermission.class, target = "user.name", actions = "read")
 @PermissionEntry(type = PropertyPermission.class, target = "user.home", actions = "read")
 public class HelloApp implements App {
