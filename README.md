@@ -20,7 +20,7 @@ It depends on the following libraries and their dependencies:
 ## App Example
 This is a simple example of a hello world app. It implements the App interface and declares the required permissions.
 
-```
+```java
 package dev.jfxde.demos.hello;
 
 import java.util.PropertyPermission;
@@ -48,7 +48,7 @@ public class HelloApp implements App {
 Than it is necessary to declare the app in the Java module. The app is provided as a service. I also opens directories with resource bundles and icons
 so that the desktop environment can access them.
 
-```
+```java
 module dev.jfxde.demos {
 	requires javafx.controls;
 	requires javafx.fxml;
