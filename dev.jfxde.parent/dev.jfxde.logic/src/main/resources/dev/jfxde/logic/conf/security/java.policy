@@ -1,0 +1,13 @@
+
+
+grant codeBase "file:${user.dir}/modules/-" {
+    permission java.security.AllPermission;
+};
+
+grant codeBase "file:${user.dir}/lib/-" {
+    permission java.security.AllPermission;
+};
+
+grant codeBase "file:${user.dir}/libcp/-" {
+    permission java.security.AllPermission;
+};
