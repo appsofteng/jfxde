@@ -5,6 +5,9 @@ import java.io.PrintStream;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import org.reactfx.util.Tuple2;
+import org.reactfx.util.Tuples;
+
 import jdk.jshell.EvalException;
 import jdk.jshell.ExpressionSnippet;
 import jdk.jshell.JShell;
@@ -57,11 +60,16 @@ public class SnippetOutput {
 					sb.append("Error:\n");
 				}
 				sb.append(d.getMessage(null)).append("\n");
-				sb.append(event.snippet().source()).append("\n");
 
-				String underscore = LongStream.range(0, d.getEndPosition())
-						.mapToObj(p -> p >= 0 && p < d.getStartPosition() ? " "
-								: p > d.getStartPosition() && p < d.getEndPosition() - 1 ? "-" : "^")
+				Tuple2<String, Integer> line = getLine(snippet.source(), (int) d.getStartPosition(),
+						(int) d.getEndPosition());
+				sb.append(line._1).append("\n");
+
+				String underscore = LongStream
+						.range(0, d.getEndPosition() - line._2)
+						.mapToObj(p -> p >= 0 && p < d.getStartPosition() - line._2 ? " "
+								: p > d.getStartPosition() - line._2 && p < d.getEndPosition() - 1 - line._2 ? "-"
+										: "^")
 						.collect(Collectors.joining());
 
 				sb.append(underscore);
@@ -77,5 +85,16 @@ public class SnippetOutput {
 		}
 
 		return sb.toString().trim();
+	}
+
+	private Tuple2<String, Integer> getLine(String text, int start, int end) {
+		int lineStart = text.lastIndexOf("\n", start) + 1;
+		int lineEnd = text.indexOf("\n", end);
+		lineEnd = lineEnd == -1 ? text.length() : lineEnd;
+		String line = text.substring(lineStart, lineEnd);
+
+		Tuple2<String, Integer> result = Tuples.t(line, lineStart);
+
+		return result;
 	}
 }
