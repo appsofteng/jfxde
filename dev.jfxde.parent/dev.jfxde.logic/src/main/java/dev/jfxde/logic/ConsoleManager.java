@@ -29,11 +29,29 @@ public class ConsoleManager extends Manager {
 
 	private static final Logger LOGGER = Logger.getLogger(ConsoleManager.class.getName());
 
+	private boolean systemOutput = true;
+
+	public ConsoleManager() {
+
+	}
+
+	public ConsoleManager(boolean systemOutput) {
+		this.systemOutput = systemOutput;
+	}
+
 	@Override
 	void init() throws Exception {
 
 		System.setOut(cout);
 		System.setErr(cerr);
+	}
+
+	public PrintStream getCout() {
+		return cout;
+	}
+
+	public PrintStream getCerr() {
+		return cerr;
 	}
 
 	public ObservableList<ConsoleOutput> getOutputs() {
@@ -50,8 +68,6 @@ public class ConsoleManager extends Manager {
 	}
 
 	private synchronized void update(String msg, Type type) {
-
-		LOGGER.log(type.getLevel(), msg);
 
 		// Windows OS
 		msg = msg.replace("\r", "");
@@ -93,11 +109,11 @@ public class ConsoleManager extends Manager {
 	private class ConsoleOutputStream extends ByteArrayOutputStream {
 
 		private final Type type;
-		private PrintStream patream;
+		private PrintStream pstream;
 
 		public ConsoleOutputStream(Type type, PrintStream pstream) {
 			this.type = type;
-			this.patream = pstream;
+			this.pstream = pstream;
 		}
 
 		@Override
@@ -109,7 +125,10 @@ public class ConsoleManager extends Manager {
 				return;
 			}
 
-			patream.print(msg);
+			if (systemOutput) {
+				pstream.print(msg);
+				LOGGER.log(type.getLevel(), msg);
+			}
 
 			update(msg, type);
 			reset();

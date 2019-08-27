@@ -26,6 +26,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+import javafx.scene.Node;
 
 public class InternalWindow extends Pane {
 
@@ -255,6 +256,7 @@ public class InternalWindow extends Pane {
 		toFront();
 
 		contentPane.requestFocus();
+		contentPane.getChildren().forEach(Node::requestFocus);
 
 	}
 

@@ -59,8 +59,7 @@ public final class TaskManager extends Manager {
     }
 
     public void executeSequentially(Task<?> task) {
-
-        singleThreadExecutor.execute(task);
+    	singleThreadExecutor.execute(task);
     }
 
     public ScheduledFuture<?> scheduleAtFixedRate​(Runnable task, long initialDelay, long period, TimeUnit unit) {

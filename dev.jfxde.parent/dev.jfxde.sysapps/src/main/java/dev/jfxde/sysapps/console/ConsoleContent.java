@@ -1,19 +1,16 @@
 package dev.jfxde.sysapps.console;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.model.StyleSpans;
-import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.ConsoleOutput;
+import dev.jfxde.sysapps.util.CodeAreaUtils;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener.Change;
@@ -31,11 +28,11 @@ public class ConsoleContent extends BorderPane {
 		getStylesheets().add(context.rc().getCss("console"));
 
 		codeArea.setEditable(false);
-		codeArea.getStylesheets().add(context.rc().getCss("area"));
+		codeArea.getStylesheets().add(context.rc().getCss("code-area"));
 		setCenter(new VirtualizedScrollPane<>(codeArea));
 		setListeners();
 		setContextMenu();
-		addOutput(Sys.cm().getCopyOutputs());
+		CodeAreaUtils.addOutput(codeArea, Sys.cm().getCopyOutputs());
 	}
 
 	private void setListeners() {
@@ -46,7 +43,7 @@ public class ConsoleContent extends BorderPane {
 				if (c.wasAdded()) {
 					List<? extends ConsoleOutput> added = new ArrayList<>(c.getAddedSubList());
 					Platform.runLater(() -> {
-						addOutput(added);
+						CodeAreaUtils.addOutput(codeArea, added);
 					});
 				} else if (c.wasRemoved()) {
 					String removed = c.getRemoved().stream().map(ConsoleOutput::getText).collect(Collectors.joining());
@@ -75,29 +72,6 @@ public class ConsoleContent extends BorderPane {
 
 		contextMenu.getItems().addAll(copy, clear);
 		codeArea.setContextMenu(contextMenu);
-	}
-
-	private void addOutput(List<? extends ConsoleOutput> outputs) {
-
-		if (outputs.isEmpty()) {
-			return;
-		}
-
-		String text = "";
-		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-
-		for (ConsoleOutput co : outputs) {
-			text += co.getText();
-			spansBuilder.add(Collections.singleton("jd-console-" + co.getType().name().toLowerCase()),
-					co.getText().length());
-		}
-
-		int from = codeArea.getLength();
-		codeArea.appendText(text);
-		StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
-		codeArea.setStyleSpans(from, styleSpans);
-		codeArea.moveTo(codeArea.getLength());
-		codeArea.requestFollowCaret();
 	}
 
     void dispose() {
