@@ -13,13 +13,18 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 
 public class ShortcutPane extends Pane {
-	
+
 	private Desktop desktop;
 
 	public ShortcutPane(Desktop desktop) {
 		this.desktop = desktop;
 		getStyleClass().add("jd-desktop-shortcut-pane");
-		setOnMouseClicked(e -> desktop.setActiveShortcut(null));
+		setOnMousePressed(e -> {
+			desktop.setActiveShortcut(null);
+			desktop.setActiveWindow(null);
+			requestFocus();
+		});
+
 		initListeners();
 		desktop.getShortcuts().forEach(s -> addShortcutView(s));
 	}
@@ -37,68 +42,67 @@ public class ShortcutPane extends Pane {
 	}
 
 	private void initListeners() {
-        desktop.getShortcuts().addListener((Change<? extends Shortcut> c) -> {
-            while (c.next()) {
-                if (c.wasAdded()) {
-                    c.getAddedSubList().forEach(sc -> addShortcutView(sc));
-                } else if (c.wasRemoved()) {
-                    c.getRemoved().forEach(
-                            s -> removeShortcutView(s));
-                }
-            }
-        });
-        
-        setOnDragOver(event -> {
-            if (event.getDragboard().hasString() && event.getGestureSource() instanceof ShortcutView) {
+		desktop.getShortcuts().addListener((Change<? extends Shortcut> c) -> {
+			while (c.next()) {
+				if (c.wasAdded()) {
+					c.getAddedSubList().forEach(sc -> addShortcutView(sc));
+				} else if (c.wasRemoved()) {
+					c.getRemoved().forEach(s -> removeShortcutView(s));
+				}
+			}
+		});
 
-                event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
-            }
+		setOnDragOver(event -> {
+			if (event.getDragboard().hasString() && event.getGestureSource() instanceof ShortcutView) {
 
-            event.consume();
-        });
+				event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+			}
 
-        setOnDragDropped(event -> {
-            Dragboard db = event.getDragboard();
-            boolean success = false;
+			event.consume();
+		});
 
-            if (db.hasString() && event.getGestureSource() instanceof ShortcutView) {
-                ShortcutView shortcutViewSource = (ShortcutView) event.getGestureSource();
-                shortcutViewSource.moved(event.getX(), event.getY());
-                success = true;
-                layoutChildren();
-                Sys.dm().updateShortcut(shortcutViewSource.getShortcut());
-            }
+		setOnDragDropped(event -> {
+			Dragboard db = event.getDragboard();
+			boolean success = false;
 
-            event.setDropCompleted(success);
+			if (db.hasString() && event.getGestureSource() instanceof ShortcutView) {
+				ShortcutView shortcutViewSource = (ShortcutView) event.getGestureSource();
+				shortcutViewSource.moved(event.getX(), event.getY());
+				success = true;
+				layoutChildren();
+				Sys.dm().updateShortcut(shortcutViewSource.getShortcut());
+			}
 
-            event.consume();
-        });
+			event.setDropCompleted(success);
+
+			event.consume();
+		});
 	}
-	
-    private void addShortcutView(Shortcut shortcut) {
 
-        ShortcutView shortcutView = new ShortcutView(shortcut);
+	private void addShortcutView(Shortcut shortcut) {
 
-        shortcutView.setOnDragDetected(event -> {
-            shortcutView.stopEditing();
-            Dragboard db = shortcutView.startDragAndDrop(TransferMode.MOVE);
-            // db.setDragView(new Text(shortcut.getName()).snapshot(null, null),
-            // event.getX(), event.getY());
-            db.setDragView(shortcutView.getSnapshot(), event.getX(), event.getY());
-            // db.setDragView(shortcutView.getName().snapshot(null, null),
-            // event.getX(), event.getY());
-            ClipboardContent content = new ClipboardContent();
-            content.putString(shortcut.getName());
-            db.setContent(content);
-            event.consume();
-        });
+		ShortcutView shortcutView = new ShortcutView(shortcut);
 
-        getChildren().add(shortcutView);
-    }
+		shortcutView.setOnDragDetected(event -> {
+			shortcutView.stopEditing();
+			Dragboard db = shortcutView.startDragAndDrop(TransferMode.MOVE);
+			// db.setDragView(new Text(shortcut.getName()).snapshot(null, null),
+			// event.getX(), event.getY());
+			db.setDragView(shortcutView.getSnapshot(), event.getX(), event.getY());
+			// db.setDragView(shortcutView.getName().snapshot(null, null),
+			// event.getX(), event.getY());
+			ClipboardContent content = new ClipboardContent();
+			content.putString(shortcut.getName());
+			db.setContent(content);
+			event.consume();
+		});
 
-    private void removeShortcutView(Shortcut shortcut) {
+		getChildren().add(shortcutView);
+	}
 
-        getChildren().removeIf(n -> ((ShortcutView) n).getShortcut() == shortcut);
-    }
+	private void removeShortcutView(Shortcut shortcut) {
+
+		getChildren().removeIf(n -> ((ShortcutView) n).getShortcut() == shortcut);
+	}
 
 }

@@ -1,5 +1,6 @@
 package dev.jfxde.ui;
 
+import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.Desktop;
 import dev.jfxde.logic.data.Window;
 import javafx.beans.Observable;
@@ -68,6 +69,7 @@ public class WindowPane extends Pane {
     }
 
 	private void initListeners() {
+
         desktop.getWindows().addListener((Change<? extends Window> c) -> {
 
             while (c.next()) {

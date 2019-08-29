@@ -2,25 +2,31 @@ package dev.jfxde.sysapps.jshell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import org.reactfx.util.Tuple2;
 import org.reactfx.util.Tuples;
 
+import dev.jfxde.logic.data.ConsoleOutput;
+import dev.jfxde.logic.data.ConsoleOutput.Type;
 import jdk.jshell.EvalException;
 import jdk.jshell.ExpressionSnippet;
 import jdk.jshell.JShell;
+import jdk.jshell.MethodSnippet;
 import jdk.jshell.Snippet;
+import jdk.jshell.Snippet.Kind;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
+import jdk.jshell.TypeDeclSnippet;
 import jdk.jshell.VarSnippet;
 
 public class SnippetOutput {
 
 	private JShell jshell;
 	private SnippetEvent event;
-	private boolean error;
 
 	private SnippetOutput(JShell jshell, SnippetEvent event) {
 		this.jshell = jshell;
@@ -31,15 +37,13 @@ public class SnippetOutput {
 		return new SnippetOutput(jshell, event);
 	}
 
-	public boolean isError() {
-		return error;
-	}
+	public List<ConsoleOutput> build() {
 
-	public String build() {
+		List<ConsoleOutput> outputs = new ArrayList<>();
 
-		error = event.status() == Status.REJECTED || event.exception() != null;
 		StringBuilder sb = new StringBuilder();
 		Snippet snippet = event.snippet();
+		Type type = Type.NORMAL;
 
 		if (event.exception() != null) {
 
@@ -52,7 +56,10 @@ public class SnippetOutput {
 				msg = msg.replace(event.exception().getClass().getName(), e.getExceptionClassName());
 			}
 
+			msg = msg.replace("\r", "");
 			sb.append("Exception ").append(msg);
+
+			type = Type.ERROR;
 
 		} else if (event.status() == Status.REJECTED) {
 			jshell.diagnostics(event.snippet()).forEach(d -> {
@@ -66,7 +73,8 @@ public class SnippetOutput {
 				sb.append(line._1).append("\n");
 
 				String underscore = LongStream
-						.range(0, d.getEndPosition() - line._2)
+						.range(0,
+								d.getEndPosition() - line._2)
 						.mapToObj(p -> p >= 0 && p < d.getStartPosition() - line._2 ? " "
 								: p > d.getStartPosition() - line._2 && p < d.getEndPosition() - 1 - line._2 ? "-"
 										: "^")
@@ -76,15 +84,51 @@ public class SnippetOutput {
 				sb.append("\n");
 
 			});
+
+			type = Type.ERROR;
 		} else if (event.value() != null) {
-			if (snippet.kind() == jdk.jshell.Snippet.Kind.EXPRESSION) {
+			if (snippet.kind() == Kind.EXPRESSION) {
 				sb.append(((ExpressionSnippet) snippet).name() + " ==> " + event.value());
-			} else if (snippet.kind() == jdk.jshell.Snippet.Kind.VAR) {
+			} else if (snippet.kind() == Kind.VAR) {
 				sb.append(((VarSnippet) snippet).name() + " ==> " + event.value());
 			}
+		} else if (snippet.kind() == Kind.METHOD) {
+			MethodSnippet methodSnippet = ((MethodSnippet) snippet);
+			if (event.previousStatus() == Status.NONEXISTENT) {
+				sb.append("created method " + methodSnippet.name() + "(" + methodSnippet.parameterTypes() + ")");
+			} else if (event.status() == Status.OVERWRITTEN) {
+				sb.append("modified method " + methodSnippet.name() + "(" + methodSnippet.parameterTypes() + ")");
+			}
+
+			type = Type.COMMENT;
+		} else if (snippet.kind() == Kind.TYPE_DECL) {
+			TypeDeclSnippet typeSnippet = ((TypeDeclSnippet) snippet);
+			if (event.previousStatus() == Status.NONEXISTENT) {
+				sb.append("created " + getSubkind(typeSnippet) + " " + typeSnippet.name());
+			} else if (event.status() == Status.OVERWRITTEN) {
+				if (event.causeSnippet().subKind() == typeSnippet.subKind()) {
+					sb.append("modified " + getSubkind(typeSnippet) + " " + typeSnippet.name());
+				} else {
+					sb.append("replaced " + getSubkind(typeSnippet) + " " + typeSnippet.name());
+				}
+			}
+
+			type = Type.COMMENT;
 		}
 
-		return sb.toString().trim();
+		String ooutput = sb.toString().trim() + "\n\n";
+		if (!ooutput.isBlank()) {
+			outputs.add(new ConsoleOutput(ooutput, type));
+		}
+
+		return outputs;
+	}
+
+	private String getSubkind(Snippet snippet) {
+		String name = snippet.subKind().name();
+		String subkind = name.substring(0, name.indexOf("_"));
+
+		return subkind;
 	}
 
 	private Tuple2<String, Integer> getLine(String text, int start, int end) {

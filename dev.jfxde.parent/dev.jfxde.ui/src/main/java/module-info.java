@@ -5,7 +5,7 @@ module dev.jfxde.ui {
     requires dev.jfxde.api;
     requires transitive dev.jfxde.logic;
 
-    exports dev.jfxde.ui to  dev.jfxde.sysapps;
+    exports dev.jfxde.ui to dev.jfxde.sysapps;
 
     opens dev.jfxde.ui to javafx.graphics;
     opens  dev.jfxde.ui.bundles to  dev.jfxde.logic;

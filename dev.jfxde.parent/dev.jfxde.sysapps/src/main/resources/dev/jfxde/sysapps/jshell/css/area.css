@@ -1,4 +1,9 @@
 /* Rich text FX */
+.styled-text-area {
+	-fx-border-width: 1;
+    -fx-border-color: #eee;
+}
+
 .styled-text-area .selection {
     -fx-fill: rgba(30,144,255,0.3);
 }

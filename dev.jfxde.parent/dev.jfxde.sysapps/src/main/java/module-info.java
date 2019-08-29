@@ -9,6 +9,7 @@ module dev.jfxde.sysapps {
 	requires richtextfx;
 	requires flowless;
 	requires reactfx;
+	requires wellbehavedfx;
 	requires org.controlsfx.controls;
 	requires jdk.jshell;
 

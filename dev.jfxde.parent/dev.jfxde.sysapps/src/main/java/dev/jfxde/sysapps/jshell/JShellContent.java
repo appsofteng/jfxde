@@ -1,14 +1,12 @@
 package dev.jfxde.sysapps.jshell;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.model.StyleSpans;
-import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.logic.ConsoleManager;
@@ -18,6 +16,7 @@ import dev.jfxde.sysapps.util.CodeAreaUtils;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener.Change;
 import javafx.concurrent.Task;
+import javafx.geometry.Bounds;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
@@ -26,6 +25,7 @@ import javafx.scene.layout.BorderPane;
 import jdk.jshell.JShell;
 import jdk.jshell.SnippetEvent;
 import jdk.jshell.SourceCodeAnalysis;
+import jdk.jshell.SourceCodeAnalysis.Suggestion;
 
 public class JShellContent extends BorderPane {
 
@@ -35,6 +35,7 @@ public class JShellContent extends BorderPane {
 	private ConsoleManager consoleManager = new ConsoleManager(false);
 	private List<String> history = new ArrayList<>();
 	private int historyIndex;
+	private CodeCompletion codeCompletion;
 
 	public JShellContent(AppContext context) {
 		getStylesheets().add(context.rc().getCss("console"));
@@ -43,8 +44,9 @@ public class JShellContent extends BorderPane {
 		outputArea.setFocusTraversable(false);
 
 		inputArea.requestFocus();
-		inputArea.getStylesheets().add(context.rc().getCss("code-area"));
+		inputArea.getStylesheets().add(context.rc().getCss("area"));
 		inputArea.setWrapText(true);
+		inputArea.getStyleClass().add("jd-input");
 
 		setCenter(new VirtualizedScrollPane<>(outputArea));
 		setBottom(new VirtualizedScrollPane<>(inputArea));
@@ -69,7 +71,7 @@ public class JShellContent extends BorderPane {
 			}
 		});
 
-		outputArea.selectedTextProperty().addListener((v,o,n) -> {
+		outputArea.selectedTextProperty().addListener((v, o, n) -> {
 			Clipboard clipboard = Clipboard.getSystemClipboard();
 			ClipboardContent content = new ClipboardContent();
 			content.putString(outputArea.getSelectedText());
@@ -87,9 +89,20 @@ public class JShellContent extends BorderPane {
 			if (e.getCode() == KeyCode.ENTER && e.isShiftDown()) {
 				enter();
 			} else if (e.getCode() == KeyCode.UP && e.isControlDown()) {
-				historyUp(e);
+				historyUp();
 			} else if (e.getCode() == KeyCode.DOWN && e.isControlDown()) {
-				historyDown(e);
+				historyDown();
+			} else if (e.getCode() == KeyCode.SPACE && e.isControlDown()) {
+				codeCompletion();
+			} else if (e.getCode() == KeyCode.ENTER && codeCompletion != null) {
+				e.consume();
+				codeCompletion.seleced();
+			}
+		});
+
+		inputArea.caretPositionProperty().addListener((v,o,n) -> {
+			if (codeCompletion != null) {
+				codeCompletion();
 			}
 		});
 	}
@@ -98,7 +111,7 @@ public class JShellContent extends BorderPane {
 		String input = inputArea.getText();
 		inputArea.replaceText("");
 
-		update(input);
+		CodeAreaUtils.addOutput(outputArea, input + "\n");
 
 		if (input.isBlank()) {
 			return;
@@ -130,22 +143,20 @@ public class JShellContent extends BorderPane {
 			}
 
 			private void updateLater(SnippetOutput snippetOuput) {
-				String output = snippetOuput.build();
+				List<ConsoleOutput> outputs = snippetOuput.build();
 
-				Platform.runLater(() -> {
-					if (snippetOuput.isError()) {
-						updateError(output);
-					} else {
-						update(output);
-					}
-				});
+				if (!outputs.isEmpty()) {
+					Platform.runLater(() -> {
+						CodeAreaUtils.addOutput(outputArea, outputs);
+					});
+				}
 			}
 		};
 
 		Sys.tm().executeSequentially(task);
 	}
 
-	private void historyUp(KeyEvent e) {
+	private void historyUp() {
 
 		if (historyIndex > 0 && historyIndex <= history.size()) {
 			historyIndex--;
@@ -154,7 +165,7 @@ public class JShellContent extends BorderPane {
 		}
 	}
 
-	private void historyDown(KeyEvent e) {
+	private void historyDown() {
 
 		if (historyIndex >= 0 && historyIndex < history.size() - 1) {
 			historyIndex++;
@@ -166,24 +177,32 @@ public class JShellContent extends BorderPane {
 		}
 	}
 
-	private void updateError(String output) {
-		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-		spansBuilder.add(Collections.singleton("jd-console-error"), output.length());
+	private void codeCompletion() {
 
-		int from = outputArea.getLength();
-		outputArea.appendText(output + "\n");
+		if (codeCompletion != null) {
+			codeCompletion.hide();
+		}
 
-		StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
+		int[] anchor = new int[1];
 
-		outputArea.setStyleSpans(from, styleSpans);
-		outputArea.moveTo(outputArea.getLength());
-		outputArea.requestFollowCaret();
-	}
+		List<String> suggestions = jshell.sourceCodeAnalysis()
+				.completionSuggestions(inputArea.getText(), inputArea.getCaretPosition(), anchor).stream()
+				.map(Suggestion::continuation).collect(Collectors.toList());
+		codeCompletion = new CodeCompletion();
+		codeCompletion.setSuggestions(suggestions);
+		Optional<Bounds> boundsOption = inputArea.caretBoundsProperty().getValue();
 
-	private void update(String output) {
-		outputArea.appendText(output + "\n");
-		outputArea.moveTo(outputArea.getLength());
-		outputArea.requestFollowCaret();
+		if (boundsOption.isPresent()) {
+			Bounds bounds = boundsOption.get();
+			codeCompletion.show(inputArea, bounds.getMaxX(), bounds.getMaxY());
+			codeCompletion.setOnHidden(ev -> {
+				String selection = codeCompletion.getSelection();
+				codeCompletion = null;
+				if (selection != null) {
+					inputArea.replaceText(anchor[0], inputArea.getCaretPosition(), selection);
+				}
+			});
+		}
 	}
 
 	@Override

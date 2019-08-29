@@ -27,7 +27,7 @@ import javafx.stage.Screen;
 import javafx.util.Duration;
 
 public class ShortcutView extends VBox {
-	
+
     private static final PseudoClass ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("active");
     private static double SIZE = 70;
     private static int MAX_CHARS = 100;
@@ -67,7 +67,7 @@ public class ShortcutView extends VBox {
         helperHeightText.setLineSpacing(1);
 
         name.setPrefHeight(prefTextHeight);
-        
+
 
         stopEditing();
 
@@ -92,14 +92,14 @@ public class ShortcutView extends VBox {
 
     private void setHandlers() {
 
-        setOnMouseClicked(e -> {
+        setOnMousePressed(e -> {
 
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 if (pauseBeforeEdit != null) {
                     pauseBeforeEdit.stop();
                     pauseBeforeEdit = null;
                 }
-                
+
                 Sys.am().start(shortcut.getFqn(), shortcut.getUri());
                 return;
             }
@@ -222,6 +222,7 @@ public class ShortcutView extends VBox {
         name.prefHeightProperty().bind(Bindings.createDoubleBinding(() -> Math.max(prefTextHeight, helperHeightText.getLayoutBounds().getHeight()), helperHeightText.textProperty()));
 
         setPrefHeight(USE_COMPUTED_SIZE);
+        requestFocus();
     }
 
     private void deactivate() {
