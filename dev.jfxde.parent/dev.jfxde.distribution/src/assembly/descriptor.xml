@@ -86,6 +86,10 @@
 			<filtered>true</filtered>
 		</file>
 		<file>
+			<source>src/main/scripts/startw.bat</source>
+			<filtered>true</filtered>
+		</file>
+		<file>
 			<source>src/main/conf/logging.properties</source>
 			<outputDirectory>conf</outputDirectory>
 			<filtered>true</filtered>
