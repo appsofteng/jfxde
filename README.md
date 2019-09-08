@@ -45,7 +45,7 @@ public class HelloApp implements App {
 }
 ```
 
-Than it is necessary to declare the app in the Java module. The app is provided as a service. I also opens directories with resource bundles and icons
+It is necessary to declare the app in the Java module. The app is provided as a service. I also opens directories with resource bundles and icons
 so that the desktop environment can access them.
 
 ```java
@@ -59,4 +59,10 @@ module dev.jfxde.demos {
 	opens  dev.jfxde.demos.hello.bundles;
 	opens  dev.jfxde.demos.hello.icons;
 }
+```
+
+The app is then stored as a jar file in directory:
+
+```
+${user.home}\.jfxde\${version}\apps
 ```
