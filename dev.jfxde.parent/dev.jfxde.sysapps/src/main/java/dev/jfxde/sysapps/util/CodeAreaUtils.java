@@ -14,14 +14,20 @@ import javafx.application.Platform;
 
 public final class CodeAreaUtils {
 
-	private CodeAreaUtils() {
-	}
+    private CodeAreaUtils() {
+    }
 
-	public static void addOutput(CodeArea codeArea, String output) {
-		codeArea.appendText(output);
-		codeArea.moveTo(codeArea.getLength());
-		codeArea.requestFollowCaret();
-	}
+    public static void addOutputLater(CodeArea codeArea, String output) {
+        Platform.runLater(() -> {
+            CodeAreaUtils.addOutput(codeArea, output);
+        });
+    }
+
+    public static void addOutput(CodeArea codeArea, String output) {
+        codeArea.appendText(output);
+        codeArea.moveTo(codeArea.getLength());
+        codeArea.requestFollowCaret();
+    }
 
     public static void addOutputLater(CodeArea codeArea, List<? extends ConsoleOutput> outputs) {
 
@@ -32,69 +38,69 @@ public final class CodeAreaUtils {
         }
     }
 
-	public static void addOutput(CodeArea codeArea, List<? extends ConsoleOutput> outputs) {
+    public static void addOutput(CodeArea codeArea, List<? extends ConsoleOutput> outputs) {
 
-		if (outputs.isEmpty()) {
-			return;
-		}
+        if (outputs.isEmpty()) {
+            return;
+        }
 
-		String text = "";
-		StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        String text = "";
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
 
-		for (ConsoleOutput co : outputs) {
-			text += co.getText();
-			spansBuilder.add(Collections.singleton("jd-console-" + co.getType().name().toLowerCase()),
-					co.getText().length());
-		}
+        for (ConsoleOutput co : outputs) {
+            text += co.getText();
+            spansBuilder.add(Collections.singleton("jd-console-" + co.getType().name().toLowerCase()),
+                    co.getText().length());
+        }
 
-		int from = codeArea.getLength();
+        int from = codeArea.getLength();
 
-		codeArea.appendText(text);
+        codeArea.appendText(text);
 
-		StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
+        StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
 
-		codeArea.setStyleSpans(from, styleSpans);
-		codeArea.moveTo(codeArea.getLength());
-		codeArea.requestFollowCaret();
-	}
+        codeArea.setStyleSpans(from, styleSpans);
+        codeArea.moveTo(codeArea.getLength());
+        codeArea.requestFollowCaret();
+    }
 
-	public static String getCodeWord(CodeArea codeArea) {
+    public static String getCodeWord(CodeArea codeArea) {
 
-		String code = codeArea.getText();
-		int position = codeArea.getCaretPosition();
+        String code = codeArea.getText();
+        int position = codeArea.getCaretPosition();
 
-		StringBuilder word = new StringBuilder();
+        StringBuilder word = new StringBuilder();
 
-		getCodeWordPart(code, position - 1, -1, c -> word.insert(0, c));
-		getCodeWordPart(code, position, 1, c -> word.append(c));
+        getCodeWordPart(code, position - 1, -1, c -> word.insert(0, c));
+        getCodeWordPart(code, position, 1, c -> word.append(c));
 
-		return word.toString();
-	}
+        return word.toString();
+    }
 
-	public static String getCodePrefix(CodeArea codeArea) {
+    public static String getCodePrefix(CodeArea codeArea) {
 
-		String code = codeArea.getText();
-		int position = codeArea.getCaretPosition();
+        String code = codeArea.getText();
+        int position = codeArea.getCaretPosition();
 
-		StringBuilder word = new StringBuilder();
+        StringBuilder word = new StringBuilder();
 
-		getCodeWordPart(code, position - 1, -1, c -> word.insert(0, c));
+        getCodeWordPart(code, position - 1, -1, c -> word.insert(0, c));
 
-		return word.toString();
-	}
+        return word.toString();
+    }
 
-	private static void getCodeWordPart(String code, int position, int step, Consumer<Character> word) {
-		int i = position;
+    private static void getCodeWordPart(String code, int position, int step, Consumer<Character> word) {
+        int i = position;
 
-		while (i >= 0 && i < code.length()) {
-			char c = code.charAt(i);
-			if (Character.isJavaIdentifierPart(c)) {
-				word.accept(c);
-			} else {
-				break;
-			}
+        while (i >= 0 && i < code.length()) {
+            char c = code.charAt(i);
+            if (Character.isJavaIdentifierPart(c)) {
+                word.accept(c);
+            } else {
+                break;
+            }
 
-			i += step;
-		}
-	}
+            i += step;
+        }
+    }
 }

@@ -48,6 +48,8 @@ public class SnippetOutput extends JShellOutput {
             info = sourceAnalysis.analyzeCompletion(info.remaining());
             source = info.source();
         }
+
+        CodeAreaUtils.addOutputLater(outputArea, "\n");
     }
 
     private List<ConsoleOutput> getOutputs(SnippetEvent event) {
@@ -129,7 +131,7 @@ public class SnippetOutput extends JShellOutput {
             type = Type.COMMENT;
         }
 
-        String output = sb.toString().trim() + "\n";
+        String output = sb.toString().trim();
 
         if (!output.isBlank()) {
             output += "\n";
