@@ -335,7 +335,7 @@ public class InternalWindow extends Pane {
 						* windowPane.tileWidthProperty().get(),
 				windowPane.getTiledWindows(), windowPane.tileColsProperty(), windowPane.tileWidthProperty()));
 		layoutYProperty().bind(Bindings.createDoubleBinding(
-				() -> windowPane.getVisibleWindows().indexOf(this) / windowPane.tileColsProperty().get()
+				() -> windowPane.getTiledWindows().indexOf(this) / windowPane.tileColsProperty().get()
 						* windowPane.tileHeightProperty().get(),
 				windowPane.getTiledWindows(), windowPane.tileColsProperty(), windowPane.tileHeightProperty()));
 
