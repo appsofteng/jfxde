@@ -63,7 +63,7 @@ public class InternalWindow extends Pane {
 
 	};
 
-	private ChangeListener<State> closeListener = (v, o, n) -> {
+	private ChangeListener<State> stateListener = (v, o, n) -> {
 
 		pseudoClassStateChanged(FULL_PSEUDO_CLASS, n == State.FULL);
 
@@ -197,7 +197,8 @@ public class InternalWindow extends Pane {
 				double restoreX = localClickPoint.getX() - restoreBounds.getWidth() / 2;
 				restoreX = Math.max(0, restoreX);
 				restoreX = Math.min(windowPane.getWidth() - restoreBounds.getWidth(), restoreX);
-				pressDragPoint = new Point2D(restoreX, 0);
+				double restoreY = localClickPoint.getY() - e.getY();
+				pressDragPoint = new Point2D(restoreX, restoreY);
 			} else {
 				pressDragPoint = new Point2D(getLayoutX(), getLayoutY());
 			}
@@ -240,7 +241,7 @@ public class InternalWindow extends Pane {
 
 		window.activeProperty().addListener(activateListener);
 
-		window.stateProperty().addListener(closeListener);
+		window.stateProperty().addListener(stateListener);
 	}
 
 	protected void onNewWindow() {
@@ -276,8 +277,6 @@ public class InternalWindow extends Pane {
 		layoutYProperty().unbind();
 		payload.prefWidthProperty().unbind();
 		payload.prefHeightProperty().unbind();
-
-		// deactiveSnapshot = getSnapshot();
 
 		minimizeTransition(MINIMALIZATION_DURATION);
 	}
@@ -323,7 +322,7 @@ public class InternalWindow extends Pane {
 	void tile(State old) {
 
 		if (old == State.RESTORED) {
-			restoreBounds = payload.getLayoutBounds();
+			restoreBounds = getBoundsInParent();
 		}
 
 		layoutXProperty().unbind();
@@ -332,13 +331,13 @@ public class InternalWindow extends Pane {
 		payload.prefHeightProperty().unbind();
 
 		layoutXProperty().bind(Bindings.createDoubleBinding(
-				() -> windowPane.getVisibleWindows().indexOf(this) % windowPane.tileColsProperty().get()
+				() -> windowPane.getTiledWindows().indexOf(this) % windowPane.tileColsProperty().get()
 						* windowPane.tileWidthProperty().get(),
-				windowPane.getVisibleWindows(), windowPane.tileColsProperty(), windowPane.tileWidthProperty()));
+				windowPane.getTiledWindows(), windowPane.tileColsProperty(), windowPane.tileWidthProperty()));
 		layoutYProperty().bind(Bindings.createDoubleBinding(
 				() -> windowPane.getVisibleWindows().indexOf(this) / windowPane.tileColsProperty().get()
 						* windowPane.tileHeightProperty().get(),
-				windowPane.getVisibleWindows(), windowPane.tileColsProperty(), windowPane.tileHeightProperty()));
+				windowPane.getTiledWindows(), windowPane.tileColsProperty(), windowPane.tileHeightProperty()));
 
 		payload.prefWidthProperty().bind(windowPane.tileWidthProperty());
 		payload.prefHeightProperty().bind(windowPane.tileHeightProperty());
@@ -401,6 +400,6 @@ public class InternalWindow extends Pane {
 
 	public void dispose() {
 		window.activeProperty().removeListener(activateListener);
-		window.stateProperty().removeListener(closeListener);
+		window.stateProperty().removeListener(stateListener);
 	}
 }

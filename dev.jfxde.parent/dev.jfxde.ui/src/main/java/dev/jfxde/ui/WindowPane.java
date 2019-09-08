@@ -1,6 +1,5 @@
 package dev.jfxde.ui;
 
-import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.Desktop;
 import dev.jfxde.logic.data.Window;
 import javafx.beans.Observable;
@@ -20,6 +19,7 @@ public class WindowPane extends Pane {
 	private Desktop desktop;
     private ObservableList<AppWindow> windows;
     private FilteredList<AppWindow> visibleWindows;
+    private FilteredList<AppWindow> tiledWindows;
     private FilteredList<AppWindow> closableWindows;
 
     private IntegerProperty tileCols = new SimpleIntegerProperty();
@@ -31,13 +31,14 @@ public class WindowPane extends Pane {
 		this.desktop = desktop;
         setPickOnBounds(false);
         getStyleClass().add("jd-desktop-window-pane");
-        windows = FXCollections.observableArrayList(w -> new Observable[] { w.visibleProperty() });
+        windows = FXCollections.observableArrayList(w -> new Observable[] { w.visibleProperty(), w.getWindow().stateProperty() });
 
         visibleWindows = windows.filtered(w -> w.isVisible());
+        tiledWindows = windows.filtered(w -> w.getWindow().isTiled());
         closableWindows = visibleWindows;
 
-        tileCols.bind(Bindings.when(Bindings.size(visibleWindows).greaterThan(1)).then(2).otherwise(1));
-        tileRows.bind(Bindings.createIntegerBinding(() -> visibleWindows.size() / tileCols.get() + (int) Math.signum(visibleWindows.size() % tileCols.get()), Bindings.size(visibleWindows), tileCols));
+        tileCols.bind(Bindings.when(Bindings.size(tiledWindows).greaterThan(1)).then(2).otherwise(1));
+        tileRows.bind(Bindings.createIntegerBinding(() -> tiledWindows.size() / tileCols.get() + (int) Math.signum(tiledWindows.size() % tileCols.get()), Bindings.size(tiledWindows), tileCols));
         tileWidth.bind(widthProperty().divide(tileCols));
         tileHeight.bind(heightProperty().divide(tileRows));
 
@@ -46,6 +47,10 @@ public class WindowPane extends Pane {
 
     public ObservableList<AppWindow> getVisibleWindows() {
         return visibleWindows;
+    }
+
+    public FilteredList<AppWindow> getTiledWindows() {
+        return tiledWindows;
     }
 
     public ObservableList<AppWindow> getClosableWindows() {
