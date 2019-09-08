@@ -10,6 +10,7 @@ import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import dev.jfxde.logic.data.ConsoleOutput;
+import javafx.application.Platform;
 
 public final class CodeAreaUtils {
 
@@ -21,6 +22,15 @@ public final class CodeAreaUtils {
 		codeArea.moveTo(codeArea.getLength());
 		codeArea.requestFollowCaret();
 	}
+
+    public static void addOutputLater(CodeArea codeArea, List<? extends ConsoleOutput> outputs) {
+
+        if (!outputs.isEmpty()) {
+            Platform.runLater(() -> {
+                CodeAreaUtils.addOutput(codeArea, outputs);
+            });
+        }
+    }
 
 	public static void addOutput(CodeArea codeArea, List<? extends ConsoleOutput> outputs) {
 

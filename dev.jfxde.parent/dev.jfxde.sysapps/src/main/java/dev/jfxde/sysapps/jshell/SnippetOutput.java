@@ -7,11 +7,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import org.fxmisc.richtext.CodeArea;
 import org.reactfx.util.Tuple2;
 import org.reactfx.util.Tuples;
 
 import dev.jfxde.logic.data.ConsoleOutput;
 import dev.jfxde.logic.data.ConsoleOutput.Type;
+import dev.jfxde.sysapps.util.CodeAreaUtils;
 import jdk.jshell.EvalException;
 import jdk.jshell.ExpressionSnippet;
 import jdk.jshell.JShell;
@@ -20,125 +22,139 @@ import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Kind;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
+import jdk.jshell.SourceCodeAnalysis;
 import jdk.jshell.TypeDeclSnippet;
 import jdk.jshell.VarSnippet;
 
-public class SnippetOutput {
+public class SnippetOutput extends JShellOutput {
 
-	private JShell jshell;
-	private SnippetEvent event;
+    SnippetOutput(JShell jshell, CodeArea outputArea) {
+       super(jshell, outputArea);
+    }
 
-	private SnippetOutput(JShell jshell, SnippetEvent event) {
-		this.jshell = jshell;
-		this.event = event;
-	}
+    @Override
+    public void output(String input) {
 
-	public static SnippetOutput get(JShell jshell, SnippetEvent event) {
-		return new SnippetOutput(jshell, event);
-	}
+        SourceCodeAnalysis sourceAnalysis = jshell.sourceCodeAnalysis();
+        SourceCodeAnalysis.CompletionInfo info = sourceAnalysis.analyzeCompletion(input);
 
-	public List<ConsoleOutput> build() {
+        String source = info.source();
 
-		List<ConsoleOutput> outputs = new ArrayList<>();
+        while (!source.isEmpty()) {
 
-		StringBuilder sb = new StringBuilder();
-		Snippet snippet = event.snippet();
-		Type type = Type.NORMAL;
+            List<SnippetEvent> snippetEvents = jshell.eval(source);
+            snippetEvents.forEach(e -> CodeAreaUtils.addOutputLater(outputArea, getOutputs(e)));
 
-		if (event.exception() != null) {
+            info = sourceAnalysis.analyzeCompletion(info.remaining());
+            source = info.source();
+        }
+    }
 
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			event.exception().printStackTrace(new PrintStream(out));
-			String msg = out.toString();
+    private List<ConsoleOutput> getOutputs(SnippetEvent event) {
 
-			if (event.exception() instanceof EvalException) {
-				EvalException e = (EvalException) event.exception();
-				msg = msg.replace(event.exception().getClass().getName(), e.getExceptionClassName());
-			}
+        List<ConsoleOutput> outputs = new ArrayList<>();
 
-			msg = msg.replace("\r", "");
-			sb.append("Exception ").append(msg);
+        StringBuilder sb = new StringBuilder();
+        Snippet snippet = event.snippet();
+        Type type = Type.NORMAL;
 
-			type = Type.ERROR;
+        if (event.exception() != null) {
 
-		} else if (event.status() == Status.REJECTED) {
-			jshell.diagnostics(event.snippet()).forEach(d -> {
-				if (d.isError()) {
-					sb.append("Error:\n");
-				}
-				sb.append(d.getMessage(null)).append("\n");
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            event.exception().printStackTrace(new PrintStream(out));
+            String msg = out.toString();
 
-				Tuple2<String, Integer> line = getLine(snippet.source(), (int) d.getStartPosition(),
-						(int) d.getEndPosition());
-				sb.append(line._1).append("\n");
+            if (event.exception() instanceof EvalException) {
+                EvalException e = (EvalException) event.exception();
+                msg = msg.replace(event.exception().getClass().getName(), e.getExceptionClassName());
+            }
 
-				String underscore = LongStream
-						.range(0,
-								d.getEndPosition() - line._2)
-						.mapToObj(p -> p >= 0 && p < d.getStartPosition() - line._2 ? " "
-								: p > d.getStartPosition() - line._2 && p < d.getEndPosition() - 1 - line._2 ? "-"
-										: "^")
-						.collect(Collectors.joining());
+            msg = msg.replace("\r", "");
+            sb.append("Exception ").append(msg);
 
-				sb.append(underscore);
-				sb.append("\n");
+            type = Type.ERROR;
 
-			});
+        } else if (event.status() == Status.REJECTED) {
+            jshell.diagnostics(event.snippet()).forEach(d -> {
+                if (d.isError()) {
+                    sb.append("Error:\n");
+                }
+                sb.append(d.getMessage(null)).append("\n");
 
-			type = Type.ERROR;
-		} else if (event.value() != null) {
-			if (snippet.kind() == Kind.EXPRESSION) {
-				sb.append(((ExpressionSnippet) snippet).name() + " ==> " + event.value());
-			} else if (snippet.kind() == Kind.VAR) {
-				sb.append(((VarSnippet) snippet).name() + " ==> " + event.value());
-			}
-		} else if (snippet.kind() == Kind.METHOD) {
-			MethodSnippet methodSnippet = ((MethodSnippet) snippet);
-			if (event.previousStatus() == Status.NONEXISTENT) {
-				sb.append("created method " + methodSnippet.name() + "(" + methodSnippet.parameterTypes() + ")");
-			} else if (event.status() == Status.OVERWRITTEN) {
-				sb.append("modified method " + methodSnippet.name() + "(" + methodSnippet.parameterTypes() + ")");
-			}
+                Tuple2<String, Integer> line = getLine(snippet.source(), (int) d.getStartPosition(),
+                        (int) d.getEndPosition());
+                sb.append(line._1).append("\n");
 
-			type = Type.COMMENT;
-		} else if (snippet.kind() == Kind.TYPE_DECL) {
-			TypeDeclSnippet typeSnippet = ((TypeDeclSnippet) snippet);
-			if (event.previousStatus() == Status.NONEXISTENT) {
-				sb.append("created " + getSubkind(typeSnippet) + " " + typeSnippet.name());
-			} else if (event.status() == Status.OVERWRITTEN) {
-				if (event.causeSnippet().subKind() == typeSnippet.subKind()) {
-					sb.append("modified " + getSubkind(typeSnippet) + " " + typeSnippet.name());
-				} else {
-					sb.append("replaced " + getSubkind(typeSnippet) + " " + typeSnippet.name());
-				}
-			}
+                String underscore = LongStream
+                        .range(0,
+                                d.getEndPosition() - line._2)
+                        .mapToObj(p -> p >= 0 && p < d.getStartPosition() - line._2 ? " "
+                                : p > d.getStartPosition() - line._2 && p < d.getEndPosition() - 1 - line._2 ? "-"
+                                        : "^")
+                        .collect(Collectors.joining());
 
-			type = Type.COMMENT;
-		}
+                sb.append(underscore);
+                sb.append("\n");
 
-		String ooutput = sb.toString().trim() + "\n\n";
-		if (!ooutput.isBlank()) {
-			outputs.add(new ConsoleOutput(ooutput, type));
-		}
+            });
 
-		return outputs;
-	}
+            type = Type.ERROR;
+        } else if (event.value() != null) {
+            if (snippet.kind() == Kind.EXPRESSION) {
+                sb.append(((ExpressionSnippet) snippet).name() + " ==> " + event.value());
+            } else if (snippet.kind() == Kind.VAR) {
+                sb.append(((VarSnippet) snippet).name() + " ==> " + event.value());
+            }
+        } else if (snippet.kind() == Kind.METHOD) {
+            MethodSnippet methodSnippet = ((MethodSnippet) snippet);
+            if (event.previousStatus() == Status.NONEXISTENT) {
+                sb.append("created method " + methodSnippet.name() + "(" + methodSnippet.parameterTypes() + ")");
+            } else if (event.status() == Status.OVERWRITTEN) {
+                sb.append("modified method " + methodSnippet.name() + "(" + methodSnippet.parameterTypes() + ")");
+            }
 
-	private String getSubkind(Snippet snippet) {
-		String name = snippet.subKind().name();
-		String subkind = name.substring(0, name.indexOf("_"));
+            type = Type.COMMENT;
+        } else if (snippet.kind() == Kind.TYPE_DECL) {
+            TypeDeclSnippet typeSnippet = ((TypeDeclSnippet) snippet);
+            if (event.previousStatus() == Status.NONEXISTENT) {
+                sb.append("created " + getSubkind(typeSnippet) + " " + typeSnippet.name());
+            } else if (event.status() == Status.OVERWRITTEN) {
+                if (event.causeSnippet().subKind() == typeSnippet.subKind()) {
+                    sb.append("modified " + getSubkind(typeSnippet) + " " + typeSnippet.name());
+                } else {
+                    sb.append("replaced " + getSubkind(typeSnippet) + " " + typeSnippet.name());
+                }
+            }
 
-		return subkind;
-	}
+            type = Type.COMMENT;
+        }
 
-	private Tuple2<String, Integer> getLine(String text, int start, int end) {
-		int lineStart = text.lastIndexOf("\n", start) + 1;
-		int lineEnd = text.indexOf("\n", end);
-		lineEnd = lineEnd == -1 ? text.length() : lineEnd;
-		String line = text.substring(lineStart, lineEnd);
+        String output = sb.toString().trim() + "\n";
 
-		Tuple2<String, Integer> result = Tuples.t(line, lineStart);
+        if (!output.isBlank()) {
+            output += "\n";
+        }
 
-		return result;
-	}
+        outputs.add(new ConsoleOutput(output, type));
+
+        return outputs;
+    }
+
+    private String getSubkind(Snippet snippet) {
+        String name = snippet.subKind().name();
+        String subkind = name.substring(0, name.indexOf("_"));
+
+        return subkind;
+    }
+
+    private Tuple2<String, Integer> getLine(String text, int start, int end) {
+        int lineStart = text.lastIndexOf("\n", start) + 1;
+        int lineEnd = text.indexOf("\n", end);
+        lineEnd = lineEnd == -1 ? text.length() : lineEnd;
+        String line = text.substring(lineStart, lineEnd);
+
+        Tuple2<String, Integer> result = Tuples.t(line, lineStart);
+
+        return result;
+    }
 }
