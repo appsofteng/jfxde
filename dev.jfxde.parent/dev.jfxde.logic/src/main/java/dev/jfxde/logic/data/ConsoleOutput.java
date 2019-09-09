@@ -5,11 +5,11 @@ import java.util.logging.Level;
 public class ConsoleOutput {
 
 	private final String text;
-	private final Type err;
+	private final Type type;
 
 	public ConsoleOutput(String text, Type type) {
 		this.text = text;
-		this.err = type;
+		this.type = type;
 	}
 
 	public String getText() {
@@ -17,7 +17,7 @@ public class ConsoleOutput {
 	}
 
 	public Type getType() {
-		return err;
+		return type;
 	}
 
 	public boolean isEof() {
@@ -25,7 +25,7 @@ public class ConsoleOutput {
 	}
 
 	public enum Type {
-		NORMAL(Level.INFO), ERROR(Level.SEVERE);
+		NORMAL(Level.INFO), COMMENT(Level.INFO),  ERROR(Level.SEVERE);
 
 		private final Level level;
 

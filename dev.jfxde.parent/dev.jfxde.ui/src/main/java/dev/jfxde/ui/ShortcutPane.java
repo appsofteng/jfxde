@@ -13,41 +13,47 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 
 public class ShortcutPane extends Pane {
-	
-	private Desktop desktop;
 
-	public ShortcutPane(Desktop desktop) {
-		this.desktop = desktop;
-		getStyleClass().add("jd-desktop-shortcut-pane");
-		setOnMouseClicked(e -> desktop.setActiveShortcut(null));
-		initListeners();
-		desktop.getShortcuts().forEach(s -> addShortcutView(s));
-	}
+    private Desktop desktop;
 
-	@Override
-	protected void layoutChildren() {
+    public ShortcutPane(Desktop desktop) {
+        this.desktop = desktop;
+        getStyleClass().add("jd-desktop-shortcut-pane");
 
-		getChildren().forEach(c -> {
-			ShortcutView sw = (ShortcutView) c;
-			Point2D xy = sw.getCoordinatesForPosition();
+        setListeners();
+        desktop.getShortcuts().forEach(s -> addShortcutView(s));
+    }
 
-			sw.autosize();
-			layoutInArea(c, xy.getX(), xy.getY(), sw.getWidth(), sw.getHeight(), 0, HPos.LEFT, VPos.CENTER);
-		});
-	}
+    @Override
+    protected void layoutChildren() {
 
-	private void initListeners() {
+        getChildren().forEach(c -> {
+            ShortcutView sw = (ShortcutView) c;
+            Point2D xy = sw.getCoordinatesForPosition();
+
+            sw.autosize();
+            layoutInArea(c, xy.getX(), xy.getY(), sw.getWidth(), sw.getHeight(), 0, HPos.LEFT, VPos.CENTER);
+        });
+    }
+
+    private void setListeners() {
+
+        setOnMouseClicked(e -> {
+            desktop.setActiveShortcut(null);
+            desktop.setActiveWindow(null);
+            requestFocus();
+        });
+
         desktop.getShortcuts().addListener((Change<? extends Shortcut> c) -> {
             while (c.next()) {
                 if (c.wasAdded()) {
                     c.getAddedSubList().forEach(sc -> addShortcutView(sc));
                 } else if (c.wasRemoved()) {
-                    c.getRemoved().forEach(
-                            s -> removeShortcutView(s));
+                    c.getRemoved().forEach(s -> removeShortcutView(s));
                 }
             }
         });
-        
+
         setOnDragOver(event -> {
             if (event.getDragboard().hasString() && event.getGestureSource() instanceof ShortcutView) {
 
@@ -73,8 +79,8 @@ public class ShortcutPane extends Pane {
 
             event.consume();
         });
-	}
-	
+    }
+
     private void addShortcutView(Shortcut shortcut) {
 
         ShortcutView shortcutView = new ShortcutView(shortcut);

@@ -26,6 +26,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+import javafx.scene.Node;
 
 public class InternalWindow extends Pane {
 
@@ -51,9 +52,9 @@ public class InternalWindow extends Pane {
 	private static final Duration MINIMALIZATION_DURATION = Duration.millis(300);
 
 	private Bounds restoreBounds;
-    private Point2D pressDragPoint;
+	private Point2D pressDragPoint;
 
-    private ChangeListener<Boolean> activateListener = (v, o, n) -> {
+	private ChangeListener<Boolean> activateListener = (v, o, n) -> {
 		if (n) {
 			activate();
 		} else {
@@ -62,7 +63,7 @@ public class InternalWindow extends Pane {
 
 	};
 
-	private ChangeListener<State> closeListener = (v, o, n) -> {
+	private ChangeListener<State> stateListener = (v, o, n) -> {
 
 		pseudoClassStateChanged(FULL_PSEUDO_CLASS, n == State.FULL);
 
@@ -91,10 +92,10 @@ public class InternalWindow extends Pane {
 		setTitleMenu();
 	}
 
-    @Override
-    public boolean isResizable() {
-        return window.isRestored();
-    }
+	@Override
+	public boolean isResizable() {
+		return window.isRestored();
+	}
 
 	public Window getWindow() {
 		return window;
@@ -140,14 +141,15 @@ public class InternalWindow extends Pane {
 		minimize.setTooltip(new Tooltip());
 		minimize.getTooltip().textProperty().bind(Sys.rm().getTextBinding("minimize"));
 
-
 		maximize.getStyleClass().addAll("jd-internal-window-button", "jd-menubar-button-solid");
 		maximize.setFocusTraversable(false);
-        maximize.textProperty().bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
-                .then(Fonts.Unicode.UPPER_RIGHT_DROP_SHADOWED_WHITE_SQUARE).otherwise(Fonts.Unicode.WHITE_LARGE_SQUARE));
-        maximize.setTooltip(new Tooltip());
-        maximize.getTooltip().textProperty().bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
-                .then(Sys.rm().getTextBinding("restore")).otherwise(Sys.rm().getTextBinding("maximize")));
+		maximize.textProperty()
+				.bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
+						.then(Fonts.Unicode.UPPER_RIGHT_DROP_SHADOWED_WHITE_SQUARE)
+						.otherwise(Fonts.Unicode.WHITE_LARGE_SQUARE));
+		maximize.setTooltip(new Tooltip());
+		maximize.getTooltip().textProperty().bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
+				.then(Sys.rm().getTextBinding("restore")).otherwise(Sys.rm().getTextBinding("maximize")));
 
 		full.getStyleClass().addAll("jd-internal-window-button", "jd-octicons");
 		full.setFocusTraversable(false);
@@ -164,28 +166,28 @@ public class InternalWindow extends Pane {
 	}
 
 	private void setTitleMenu() {
-        MenuItem minimizeOthers = new MenuItem();
-        minimizeOthers.textProperty().bind(Sys.rm().getTextBinding("minimizeOthers"));
-        minimizeOthers.disableProperty().bind(Bindings.size(windowPane.getVisibleWindows()).isEqualTo(1));
-        minimizeOthers.setOnAction(e -> window.getDesktop().minimizeOthers());
+		MenuItem minimizeOthers = new MenuItem();
+		minimizeOthers.textProperty().bind(Sys.rm().getTextBinding("minimizeOthers"));
+		minimizeOthers.disableProperty().bind(Bindings.size(windowPane.getVisibleWindows()).isEqualTo(1));
+		minimizeOthers.setOnAction(e -> window.getDesktop().minimizeOthers());
 
-        MenuItem minimizeAll = new MenuItem();
-        minimizeAll.textProperty().bind(Sys.rm().getTextBinding("minimizeAll"));
-        minimizeAll.setOnAction(e -> window.getDesktop().minimizeAll());
+		MenuItem minimizeAll = new MenuItem();
+		minimizeAll.textProperty().bind(Sys.rm().getTextBinding("minimizeAll"));
+		minimizeAll.setOnAction(e -> window.getDesktop().minimizeAll());
 
-        MenuItem closeOthers = new MenuItem();
-        closeOthers.textProperty().bind(Sys.rm().getTextBinding("closeOthers"));
-        closeOthers.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows())
-            .or(Bindings.size(windowPane.getClosableWindows()).lessThan(2)));
-        closeOthers.setOnAction(e -> window.getDesktop().closeOthers());
+		MenuItem closeOthers = new MenuItem();
+		closeOthers.textProperty().bind(Sys.rm().getTextBinding("closeOthers"));
+		closeOthers.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows())
+				.or(Bindings.size(windowPane.getClosableWindows()).lessThan(2)));
+		closeOthers.setOnAction(e -> window.getDesktop().closeOthers());
 
-        MenuItem closeAll = new MenuItem();
-        closeAll.textProperty().bind(Sys.rm().getTextBinding("closeAll"));
-        closeAll.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows()));
-        closeAll.setOnAction(e -> window.getDesktop().closeAll());
+		MenuItem closeAll = new MenuItem();
+		closeAll.textProperty().bind(Sys.rm().getTextBinding("closeAll"));
+		closeAll.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows()));
+		closeAll.setOnAction(e -> window.getDesktop().closeAll());
 
-        ContextMenu titleContextMenu = new ContextMenu(minimizeOthers, minimizeAll, closeOthers, closeAll);
-        title.setContextMenu(titleContextMenu);
+		ContextMenu titleContextMenu = new ContextMenu(minimizeOthers, minimizeAll, closeOthers, closeAll);
+		title.setContextMenu(titleContextMenu);
 	}
 
 	private void setMoveable() {
@@ -195,7 +197,8 @@ public class InternalWindow extends Pane {
 				double restoreX = localClickPoint.getX() - restoreBounds.getWidth() / 2;
 				restoreX = Math.max(0, restoreX);
 				restoreX = Math.min(windowPane.getWidth() - restoreBounds.getWidth(), restoreX);
-				pressDragPoint = new Point2D(restoreX, 0);
+				double restoreY = localClickPoint.getY() - e.getY();
+				pressDragPoint = new Point2D(restoreX, restoreY);
 			} else {
 				pressDragPoint = new Point2D(getLayoutX(), getLayoutY());
 			}
@@ -204,7 +207,8 @@ public class InternalWindow extends Pane {
 		}, () -> {
 
 			if (window.isMaximized() || window.isTiled()) {
-				restoreBounds = new BoundingBox(pressDragPoint.getX(), 0, restoreBounds.getWidth(), restoreBounds.getHeight());
+				restoreBounds = new BoundingBox(pressDragPoint.getX(), 0, restoreBounds.getWidth(),
+						restoreBounds.getHeight());
 				window.restore();
 			}
 		});
@@ -213,15 +217,17 @@ public class InternalWindow extends Pane {
 	}
 
 	private void setHandlers() {
-		addEventFilter(MouseEvent.MOUSE_PRESSED, e -> window.activate());
+		addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+			window.activate();
+			contentPane.getChildren().forEach(Node::requestFocus);
+		});
 
+		title.setOnMouseClicked(e -> {
 
-        title.setOnMouseClicked(e -> {
-
-            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
-                window.maximizeRestore();
-            }
-        });
+			if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+				window.maximizeRestore();
+			}
+		});
 
 		newWindow.setOnAction(e -> onNewWindow());
 		tile.setOnAction(e -> {
@@ -235,7 +241,7 @@ public class InternalWindow extends Pane {
 
 		window.activeProperty().addListener(activateListener);
 
-		window.stateProperty().addListener(closeListener);
+		window.stateProperty().addListener(stateListener);
 	}
 
 	protected void onNewWindow() {
@@ -254,8 +260,7 @@ public class InternalWindow extends Pane {
 
 		toFront();
 
-		contentPane.requestFocus();
-
+		contentPane.getChildren().forEach(Node::requestFocus);
 	}
 
 	void deactivate() {
@@ -272,8 +277,6 @@ public class InternalWindow extends Pane {
 		layoutYProperty().unbind();
 		payload.prefWidthProperty().unbind();
 		payload.prefHeightProperty().unbind();
-
-		// deactiveSnapshot = getSnapshot();
 
 		minimizeTransition(MINIMALIZATION_DURATION);
 	}
@@ -319,7 +322,7 @@ public class InternalWindow extends Pane {
 	void tile(State old) {
 
 		if (old == State.RESTORED) {
-			restoreBounds = payload.getLayoutBounds();
+			restoreBounds = getBoundsInParent();
 		}
 
 		layoutXProperty().unbind();
@@ -328,13 +331,13 @@ public class InternalWindow extends Pane {
 		payload.prefHeightProperty().unbind();
 
 		layoutXProperty().bind(Bindings.createDoubleBinding(
-				() -> windowPane.getVisibleWindows().indexOf(this) % windowPane.tileColsProperty().get()
+				() -> windowPane.getTiledWindows().indexOf(this) % windowPane.tileColsProperty().get()
 						* windowPane.tileWidthProperty().get(),
-				windowPane.getVisibleWindows(), windowPane.tileColsProperty(), windowPane.tileWidthProperty()));
+				windowPane.getTiledWindows(), windowPane.tileColsProperty(), windowPane.tileWidthProperty()));
 		layoutYProperty().bind(Bindings.createDoubleBinding(
-				() -> windowPane.getVisibleWindows().indexOf(this) / windowPane.tileColsProperty().get()
+				() -> windowPane.getTiledWindows().indexOf(this) / windowPane.tileColsProperty().get()
 						* windowPane.tileHeightProperty().get(),
-				windowPane.getVisibleWindows(), windowPane.tileColsProperty(), windowPane.tileHeightProperty()));
+				windowPane.getTiledWindows(), windowPane.tileColsProperty(), windowPane.tileHeightProperty()));
 
 		payload.prefWidthProperty().bind(windowPane.tileWidthProperty());
 		payload.prefHeightProperty().bind(windowPane.tileHeightProperty());
@@ -397,6 +400,6 @@ public class InternalWindow extends Pane {
 
 	public void dispose() {
 		window.activeProperty().removeListener(activateListener);
-		window.stateProperty().removeListener(closeListener);
+		window.stateProperty().removeListener(stateListener);
 	}
 }

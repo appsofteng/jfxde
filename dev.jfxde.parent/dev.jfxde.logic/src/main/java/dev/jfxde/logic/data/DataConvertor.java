@@ -41,8 +41,6 @@ public class DataConvertor {
 	public ShortcutEntity convert(Shortcut shortcut) {
 		ShortcutEntity shortcutEntity = new ShortcutEntity();
 
-		shortcutEntity.setActive(shortcut.isActive());
-
 		DesktopEntity desktopEntity = new DesktopEntity();
 		desktopEntity.setId(shortcut.getDesktop().getId());
 		shortcutEntity.setDesktop(desktopEntity);
@@ -59,7 +57,6 @@ public class DataConvertor {
 	public Shortcut convert(ShortcutEntity shortcutEntity, Desktop desktop) {
 		Shortcut shortcut = new Shortcut();
 
-		shortcut.setActive(shortcutEntity.isActive());
 		shortcut.setDesktop(desktop);
 		shortcut.setFqn(shortcutEntity.getFqn());
 		shortcut.setId(shortcutEntity.getId());

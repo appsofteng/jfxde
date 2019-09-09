@@ -18,26 +18,25 @@ public class ShortcutEntity extends DataEntity {
     private String fqn;
     private String uri;
     private int position;
-    private boolean active;
 	private DesktopEntity desktop;
-	
+
 	@Id
 	@GeneratedValue(generator = "ShortcutSeq", strategy = GenerationType.SEQUENCE)
 	@SequenceGenerator(name = "ShortcutSeq", sequenceName = "shortcut_seq", allocationSize = 1)
 	public Long getId() {
 		return id;
 	}
-	
+
 	public void setId(Long id) {
 		this.id = id;
 	}
-	
+
 	@ManyToOne
 	@JoinColumn(name = "desktop_id")
 	public DesktopEntity getDesktop() {
 		return desktop;
 	}
-	
+
 	public void setDesktop(DesktopEntity desktop) {
 		this.desktop = desktop;
 	}
@@ -72,13 +71,5 @@ public class ShortcutEntity extends DataEntity {
 
 	public void setPosition(int position) {
 		this.position = position;
-	}
-
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
 	}
 }
