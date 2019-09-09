@@ -43,12 +43,14 @@ public class WebMenuBar extends BorderPane {
 		back.getTooltip().textProperty().bind(context.rc().getTextBinding("back"));
 		back.setOnAction(e -> webPageView.back());
 		back.disableProperty().bind(webPageView.backDisableProperty());
+		back.setFocusTraversable(false);
 
 		forward.getStyleClass().addAll("jd-menubar-button-solid");
 		forward.setTooltip(new Tooltip());
 		forward.getTooltip().textProperty().bind(context.rc().getTextBinding("forward"));
 		forward.setOnAction(e -> webPageView.forward());
 		forward.disableProperty().bind(webPageView.forwardDisableProperty());
+		forward.setFocusTraversable(false);
 
 		reload.getStyleClass().addAll("jd-menubar-button-solid");
 		reload.setTooltip(new Tooltip());
@@ -56,6 +58,7 @@ public class WebMenuBar extends BorderPane {
 				.otherwise(Fonts.FontAwesome.REDO));
 		reload.getTooltip().textProperty().bind(Bindings.when(webPageView.runningProperty())
 				.then(context.rc().getTextBinding("stop")).otherwise(context.rc().getTextBinding("reload")));
+		reload.setFocusTraversable(false);
 
 		TilePane buttonPane = new TilePane();
 		buttonPane.getChildren().addAll(back, forward, reload);
