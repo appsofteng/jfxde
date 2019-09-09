@@ -12,7 +12,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Window;
 
 public final class DialogDisplayer {
-	
+
 	private DialogDisplayer() {
 
 	}
@@ -49,6 +49,8 @@ public final class DialogDisplayer {
 		table.getColumns().addAll(typeColumn, targetColumn, actionsColumn);
 
 		table.itemsProperty().setValue(descriptor.getPermissionDescriptors());
+
+		table.setPrefHeight(200);
 
 		return table;
 	}

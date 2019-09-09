@@ -16,7 +16,7 @@ public class AppWindow extends InternalWindow {
 		title.setGraphic(appDescriptor.getAppProviderDescriptor().getSmallIcon());
         newWindow.setDisable(appDescriptor.isSingleton());
 
-        contentPane.getChildren().add(appDescriptor.getContent());
+        setContent(appDescriptor.getContent());
 	}
 
 	public AppDescriptor getAppDescriptor() {
