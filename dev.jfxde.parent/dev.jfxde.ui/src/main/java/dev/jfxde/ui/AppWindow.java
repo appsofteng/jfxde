@@ -19,10 +19,6 @@ public class AppWindow extends InternalWindow {
         setContent(appDescriptor.getContent());
 	}
 
-	public AppDescriptor getAppDescriptor() {
-		return appDescriptor;
-	}
-
 	@Override
 	protected void onNewWindow() {
 		Sys.am().start(appDescriptor.getAppProviderDescriptor());
