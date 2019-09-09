@@ -17,10 +17,10 @@ import javafx.scene.layout.Pane;
 public class WindowPane extends Pane {
 
 	private Desktop desktop;
-    private ObservableList<AppWindow> windows;
-    private FilteredList<AppWindow> visibleWindows;
-    private FilteredList<AppWindow> tiledWindows;
-    private FilteredList<AppWindow> closableWindows;
+    private ObservableList<InternalWindow> windows;
+    private FilteredList<InternalWindow> visibleWindows;
+    private ObservableList<InternalWindow> tiledWindows = FXCollections.observableArrayList();
+    private FilteredList<InternalWindow> closableWindows;
 
     private IntegerProperty tileCols = new SimpleIntegerProperty();
     private IntegerProperty tileRows = new SimpleIntegerProperty();
@@ -31,10 +31,9 @@ public class WindowPane extends Pane {
 		this.desktop = desktop;
         setPickOnBounds(false);
         getStyleClass().add("jd-desktop-window-pane");
-        windows = FXCollections.observableArrayList(w -> new Observable[] { w.visibleProperty(), w.getWindow().stateProperty() });
+        windows = FXCollections.observableArrayList(w -> new Observable[] { w.visibleProperty() });
 
         visibleWindows = windows.filtered(w -> w.isVisible());
-        tiledWindows = windows.filtered(w -> w.getWindow().isTiled());
         closableWindows = visibleWindows;
 
         tileCols.bind(Bindings.when(Bindings.size(tiledWindows).greaterThan(1)).then(2).otherwise(1));
@@ -45,15 +44,27 @@ public class WindowPane extends Pane {
         initListeners();
 	}
 
-    public ObservableList<AppWindow> getVisibleWindows() {
+    public ObservableList<? extends InternalWindow> getVisibleWindows() {
         return visibleWindows;
     }
 
-    public FilteredList<AppWindow> getTiledWindows() {
+    public ObservableList<? extends InternalWindow> getTiledWindows() {
         return tiledWindows;
     }
 
-    public ObservableList<AppWindow> getClosableWindows() {
+    public void tile() {
+        visibleWindows.forEach(w -> ((InternalWindow) w).getWindow().tile());
+    }
+
+    public void tile(InternalWindow window) {
+        tiledWindows.add(window);
+    }
+
+    public void untile(InternalWindow window) {
+        tiledWindows.remove(window);
+    }
+
+    public ObservableList<? extends InternalWindow> getClosableWindows() {
         return closableWindows;
     }
 
@@ -90,14 +101,14 @@ public class WindowPane extends Pane {
 
     void addWindow(Window window) {
 
-        AppWindow appWindow = new AppWindow(window, this);
+        InternalWindow appWindow = new AppWindow(window, this);
 
         getChildren().add(appWindow);
         windows.add(appWindow);
     }
 
     void removeWindow(Window window) {
-        AppWindow appWindow = (AppWindow) getChildren().stream().filter(ch -> ((AppWindow) ch).getWindow() == window).findFirst().orElseGet(null);
+        InternalWindow appWindow = (InternalWindow) getChildren().stream().filter(ch -> ((InternalWindow) ch).getWindow() == window).findFirst().orElseGet(null);
 
         if (appWindow != null) {
             getChildren().remove(appWindow);
