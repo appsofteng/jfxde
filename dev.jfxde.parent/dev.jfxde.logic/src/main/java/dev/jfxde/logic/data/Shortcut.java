@@ -11,7 +11,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 public class Shortcut extends DataObj {
-	
+
     private StringProperty name = new SimpleStringProperty();
     private String fqn;
     private String uri;
@@ -21,7 +21,7 @@ public class Shortcut extends DataObj {
 
     public Shortcut() {
 	}
-    
+
     public Shortcut(AppProviderDescriptor descriptor) {
         this.name.set(descriptor.getName());
         this.fqn = descriptor.getAppManifest().fqn();
@@ -32,7 +32,7 @@ public class Shortcut extends DataObj {
         this.fqn = fqn;
         this.uri = uri;
     }
-    
+
     public ReadOnlyStringProperty nameProperty() {
         return name;
     }
@@ -64,11 +64,11 @@ public class Shortcut extends DataObj {
     public void setFqn(String fqn) {
 		this.fqn = fqn;
 	}
-    
+
     public String getUri() {
         return uri;
     }
-    
+
     public Desktop getDesktop() {
         return desktop;
     }

@@ -36,6 +36,7 @@ public class ShortcutView extends VBox {
     private Text helperHeightText;
     private final double prefTextHeight;
     private PauseTransition pauseBeforeEdit;
+    private Point2D namePressedPoint;
 
     public ShortcutView(Shortcut shortcut) {
         this.shortcut = shortcut;
@@ -68,7 +69,6 @@ public class ShortcutView extends VBox {
 
         name.setPrefHeight(prefTextHeight);
 
-
         stopEditing();
 
         name.editableProperty().addListener((v, o, n) -> {
@@ -93,6 +93,7 @@ public class ShortcutView extends VBox {
     private void setHandlers() {
 
         setOnMousePressed(e -> {
+            e.consume();
 
             if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                 if (pauseBeforeEdit != null) {
@@ -108,22 +109,34 @@ public class ShortcutView extends VBox {
                 if (shortcut.isActive()) {
                     if (name.isEditable()) {
                         stopEditing();
-                    } else {
-                        pauseBeforeEdit = new PauseTransition(Duration.seconds(1));
-                        pauseBeforeEdit.setOnFinished(w -> startEditing());
-                        pauseBeforeEdit.play();
                     }
                 }
             }
 
-            shortcut.activate();
+            if (!shortcut.isActive()) {
+                shortcut.activate();
+            } else {
+                namePressedPoint = name.parentToLocal(e.getX(), e.getY());
+            }
+
+        });
+
+        setOnMouseClicked(e -> {
+
+            if (e.getButton() == MouseButton.PRIMARY && namePressedPoint != null && name.contains(namePressedPoint) && !name.isEditable()) {
+
+                pauseBeforeEdit = new PauseTransition(Duration.seconds(1));
+                pauseBeforeEdit.setOnFinished(w -> startEditing());
+                pauseBeforeEdit.play();
+
+            }
             e.consume();
         });
 
         setOnKeyPressed(e -> {
             if (name.isEditable() && e.getCode() == KeyCode.ESCAPE) {
                 name.undo();
-                shortcut.getDesktop().setActiveShortcut(null);
+                stopEditing();
             }
         });
 
@@ -219,7 +232,8 @@ public class ShortcutView extends VBox {
 
     private void activate() {
         pseudoClassStateChanged(ACTIVE_PSEUDO_CLASS, true);
-        name.prefHeightProperty().bind(Bindings.createDoubleBinding(() -> Math.max(prefTextHeight, helperHeightText.getLayoutBounds().getHeight()), helperHeightText.textProperty()));
+        name.prefHeightProperty().bind(Bindings.createDoubleBinding(() -> Math.max(prefTextHeight, helperHeightText.getLayoutBounds().getHeight()),
+                helperHeightText.textProperty()));
 
         setPrefHeight(USE_COMPUTED_SIZE);
         requestFocus();
@@ -232,6 +246,7 @@ public class ShortcutView extends VBox {
 
         setPrefHeight(SIZE);
         stopEditing();
+        namePressedPoint = null;
     }
 
 }
