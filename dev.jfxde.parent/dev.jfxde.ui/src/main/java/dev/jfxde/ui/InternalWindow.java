@@ -47,12 +47,13 @@ public class InternalWindow extends Pane {
 
 	private BorderPane titleBar = new BorderPane();
 	private BorderPane payload = new BorderPane();
-	protected StackPane contentPane = new StackPane();
+	private StackPane contentPane = new StackPane();
 
 	private static final Duration MINIMALIZATION_DURATION = Duration.millis(300);
 
 	private Bounds restoreBounds;
 	private Point2D pressDragPoint;
+	private Node focusOwner = contentPane;
 
 	private ChangeListener<Boolean> activateListener = (v, o, n) -> {
 		if (n) {
@@ -90,6 +91,11 @@ public class InternalWindow extends Pane {
 		setMoveable();
 		setHandlers();
 		setTitleMenu();
+	}
+
+	void setContent(Node node) {
+	    contentPane.getChildren().add(node);
+	    focusOwner = node;
 	}
 
 	@Override
@@ -219,7 +225,6 @@ public class InternalWindow extends Pane {
 	private void setHandlers() {
 		addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
 			window.activate();
-			contentPane.getChildren().forEach(Node::requestFocus);
 		});
 
 		title.setOnMouseClicked(e -> {
@@ -260,11 +265,12 @@ public class InternalWindow extends Pane {
 
 		toFront();
 
-		contentPane.getChildren().forEach(Node::requestFocus);
+		focusOwner.requestFocus();
 	}
 
 	void deactivate() {
 		pseudoClassStateChanged(ACTIVE_PSEUDO_CLASS, false);
+		focusOwner = getScene().getFocusOwner();
 	}
 
 	void minimize(State old) {
