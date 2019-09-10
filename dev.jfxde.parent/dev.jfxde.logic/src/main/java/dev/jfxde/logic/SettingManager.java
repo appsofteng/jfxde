@@ -5,68 +5,101 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import dev.jfxde.logic.data.PropertyDescriptor;
-import javafx.application.Platform;
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 
 public final class SettingManager extends Manager {
 
-	private Properties defaultSettings = new Properties();
-	private Properties settings = new Properties(defaultSettings);
+    private Properties userSettings;
+    private ObservableList<PropertyDescriptor> settings = FXCollections.observableArrayList( s -> new Observable[] { s.valueProperty() });
 
-	SettingManager() {
-	}
+    SettingManager() {
+    }
 
-	@Override
-	void init() throws Exception {
+    @Override
+    void init() throws Exception {
 
-		defaultSettings.load(Files.newBufferedReader(FileManager.DEFAULT_CONF_FILE));
-		if (Files.exists(FileManager.CONF_FILE)) {
-			settings.load(Files.newBufferedReader(FileManager.CONF_FILE));
-		}
-		ResourceManager.setLocale(getLocal());
-	}
+        Properties defaultSettings = new Properties();
+        defaultSettings.load(Files.newBufferedReader(FileManager.DEFAULT_CONF_FILE));
+        userSettings = new Properties(defaultSettings);
 
-	public String getLocal() {
-		String locale = settings.getProperty("locale");
+        if (Files.exists(FileManager.CONF_FILE)) {
+            userSettings.load(Files.newBufferedReader(FileManager.CONF_FILE));
+        }
 
-		return locale;
-	}
+        settings.setAll(userSettings.entrySet().stream().map(PropertyDescriptor::new).collect(Collectors.toList()));
+        FXCollections.sort(settings);
 
-	public void setLocale(String locale) {
-		ResourceManager.setLocale(locale);
-		Sys.am().sortApp();
-		Platform.runLater(() -> {
-			settings.setProperty("locale", locale);
-			store();
-		});
-	}
+        ResourceManager.setLocale(getLocale());
 
-	public ObservableList<PropertyDescriptor> getProperties() {
+        setListeners();
+    }
 
-		ObservableList<PropertyDescriptor> properties = FXCollections.observableArrayList(
-				System.getProperties().entrySet().stream().map(PropertyDescriptor::new).collect(Collectors.toList()));
-		FXCollections.sort(properties);
+    private void setListeners() {
 
-		return properties;
-	}
+        settings.addListener((Change<? extends PropertyDescriptor> c) -> {
 
-	private void store() {
-		Properties copy = new Properties();
-		copy.putAll(settings);
+            while (c.next()) {
 
-		Runnable task = new Runnable() {
-			public void run() {
-				try (BufferedWriter bw = Files.newBufferedWriter(FileManager.CONF_FILE)) {
-					copy.store(bw, "");
-				} catch (IOException e) {
-					throw new RuntimeException("Failed storing properties " + FileManager.CONF_FILE, e);
-				}
-			}
-		};
+                if (c.wasUpdated()) {
+                    String oldLocale = getLocale();
+                    IntStream.range(c.getFrom(), c.getTo()).mapToObj(i -> c.getList().get(i))
+                    .forEach(s -> userSettings.put(s.getKey(), s.getValue()));
+                    String newLocale = getLocale();
 
-		Sys.tm().executeSequentially(task);
-	}
+                    if (!oldLocale.equals(newLocale)) {
+                        setLocale(newLocale);
+                    }
+
+                    storeSettings();
+                }
+            }
+        });
+    }
+
+    private String getLocale() {
+        return userSettings.getProperty("locale");
+    }
+
+    private void setLocale(String locale) {
+        ResourceManager.setLocale(locale);
+        Sys.am().sortApp();
+    }
+
+    public ObservableList<PropertyDescriptor> getSettings() {
+
+        return settings;
+    }
+
+    public ObservableList<PropertyDescriptor> getSystemProperties() {
+
+        ObservableList<PropertyDescriptor> properties = FXCollections.observableArrayList(
+                System.getProperties().entrySet().stream().map(PropertyDescriptor::new).collect(Collectors.toList()));
+        FXCollections.sort(properties);
+
+        return properties;
+    }
+
+    private void storeSettings() {
+
+        Properties userSettingsCopy = new Properties();
+        userSettingsCopy.putAll(userSettings);
+
+        Runnable task = new Runnable() {
+            public void run() {
+                try (BufferedWriter bw = Files.newBufferedWriter(FileManager.CONF_FILE)) {
+                    userSettingsCopy.store(bw, "");
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed storing properties " + FileManager.CONF_FILE, e);
+                }
+            }
+        };
+
+        Sys.tm().executeSequentially(task);
+    }
 }
