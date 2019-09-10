@@ -13,7 +13,7 @@ public final class FileManager extends Manager {
     private static final String HOME_DIR = System.getProperty("user.home") + "/." + Constants.SYS_NAME + "/" + Constants.SYS_VERSION + "/";
     private static final String USER_DIR = System.getProperty("user.dir") + "/";
 
-    public static final Path APPS_DIR = Paths.get(HOME_DIR + "apps");
+    public static final Path HOME_APPS_DIR = Paths.get(HOME_DIR + "apps");
     public static final Path DATA_DIR = Paths.get(HOME_DIR + "data");
     public static final Path CONF_DIR = Paths.get(HOME_DIR + "conf");
     public static final Path DB_DIR = Paths.get(HOME_DIR + "data/db");
@@ -25,6 +25,7 @@ public final class FileManager extends Manager {
     public static final String DB_URL = "jdbc:h2:" + DB_DIR + "/db;TRACE_LEVEL_FILE=4";
 
     public static final Path MODULES_DIR = Paths.get(USER_DIR + "modules/");
+    public static final Path APPS_DIR = Paths.get(USER_DIR  + "apps");
     public static final Path DEFAULT_CONF_FILE = Paths.get(USER_DIR + "conf/settings.properties");
 
     private static final String LOCK_DIR = HOME_DIR + "lock/";
@@ -40,6 +41,7 @@ public final class FileManager extends Manager {
     @Override
     void init() throws Exception {
     	LOGGER.entering(FileManager.class.getName(), "init");
+    	Files.createDirectories(HOME_APPS_DIR);
     	Files.createDirectories(APP_DATA_DIR);
     	Files.createDirectories(DATA_DIR);
     	Files.createDirectories(CONF_DIR);

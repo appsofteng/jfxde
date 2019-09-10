@@ -209,7 +209,7 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
 
     public void checkAppPath() throws Exception {
 
-        if (!isSystem() && !FileManager.APPS_DIR.equals(codeSourceParentPath)) {
+        if (!isSystem() && !FileManager.HOME_APPS_DIR.equals(codeSourceParentPath) && !FileManager.APPS_DIR.equals(codeSourceParentPath)) {
             throw new SecurityException(
                     "App " + getFqn() + " loaded from directory " + codeSourceParentPath);
         }

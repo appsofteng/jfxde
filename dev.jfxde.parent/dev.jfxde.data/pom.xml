@@ -12,6 +12,7 @@
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-base</artifactId>
+			<classifier>${javafx.platform}</classifier>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>

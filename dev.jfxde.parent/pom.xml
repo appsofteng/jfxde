@@ -21,11 +21,12 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ojfxVersion>12.0.2</ojfxVersion>
+		<javafx.platform>win</javafx.platform>
 		<sysName>jfxde</sysName>
 		<distName>${sysName}-${project.version}</distName>
 		<appsDir>${user.home}/.${sysName}/${project.version}/apps</appsDir>
 		<confDir>${user.dir}/conf</confDir>
-		<appsDirWin>%HOME%\.${sysName}\${project.version}\apps</appsDirWin>
+		<appsDir>.${sysName}/${project.version}/apps</appsDir>
 	</properties>
 
 	<dependencyManagement>
@@ -34,21 +35,37 @@
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-base</artifactId>
 				<version>${ojfxVersion}</version>
+				<classifier>${javafx.platform}</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-graphics</artifactId>
+				<version>${ojfxVersion}</version>
+				<classifier>${javafx.platform}</classifier>
 			</dependency>
 			<dependency>
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-controls</artifactId>
 				<version>${ojfxVersion}</version>
+				<classifier>${javafx.platform}</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-media</artifactId>
+				<version>${ojfxVersion}</version>
+				<classifier>${javafx.platform}</classifier>
 			</dependency>
 			<dependency>
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-web</artifactId>
 				<version>${ojfxVersion}</version>
+				<classifier>${javafx.platform}</classifier>
 			</dependency>
 			<dependency>
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-fxml</artifactId>
 				<version>${ojfxVersion}</version>
+				<classifier>${javafx.platform}</classifier>
 			</dependency>
 			<dependency>
 				<groupId>org.controlsfx</groupId>
@@ -155,4 +172,52 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+    <profiles>
+        <profile>
+            <id>linux</id>
+<!--             <activation> -->
+<!--                 <os> -->
+<!--                     <name>linux</name> -->
+<!--                 </os> -->
+<!--             </activation> -->
+            <properties>
+                <javafx.platform>linux</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
+            <id>macosx</id>
+            <activation>
+                <os>
+                    <name>mac os x</name>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>mac</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
+            <id>windows</id>
+<!--             <activation> -->
+<!--                 <os> -->
+<!--                     <family>windows</family> -->
+<!--                 </os> -->
+<!--             </activation> -->
+            <properties>
+                <javafx.platform>win</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
+            <id>javafx.platform.custom</id>
+            <activation>
+                <property>
+                    <name>javafx.platform</name>
+                </property>
+            </activation>
+            <properties>
+                <javafx.platform>${javafx.platform}</javafx.platform>
+            </properties>
+        </profile>
+    </profiles>
+
 </project>

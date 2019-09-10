@@ -12,15 +12,28 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-graphics</artifactId>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-controls</artifactId>
+			<classifier>${javafx.platform}</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-web</artifactId>
+			<classifier>${javafx.platform}</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-fxml</artifactId>
+			<classifier>${javafx.platform}</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-media</artifactId>
+			<classifier>${javafx.platform}</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.fxmisc.richtext</groupId>
