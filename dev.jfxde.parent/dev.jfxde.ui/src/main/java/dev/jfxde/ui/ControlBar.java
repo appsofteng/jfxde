@@ -13,16 +13,13 @@ import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 
@@ -38,7 +35,6 @@ public class ControlBar extends VBox {
 		accordion.getPanes().add(createAppPane());
 		accordion.getPanes().add(createStartedAppPane());
 		accordion.getPanes().add(createDesktopPane());
-		accordion.getPanes().add(createSetttingsPane());
 
 		getChildren().add(accordion);
 
@@ -117,23 +113,6 @@ public class ControlBar extends VBox {
 		TilePane tilePane = LayoutUtils.createTilePane(desktopButtons);
 		tilePane.setAlignment(Pos.CENTER);
 		pane.setContent(tilePane);
-
-		return pane;
-	}
-
-	private TitledPane createSetttingsPane() {
-		TitledPane pane = new TitledPane();
-		pane.textProperty().bind(Sys.rm().getTextBinding("Settings"));
-		ChoiceBox<String> localesChoice = new ChoiceBox<>(Sys.am().getLocales());
-		localesChoice.getSelectionModel().select(Sys.sm().getLocal());
-		localesChoice.setOnAction(e -> Sys.sm().setLocale(localesChoice.getSelectionModel().getSelectedItem()));
-		localesChoice.setTooltip(new Tooltip());
-		localesChoice.getTooltip().textProperty().bind(Sys.rm().getTextBinding("changeLanguage"));
-
-		FlowPane flowPane = new FlowPane();
-		flowPane.getChildren().add(localesChoice);
-
-		pane.setContent(flowPane);
 
 		return pane;
 	}

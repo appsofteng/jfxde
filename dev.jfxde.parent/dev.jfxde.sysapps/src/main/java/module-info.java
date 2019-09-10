@@ -16,7 +16,7 @@ module dev.jfxde.sysapps {
 
     provides dev.jfxde.api.App with dev.jfxde.sysapps.appmanager.AppManagerApp,
             dev.jfxde.sysapps.console.ConsoleApp, dev.jfxde.sysapps.exceptionlog.ExceptionLogApp,
-            dev.jfxde.sysapps.jvmmonitor.JvmMonitorApp, dev.jfxde.sysapps.jshell.JShellApp;
+            dev.jfxde.sysapps.jvmmonitor.JvmMonitorApp, dev.jfxde.sysapps.jshell.JShellApp, dev.jfxde.sysapps.settings.SettingsApp;
 
     opens dev.jfxde.sysapps.appmanager.bundles;
     opens dev.jfxde.sysapps.console.bundles;
