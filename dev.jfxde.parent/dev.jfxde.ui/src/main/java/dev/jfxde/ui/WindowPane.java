@@ -113,6 +113,7 @@ public class WindowPane extends Pane {
         if (appWindow != null) {
             getChildren().remove(appWindow);
             windows.remove(appWindow);
+            tiledWindows.remove(appWindow);
             appWindow.dispose();
         }
     }

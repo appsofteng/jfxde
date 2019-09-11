@@ -8,7 +8,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 public class Window {
-	
+
     private Desktop desktop;
     private AppDescriptor appDescriptor;
     private final BooleanProperty active = new SimpleBooleanProperty();
@@ -20,23 +20,28 @@ public class Window {
     	appDescriptor.setWindow(this);
     	state.addListener((v, o, n) -> previousState.set(o));
 	}
-    
+
+    public void reset() {
+        state.set(State.RESTORED);
+        previousState.set(State.RESTORED);
+    }
+
 	public Desktop getDesktop() {
 		return desktop;
 	}
-	
+
 	public void setDesktop(Desktop desktop) {
 		this.desktop = desktop;
 	}
-	
+
 	public AppDescriptor getAppDescriptor() {
 		return appDescriptor;
 	}
-	
+
     public ReadOnlyBooleanProperty activeProperty() {
         return active;
     }
-	
+
     public boolean isActive() {
         return active.get();
     }
@@ -44,7 +49,7 @@ public class Window {
     public void setActive(boolean value) {
         active.set(value);
     }
-    
+
     public ReadOnlyObjectProperty<State> stateProperty() {
         return state;
     }
@@ -56,11 +61,11 @@ public class Window {
     public void setState(State value) {
         state.set(value);
     }
-    
+
     public boolean isMinimized() {
         return state.get() == State.MINIMIZED;
     }
-    
+
     public boolean isMaximized() {
         return state.get() == State.MAXIMIZED;
     }
@@ -96,10 +101,10 @@ public class Window {
     public void tile() {
         state.set(State.TILED);
     }
-    
+
     public void close() {
         state.set(State.CLOSED);
-    }    
+    }
 
     public void restore() {
         state.set(State.RESTORED);
@@ -167,7 +172,7 @@ public class Window {
     public void remove() {
     	desktop.removeWindow(this);
     }
-    
+
     public enum State {
         MINIMIZED, MAXIMIZED, FULL, RESTORED, TILED, CLOSED
     }
