@@ -3,6 +3,8 @@
 ## About
 JFXDE is a high level desktop environment in JavaFX. The apps are registered as services using Java modules.
 
+[![Video](https://img.youtube.com/vi/unqYNbjHKsY/0.jpg)](https://www.youtube.com/watch?v=unqYNbjHKsY)
+
 ## Architecture
 ### Modules
 
