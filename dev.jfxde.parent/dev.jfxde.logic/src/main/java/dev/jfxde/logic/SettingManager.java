@@ -16,7 +16,7 @@ import javafx.collections.ObservableList;
 public final class SettingManager extends Manager {
 
     private Properties userSettings;
-    private ObservableList<PropertyDescriptor> settings = FXCollections.observableArrayList( s -> new Observable[] { s.valueProperty() });
+    private ObservableList<PropertyDescriptor> settings = FXCollections.observableArrayList(s -> new Observable[] { s.valueProperty() });
 
     SettingManager() {
     }
@@ -32,7 +32,8 @@ public final class SettingManager extends Manager {
             userSettings.load(Files.newBufferedReader(FileManager.CONF_FILE));
         }
 
-        settings.setAll(userSettings.entrySet().stream().map(PropertyDescriptor::new).collect(Collectors.toList()));
+        settings.setAll(userSettings.stringPropertyNames().stream().map(k -> new PropertyDescriptor(k, userSettings.getProperty(k)))
+                .collect(Collectors.toList()));
         FXCollections.sort(settings);
 
         ResourceManager.setLocale(getLocale());
@@ -49,7 +50,7 @@ public final class SettingManager extends Manager {
                 if (c.wasUpdated()) {
                     String oldLocale = getLocale();
                     IntStream.range(c.getFrom(), c.getTo()).mapToObj(i -> c.getList().get(i))
-                    .forEach(s -> userSettings.put(s.getKey(), s.getValue()));
+                            .forEach(s -> userSettings.put(s.getKey(), s.getValue()));
                     String newLocale = getLocale();
 
                     if (!oldLocale.equals(newLocale)) {
@@ -63,7 +64,7 @@ public final class SettingManager extends Manager {
     }
 
     private String getLocale() {
-        return userSettings.getProperty("locale");
+        return userSettings.getProperty("system.locale");
     }
 
     private void setLocale(String locale) {
