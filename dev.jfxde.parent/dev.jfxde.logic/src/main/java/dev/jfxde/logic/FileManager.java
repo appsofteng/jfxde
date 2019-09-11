@@ -10,7 +10,7 @@ import  dev.jfxde.logic.Constants;
 
 public final class FileManager extends Manager {
 
-    private static final String HOME_DIR = System.getProperty("user.home") + "/." + Constants.SYS_NAME + "/" + Constants.SYS_VERSION + "/";
+    private static final String HOME_DIR = System.getProperty("user.home") + "/." + Constants.SYS_NAME + "/" + Constants.SYS_VERSION + "/" + "users/default/";
     private static final String USER_DIR = System.getProperty("user.dir") + "/";
 
     public static final Path HOME_APPS_DIR = Paths.get(HOME_DIR + "apps");
