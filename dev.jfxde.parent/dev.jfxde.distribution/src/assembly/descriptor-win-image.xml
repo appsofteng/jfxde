@@ -1,0 +1,31 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+	<id>win-image</id>
+
+	<formats>
+		<format>dir</format>
+		<format>zip</format>
+	</formats>
+	<includeBaseDirectory>true</includeBaseDirectory>
+
+	<fileSets>
+		<fileSet>
+			<directory>../dev.jfxde.image/target/maven-jlink</directory>
+			<outputDirectory>image</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>target/${distName}-win/${distName}</directory>
+			<outputDirectory>.</outputDirectory>
+			<excludes>
+				<exclude>start.*</exclude>
+			</excludes>
+		</fileSet>
+	</fileSets>
+
+	<files>
+		<file>
+			<source>src/main/scripts/image/start.bat</source>
+		</file>
+	</files>
+</assembly>

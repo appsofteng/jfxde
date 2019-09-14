@@ -14,7 +14,7 @@ public final class FileManager extends Manager {
     private static final String USER_DIR = HOME_DIR + "users/default/";
     private static final String START_DIR = System.getProperty("user.dir") + "/";
 
-    public static final Path HOME_APPS_DIR = Paths.get(USER_DIR + "apps");
+    public static final Path HOME_APPS_DIR = Paths.get(HOME_DIR + "apps");
     public static final Path DATA_DIR = Paths.get(USER_DIR + "data");
     public static final Path CONF_DIR = Paths.get(USER_DIR + "conf");
     public static final Path DB_DIR = Paths.get(USER_DIR + "data/db");

@@ -8,11 +8,6 @@ grant codeBase "file:${user.dir}/lib/-" {
     permission java.security.AllPermission;
 };
 
-grant codeBase "file:${user.dir}/libcp/-" {
-    permission java.security.AllPermission;
-};
-
-
 grant codeBase "jrt:/jdk.jshell" {
     permission java.security.AllPermission;
 };

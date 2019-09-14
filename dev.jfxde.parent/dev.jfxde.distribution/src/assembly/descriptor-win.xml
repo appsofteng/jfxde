@@ -9,93 +9,24 @@
 	</formats>
 	<includeBaseDirectory>true</includeBaseDirectory>
 
+	<componentDescriptors>
+		<componentDescriptor>src/assembly/descriptor.xml</componentDescriptor>
+	</componentDescriptors>
+
 	<dependencySets>
 		<dependencySet>
-			<outputDirectory>lib</outputDirectory>
+			<outputDirectory>lib/mp</outputDirectory>
 			<unpack>false</unpack>
 			<scope>runtime</scope>
-			<excludes>
-		    	<exclude>*:*:linux</exclude>
-				<exclude>${project.groupId}:*:*</exclude>
-				<exclude>*:hibernate-c3p0:*</exclude>
-				<exclude>*:c3p0:*</exclude>
-				<exclude>*:mchange-commons-java:*</exclude>
-				<exclude>org.slf4j:*:*</exclude>
-			</excludes>
-		</dependencySet>
-		<dependencySet>
-			<useProjectArtifact>false</useProjectArtifact>
-			<useTransitiveDependencies>true</useTransitiveDependencies>
-			<outputDirectory>libcp</outputDirectory>
-			<unpack>false</unpack>
 			<includes>
-				<include>*:hibernate-c3p0:*</include>
-				<include>*:c3p0:*</include>
-				<include>*:mchange-commons-java:*</include>
-				<include>org.slf4j:*:*</include>
+				<include>*:*:win</include>
 			</includes>
 		</dependencySet>
 	</dependencySets>
 
-	<moduleSets>
-		<moduleSet>
-			<!-- Enable access to all projects in the current multimodule build! -->
-			<useAllReactorProjects>true</useAllReactorProjects>
-			<includes>
-				<include>dev.jfxde:dev.jfxde.api</include>
-				<include>dev.jfxde:dev.jfxde.logic</include>
-				<include>dev.jfxde:dev.jfxde.ui</include>
-				<include>dev.jfxde:dev.jfxde.data</include>
-				<include>dev.jfxde:dev.jfxde.sysapps</include>
-			</includes>
-			<binaries>
-				<outputDirectory>modules</outputDirectory>
-				<unpack>false</unpack>
-				<dependencySets>
-					<dependencySet>
-						<excludes>
-							<exclude>*:*:*</exclude>
-						</excludes>
-					</dependencySet>
-				</dependencySets>
-			</binaries>
-		</moduleSet>
-		<moduleSet>
-			<useAllReactorProjects>true</useAllReactorProjects>
-			<includes>
-				<include>dev.jfxde:dev.jfxde.apps</include>
-                <include>dev.jfxde:dev.jfxde.demos</include>
-			</includes>
-			<binaries>
-				<outputDirectory>apps</outputDirectory>
-				<unpack>false</unpack>
-				<dependencySets>
-					<dependencySet>
-						<excludes>
-							<exclude>*:*:*</exclude>
-						</excludes>
-					</dependencySet>
-				</dependencySets>
-			</binaries>
-		</moduleSet>
-	</moduleSets>
 	<files>
 		<file>
 			<source>src/main/scripts/start.bat</source>
-			<filtered>true</filtered>
-		</file>
-		<file>
-			<source>src/main/scripts/startw.bat</source>
-			<filtered>true</filtered>
-		</file>
-		<file>
-			<source>src/main/conf/logging.properties</source>
-			<outputDirectory>conf</outputDirectory>
-			<filtered>true</filtered>
-		</file>
-		<file>
-			<source>src/main/conf/settings.properties</source>
-			<outputDirectory>conf</outputDirectory>
 			<filtered>true</filtered>
 		</file>
 	</files>
