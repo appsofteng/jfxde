@@ -11,13 +11,15 @@
 	<artifactId>dev.jfxde.image</artifactId>
 	<packaging>jlink</packaging>
 
-
 	<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-jlink-plugin</artifactId>
 				<extensions>true</extensions>
 				<configuration>
+					<sourceJdkModules>${sourceJdkModules}</sourceJdkModules>
+					<noHeaderFiles>true</noHeaderFiles>
+					<noManPages>true</noManPages>
 				</configuration>
 			</plugin>
 		</plugins>

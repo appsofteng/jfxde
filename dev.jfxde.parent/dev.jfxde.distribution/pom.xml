@@ -32,9 +32,8 @@
 							<finalName>${distName}</finalName>
 							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
-								<descriptor>src/assembly/descriptor-win.xml</descriptor>
-								<descriptor>src/assembly/descriptor-win-image.xml</descriptor>
-								<descriptor>src/assembly/descriptor-linux.xml</descriptor>
+								<descriptor>src/assembly/descriptor-os.xml</descriptor>
+- 								<descriptor>src/assembly/descriptor-os-image.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>

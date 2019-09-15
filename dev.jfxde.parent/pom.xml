@@ -24,6 +24,9 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ojfxVersion>13</ojfxVersion>
 		<javafx.platform>win</javafx.platform>
+		<scriptExtension>bat</scriptExtension>
+		<distFormat>zip</distFormat>
+		<sourceJdkModules>${java.home}</sourceJdkModules>
 		<sysName>jfxde</sysName>
 		<distName>${sysName}-${project.version}</distName>
 		<homeDir>.${sysName}/${project.version}</homeDir>
@@ -220,6 +223,9 @@
 			<!-- </activation> -->
 			<properties>
 				<javafx.platform>linux</javafx.platform>
+				<sourceJdkModules>${env.JAVA_HOME_LINUX}</sourceJdkModules>
+				<scriptExtension>sh</scriptExtension>
+				<distFormat>tgz</distFormat>
 			</properties>
 		</profile>
 		<profile>
