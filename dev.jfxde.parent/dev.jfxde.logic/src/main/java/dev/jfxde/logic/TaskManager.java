@@ -63,7 +63,7 @@ public final class TaskManager extends Manager {
     }
 
     public ScheduledFuture<?> scheduleAtFixedRate​(Runnable task, long initialDelay, long period, TimeUnit unit) {
-        var future = scheduledExecutorService.scheduleAtFixedRate(task, initialDelay, period, unit);
+        ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(task, initialDelay, period, unit);
         return future;
     }
 

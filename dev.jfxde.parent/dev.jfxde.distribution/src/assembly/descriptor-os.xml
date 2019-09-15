@@ -1,0 +1,34 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+	<id>${javafx.platform}</id>
+
+	<formats>
+		<format>dir</format>
+		<format>zip</format>
+	</formats>
+	<includeBaseDirectory>true</includeBaseDirectory>
+
+	<componentDescriptors>
+		<componentDescriptor>src/assembly/descriptor.xml</componentDescriptor>
+	</componentDescriptors>
+
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>lib/mp</outputDirectory>
+			<unpack>false</unpack>
+			<scope>runtime</scope>
+			<includes>
+				<include>*:*:${javafx.platform}</include>
+			</includes>
+		</dependencySet>
+	</dependencySets>
+
+	<files>
+		<file>
+			<source>src/main/scripts/start.${scriptExtension}</source>
+			<filtered>true</filtered>
+			<fileMode>0711</fileMode>
+		</file>
+	</files>
+</assembly>

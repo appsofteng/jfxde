@@ -68,5 +68,5 @@ module dev.jfxde.demos {
 The app is then stored as a jar file in directory:
 
 ```
-${user.home}/.jfxde/${version}/users/default/apps
+${user.home}/.jfxde/${version}/apps
 ```

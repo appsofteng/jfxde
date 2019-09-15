@@ -1,32 +1,27 @@
-<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+<component
+	xmlns="http://maven.apache.org/ASSEMBLY-COMPONENT/2.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-	<id>win</id>
-
-	<formats>
-		<format>dir</format>
-		<format>zip</format>
-	</formats>
-	<includeBaseDirectory>true</includeBaseDirectory>
+	xsi:schemaLocation="http://maven.apache.org/ASSEMBLY-COMPONENT/2.0.0 http://maven.apache.org/xsd/assembly-component-2.0.0.xsd">
 
 	<dependencySets>
 		<dependencySet>
-			<outputDirectory>lib</outputDirectory>
+			<outputDirectory>lib/mp</outputDirectory>
 			<unpack>false</unpack>
 			<scope>runtime</scope>
 			<excludes>
-		    	<exclude>*:*:linux</exclude>
 				<exclude>${project.groupId}:*:*</exclude>
 				<exclude>*:hibernate-c3p0:*</exclude>
 				<exclude>*:c3p0:*</exclude>
 				<exclude>*:mchange-commons-java:*</exclude>
 				<exclude>org.slf4j:*:*</exclude>
+				<exclude>*:*:linux</exclude>
+				<exclude>*:*:win</exclude>
 			</excludes>
 		</dependencySet>
 		<dependencySet>
 			<useProjectArtifact>false</useProjectArtifact>
 			<useTransitiveDependencies>true</useTransitiveDependencies>
-			<outputDirectory>libcp</outputDirectory>
+			<outputDirectory>lib/cp</outputDirectory>
 			<unpack>false</unpack>
 			<includes>
 				<include>*:hibernate-c3p0:*</include>
@@ -64,7 +59,7 @@
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
 				<include>dev.jfxde:dev.jfxde.apps</include>
-                <include>dev.jfxde:dev.jfxde.demos</include>
+				<include>dev.jfxde:dev.jfxde.demos</include>
 			</includes>
 			<binaries>
 				<outputDirectory>apps</outputDirectory>
@@ -81,14 +76,6 @@
 	</moduleSets>
 	<files>
 		<file>
-			<source>src/main/scripts/start.bat</source>
-			<filtered>true</filtered>
-		</file>
-		<file>
-			<source>src/main/scripts/startw.bat</source>
-			<filtered>true</filtered>
-		</file>
-		<file>
 			<source>src/main/conf/logging.properties</source>
 			<outputDirectory>conf</outputDirectory>
 			<filtered>true</filtered>
@@ -99,4 +86,4 @@
 			<filtered>true</filtered>
 		</file>
 	</files>
-</assembly>
+</component>

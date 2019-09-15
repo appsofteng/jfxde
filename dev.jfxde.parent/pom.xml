@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>dev.jfxde</groupId>
@@ -14,6 +15,7 @@
 		<module>dev.jfxde.sysapps</module>
 		<module>dev.jfxde.apps</module>
 		<module>dev.jfxde.demos</module>
+		<module>dev.jfxde.image</module>
 		<module>dev.jfxde.distribution</module>
 	</modules>
 
@@ -22,11 +24,13 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ojfxVersion>13</ojfxVersion>
 		<javafx.platform>win</javafx.platform>
+		<scriptExtension>bat</scriptExtension>
+		<distFormat>zip</distFormat>
+		<sourceJdkModules>${java.home}</sourceJdkModules>
 		<sysName>jfxde</sysName>
 		<distName>${sysName}-${project.version}</distName>
-		<appsDir>${user.home}/.${sysName}/${project.version}/apps</appsDir>
-		<confDir>${user.dir}/conf</confDir>
-		<appsDir>.${sysName}/${project.version}/apps</appsDir>
+		<homeDir>.${sysName}/${project.version}</homeDir>
+		<logDir>log</logDir>
 	</properties>
 
 	<dependencyManagement>
@@ -128,6 +132,16 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>dev.jfxde</groupId>
+				<artifactId>dev.jfxde.apps</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.jfxde</groupId>
+				<artifactId>dev.jfxde.demos</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter</artifactId>
 				<version>5.5.1</version>
@@ -148,8 +162,34 @@
 					</configuration>
 				</plugin>
 				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.1.2</version>
+				</plugin>
+				<plugin>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<version>3.1.1</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-jlink-plugin</artifactId>
+					<version>3.0.0-alpha-2-SNAPSHOT</version>
+					<extensions>true</extensions>
+					<configuration>
+						<!-- configuration elements goes here -->
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>dev.jfxde.maven.plugins</groupId>
+					<artifactId>image-maven-plugin</artifactId>
+					<version>0.0.1-SNAPSHOT</version>
+					<executions>
+						<execution>
+							<id>conf</id>
+							<goals>
+								<goal>conf</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -173,51 +213,67 @@
 		</pluginManagement>
 	</build>
 
-    <profiles>
-        <profile>
-            <id>linux</id>
-<!--             <activation> -->
-<!--                 <os> -->
-<!--                     <name>linux</name> -->
-<!--                 </os> -->
-<!--             </activation> -->
-            <properties>
-                <javafx.platform>linux</javafx.platform>
-            </properties>
-        </profile>
-        <profile>
-            <id>macosx</id>
-            <activation>
-                <os>
-                    <name>mac os x</name>
-                </os>
-            </activation>
-            <properties>
-                <javafx.platform>mac</javafx.platform>
-            </properties>
-        </profile>
-        <profile>
-            <id>windows</id>
-<!--             <activation> -->
-<!--                 <os> -->
-<!--                     <family>windows</family> -->
-<!--                 </os> -->
-<!--             </activation> -->
-            <properties>
-                <javafx.platform>win</javafx.platform>
-            </properties>
-        </profile>
-        <profile>
-            <id>javafx.platform.custom</id>
-            <activation>
-                <property>
-                    <name>javafx.platform</name>
-                </property>
-            </activation>
-            <properties>
-                <javafx.platform>${javafx.platform}</javafx.platform>
-            </properties>
-        </profile>
-    </profiles>
+	<profiles>
+		<profile>
+			<id>linux</id>
+			<!-- <activation> -->
+			<!-- <os> -->
+			<!-- <name>linux</name> -->
+			<!-- </os> -->
+			<!-- </activation> -->
+			<properties>
+				<javafx.platform>linux</javafx.platform>
+				<sourceJdkModules>${env.JAVA_HOME_LINUX}</sourceJdkModules>
+				<scriptExtension>sh</scriptExtension>
+				<distFormat>tgz</distFormat>
+			</properties>
+		</profile>
+		<profile>
+			<id>macosx</id>
+			<activation>
+				<os>
+					<name>mac os x</name>
+				</os>
+			</activation>
+			<properties>
+				<javafx.platform>mac</javafx.platform>
+			</properties>
+		</profile>
+		<profile>
+			<id>windows</id>
+			<!-- <activation> -->
+			<!-- <os> -->
+			<!-- <family>windows</family> -->
+			<!-- </os> -->
+			<!-- </activation> -->
+			<properties>
+				<javafx.platform>win</javafx.platform>
+			</properties>
+		</profile>
+		<profile>
+			<id>javafx.platform.custom</id>
+			<activation>
+				<property>
+					<name>javafx.platform</name>
+				</property>
+			</activation>
+			<properties>
+				<javafx.platform>${javafx.platform}</javafx.platform>
+			</properties>
+		</profile>
+	</profiles>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>apache.snapshots</id>
+			<url>http://repository.apache.org/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 
 </project>
