@@ -16,6 +16,7 @@ See a demo video:
 It depends on the following libraries and their dependencies:
 
 - OpenJDK 12
+- OpenJFX 13
 - Hibernate
 - H2 DB
 - RichTextFX
