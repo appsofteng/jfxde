@@ -1,4 +1,4 @@
-package dev.jfxde.api;
+package dev.jfxde.api.ui;
 
 public class Fonts {
 
