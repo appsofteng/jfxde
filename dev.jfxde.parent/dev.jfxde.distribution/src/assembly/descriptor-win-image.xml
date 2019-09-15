@@ -12,7 +12,7 @@
 	<fileSets>
 		<fileSet>
 			<directory>../dev.jfxde.image/target/maven-jlink</directory>
-			<outputDirectory>image</outputDirectory>
+			<outputDirectory>runtime</outputDirectory>
 		</fileSet>
 		<fileSet>
 			<directory>target/${distName}-win/${distName}</directory>
@@ -26,6 +26,7 @@
 	<files>
 		<file>
 			<source>src/main/scripts/image/start.bat</source>
+			<filtered>true</filtered>
 		</file>
 	</files>
 </assembly>

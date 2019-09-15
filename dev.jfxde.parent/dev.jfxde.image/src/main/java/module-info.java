@@ -8,6 +8,7 @@ module dev.jfxde.image {
     requires java.scripting;
     requires java.sql;
 
+    requires jdk.crypto.ec;
     requires jdk.jsobject;
     requires jdk.net;
     requires jdk.jshell;
@@ -15,5 +16,4 @@ module dev.jfxde.image {
     requires jdk.unsupported;
     requires jdk.xml.dom;
     requires jdk.zipfs;
-
 }

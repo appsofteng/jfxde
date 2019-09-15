@@ -26,7 +26,8 @@
 		<javafx.platform>win</javafx.platform>
 		<sysName>jfxde</sysName>
 		<distName>${sysName}-${project.version}</distName>
-		<appDir>.${sysName}/${project.version}</appDir>
+		<homeDir>.${sysName}/${project.version}</homeDir>
+		<logDir>log</logDir>
 	</properties>
 
 	<dependencyManagement>

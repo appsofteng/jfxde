@@ -21,7 +21,7 @@ public final class FileManager extends Manager {
     public static final Path APP_DATA_DIR = Paths.get(USER_DIR + "appdata");
     public static final Path CONF_FILE = Paths.get(CONF_DIR + "/settings.properties");
 
-    public static final Path LOG_DIR = Paths.get(HOME_DIR + "system/log");
+    public static final Path LOG_DIR = Paths.get(HOME_DIR + Constants.LOG_DIR);
 
     public static final String DB_URL = "jdbc:h2:" + DB_DIR + "/db;TRACE_LEVEL_FILE=4";
 
@@ -29,7 +29,7 @@ public final class FileManager extends Manager {
     public static final Path APPS_DIR = Paths.get(START_DIR  + "apps");
     public static final Path DEFAULT_CONF_FILE = Paths.get(START_DIR + "conf/settings.properties");
 
-    private static final String LOCK_DIR = USER_DIR + "lock/";
+    private static final String LOCK_DIR = HOME_DIR + "lock/";
     private static final String LOCK_FILE = LOCK_DIR + "lock.lck";
     private static final String MESSAGE_FILE = LOCK_DIR + "message";
     private final FileLocker fileLocker = new FileLocker(Paths.get(LOCK_FILE), Paths.get(MESSAGE_FILE));
