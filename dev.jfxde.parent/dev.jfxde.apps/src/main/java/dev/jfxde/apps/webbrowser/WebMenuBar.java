@@ -6,7 +6,7 @@ import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.api.Fonts;
+import dev.jfxde.api.ui.Fonts;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;

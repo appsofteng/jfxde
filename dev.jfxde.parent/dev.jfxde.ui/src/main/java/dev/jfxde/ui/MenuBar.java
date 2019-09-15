@@ -1,6 +1,6 @@
 package dev.jfxde.ui;
 
-import dev.jfxde.api.Fonts;
+import dev.jfxde.api.ui.Fonts;
 import dev.jfxde.logic.Sys;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.Bindings;
