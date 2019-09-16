@@ -50,7 +50,7 @@ public class MenuBar extends BorderPane {
 		restore.setTooltip(new Tooltip());
 		restore.setDisable(true);
 
-		fullScreen.getStyleClass().addAll("jd-menubar-button", "jd-menubar-button-solid");
+		fullScreen.getStyleClass().addAll("jd-menubar-button", "jd-font-awesome-solid");
 		fullScreen.setTooltip(new Tooltip());
 
 		sceneProperty().addListener((v, o, n) -> {

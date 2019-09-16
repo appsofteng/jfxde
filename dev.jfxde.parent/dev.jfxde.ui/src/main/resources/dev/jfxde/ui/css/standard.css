@@ -14,16 +14,12 @@
    src: url("../fonts/octicons.ttf");
 }
 
-.jd-font-awesome-regular {
-	-fx-font-family: "Font Awesome 5 Free Regular";
-}
+/* Platform classes ***********************************************************/
 
-.jd-font-awesome-solid {
-	-fx-font-family: "Font Awesome 5 Free Solid";
-}
-
-.jd-octicons {
-	-fx-font-family: "octicons";
+.root {
+    -jd-button-color1: rgba(0.0,0.0,0.0,0.08);
+    -jd-button-color2: linear-gradient(#5a61af, #51536d);
+    -jd-button-color3: linear-gradient(#e4fbff 0.0%,#cee6fb 10.0%, #a5d3fb 50.0%, #88c6fb 51.0%, #d5faff 100.0%);
 }
 
 .tooltip {
@@ -34,12 +30,6 @@
     -fx-padding: 2;
     -fx-background-radius: 2.0;
     -fx-border-radius: 2.0;
-}
-
-.root {
-    -jd-button-color1: rgba(0.0,0.0,0.0,0.08);
-    -jd-button-color2: linear-gradient(#5a61af, #51536d);
-    -jd-button-color3: linear-gradient(#e4fbff 0.0%,#cee6fb 10.0%, #a5d3fb 50.0%, #88c6fb 51.0%, #d5faff 100.0%);
 }
 
 .tree-cell:collapsed > .tree-disclosure-node > .arrow,
@@ -55,19 +45,18 @@
 	-fx-opacity: 0.4;
 }
 
-.jd-number-column {
-	-fx-alignment: center-right;
+/* Custom classes *************************************************************/
+
+.jd-font-awesome-regular {
+	-fx-font-family: "Font Awesome 5 Free Regular";
 }
 
-.jd-combobutton-combobox {
-	-fx-background-insets: 0.0;
-	-fx-background-radius: 2.0;
-	-fx-border-radius: 2.0;
+.jd-font-awesome-solid {
+	-fx-font-family: "Font Awesome 5 Free Solid";
 }
 
-.jd-combobutton-button {
-   -fx-border-color: transparent;
-   -fx-background-color:transparent;
+.jd-octicons {
+	-fx-font-family: "octicons";
 }
 
 .jd-medium-icon {
@@ -86,81 +75,14 @@
 	-fx-border-radius: 2.0;
 }
 
-.jd-button-box {
-    -fx-background-color:
-        #707070,
-        linear-gradient(#fcfcfc, #f3f3f3),
-        linear-gradient(#f2f2f2 0.0%, #ebebeb 49.0%, #dddddd 50.0%, #cfcfcf 100.0%);
-    -fx-background-insets: 0.0,1.0,2.0;
-    -fx-background-radius: 3.0,2.0,1.0;
-    -fx-text-fill: black;
-    -fx-font-size: 14.0px;
-}
-
-/* autocomplete *******************/
-
-.jd-autocomplete-combobox {
-    -fx-background-insets: 0.0;
-    -fx-background-radius: 2.0;
-    -fx-border-radius: 2.0;
-}
-
-.jd-autocomplete-button {
-    -fx-background-radius: 2.0;
-    -fx-border-radius: 2.0;
-}
-
-/* search text field ****************/
-
-.jd-searchtextfield-glass {
-	-fx-background-color: rgba(80.0, 80.0, 80.0, 0.5);
-	-fx-background-insets: 0.0 2.0 0.0 2.0;
-	-fx-scale-shape: true;
-	-fx-shape: "M150 0 L75 200 L225 200 Z";
-}
-
-.jd-searchtextfield-cross {
-	-fx-background-color: rgba(80.0, 80.0, 80.0, 0.5);
-	-fx-background-insets: 0.0 2.0 0.0 2.0;
-	-fx-scale-shape: true;
-	-fx-shape: "M150 0 L75 200 L225 200 Z";
-}
-
-/* web browser **********************/
-
-.jd-browser-exception-message {
-	-fx-font-size: 15.0;
-}
-
-/* find box ***********************/
-
-.jd-find-box {
-	-fx-background-radius: 5.0;
-}
-
-.jd-find-match-button {
-	-fx-background-color: white;
-	-fx-border-color: white;
-	-fx-background-radius: 0.0;
-	-fx-background-insets: 0.0px;
-}
-
-.jd-find-match-button:hover {
-	-fx-background-color:#ddd;
-}
-
-.jd-find-match-count-label {
-	-fx-padding: 0.0 5.0 0.0 5.0;
-	-fx-background-color: white;
-	-fx-background-radius: 0.0 2.0 2.0 0.0;
-}
-
-/* desktop **************************/
+/* Desktop ********************************************************************/
 
 .jd-desktop-environment {
     -text-background: black;
 	-fx-background-color: -text-background;
 }
+
+/* Shortcut pane **************************************************************/
 
 .jd-desktop-shortcut-pane {
    -fx-background-color: -text-background;
@@ -204,7 +126,7 @@
     -fx-padding: 0.0px;
 }
 
-.text-area .scroll-pane .viewport {
+.jd-desktop-shortcut-name.text-area .scroll-pane .viewport {
     -fx-border-color: transparent;
     -fx-background-color:transparent;
     -fx-background-insets: 0.0px;
@@ -249,11 +171,13 @@
 	-fx-border-radius: 3.0;
 }
 
+/* Window pane ****************************************************************/
+
 .jd-desktop-window-pane {
 	-fx-background-color: null;
 }
 
-/* menu bar ********************************/
+/* Menu bar *******************************************************************/
 
 .jd-menubar {
 	-fx-background-color: transparent;
@@ -270,100 +194,17 @@
     -fx-font-weight: normal;
 }
 
-.jd-menubar-button-regular {
-	-fx-font-family: "Font Awesome 5 Free Regular";
-}
-
-.jd-menubar-button-solid {
-	-fx-font-family: "Font Awesome 5 Free Solid";
-}
-
 .jd-menubar-button:hover {
-    -fx-background-color:#eee;
+    -fx-background-color: #eee;
 }
 
-/* app bar ******************************/
+/* Control bar ****************************************************************/
 
-.jd-appbar {
-	-fx-background-color: transparent;
-}
-
-.jd-appbar-button {
-    -fx-background-color: -jd-button-color1, -jd-button-color2, -jd-button-color3;
-    -fx-background-insets: 0.0 0.0 -1.0 0.0,0.0,1.0;
-    -fx-background-radius: 3.0;
-    -fx-padding: 3.0 10.0 3.0 10.0;
-    -fx-text-fill: #242d35;
-    -fx-font-size: 14.0px;
-}
-
-.jd-appbar-button:hover {
-    -fx-background-color:#eee;
-}
-
-.jd-appbar-snapshot-box-scroll, .jd-appbar-snapshot-box-scroll .viewport {
-	-fx-background-color: transparent;
-	-fx-border-color: transparent;
-	-fx-background-radius: 5.0;
-	-fx-border-radius: 5.0;
-}
-
-.jd-appbar-snapshot-box {
-	-fx-border-color: #eee;
-	-fx-padding: 10.0;
-	-fx-background-color:rgba(0.0, 0.0, 0.0, 0.5);
-	-fx-background-radius: 5.0;
-	-fx-border-radius: 5.0;
-}
-
-.jd-appbar-snapshot-view {
-	-fx-padding: 5.0;
-	-fx-background-color: transparent;
-	-fx-border-color: transparent;
-	-fx-background-radius: 5.0;
-	-fx-border-radius: 5.0;
-}
-
-.jd-appbar-snapshot-view-title {
-	-fx-text-fill: white;
-    -fx-font-size: 12.0px;
-}
-
-.jd-appbar-snapshot-view-button {
-    -fx-background-insets: 0.0;
-    -fx-background-radius: 3.0;
-    -fx-padding: 0.0 3.0 0.0 3.0;
-    -fx-text-fill: black;
-    -fx-font-size: 10.0px;
-}
-
-.jd-appbar-snapshot-view .label {
-	-fx-text-fill: white;
-}
-
-.jd-appbar-snapshot-view:hover {
-	-fx-background-color:rgba(200.0, 200.0, 200.0, 0.3);
-    -fx-border-color: #eee;
-}
-
-/* control bar *************************************/
 .jd-controlbar {
 	-fx-border-color: #aaa;
 	-fx-background-color: rgba(0.0, 0.0, 0.0, 0.5);
 	-fx-background-radius: 5.0;
 	-fx-border-radius: 5.0;
-}
-
-.jd-controlbar-bookmarks-icon-regular {
-	-fx-font-family: "Font Awesome 5 Free Regular";
-}
-
-.jd-controlbar-bookmarks-icon-solid {
-	-fx-font-family: "Font Awesome 5 Free Solid";
-}
-
-.jd-controlbar-bookmarks-drag-entered {
-	-fx-background-color: rgba(0.0, 150.0, 201.0, 0.5);
 }
 
 .jd-controlbar-desktops-button:active {
@@ -372,7 +213,7 @@
     -fx-border-radius: 2.0;
 }
 
-/* internal window */
+/* Internal window ************************************************************/
 
 .jd-internal-window:emphasized {
 	-fx-background-color: transparent;
@@ -445,15 +286,7 @@
     -fx-background-color:#ddd;
 }
 
-.jd-internal-window-other-app-button {
-    -fx-border-color: transparent;
-    -fx-background-color:transparent;
-	-fx-text-fill: #aaa;
-}
-
-.jd-internal-window-other-app-button:hover {
-	-fx-text-fill: black;
-}
+/* Table **********************************************************************/
 
 .jd-table-view .column-header .label {
     -fx-alignment:CENTER_LEFT
