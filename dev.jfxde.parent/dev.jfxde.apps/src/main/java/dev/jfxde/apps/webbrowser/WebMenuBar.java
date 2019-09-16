@@ -38,21 +38,21 @@ public class WebMenuBar extends BorderPane {
 	}
 
 	private void initControls() {
-		back.getStyleClass().addAll("jd-menubar-button-solid");
+		back.getStyleClass().addAll("jd-font-awesome-solid");
 		back.setTooltip(new Tooltip());
 		back.getTooltip().textProperty().bind(context.rc().getTextBinding("back"));
 		back.setOnAction(e -> webPageView.back());
 		back.disableProperty().bind(webPageView.backDisableProperty());
 		back.setFocusTraversable(false);
 
-		forward.getStyleClass().addAll("jd-menubar-button-solid");
+		forward.getStyleClass().addAll("jd-font-awesome-solid");
 		forward.setTooltip(new Tooltip());
 		forward.getTooltip().textProperty().bind(context.rc().getTextBinding("forward"));
 		forward.setOnAction(e -> webPageView.forward());
 		forward.disableProperty().bind(webPageView.forwardDisableProperty());
 		forward.setFocusTraversable(false);
 
-		reload.getStyleClass().addAll("jd-menubar-button-solid");
+		reload.getStyleClass().addAll("jd-font-awesome-solid");
 		reload.setTooltip(new Tooltip());
 		reload.textProperty().bind(Bindings.when(webPageView.runningProperty()).then(Fonts.FontAwesome.TIMES)
 				.otherwise(Fonts.FontAwesome.REDO));

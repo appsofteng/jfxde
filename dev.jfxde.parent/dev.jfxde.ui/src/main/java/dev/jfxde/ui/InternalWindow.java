@@ -136,22 +136,22 @@ public class InternalWindow extends Pane {
     }
 
     private void addButtons() {
-        newWindow.getStyleClass().addAll("jd-internal-window-button", "jd-menubar-button-solid");
+        newWindow.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
         newWindow.setFocusTraversable(false);
         newWindow.setTooltip(new Tooltip());
         newWindow.getTooltip().textProperty().bind(Sys.rm().getTextBinding("newWindow"));
 
-        tile.getStyleClass().addAll("jd-internal-window-button", "jd-menubar-button-solid");
+        tile.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
         tile.setFocusTraversable(false);
         tile.setTooltip(new Tooltip());
         tile.getTooltip().textProperty().bind(Sys.rm().getTextBinding("tile"));
 
-        minimize.getStyleClass().addAll("jd-internal-window-button", "jd-menubar-button-solid");
+        minimize.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
         minimize.setFocusTraversable(false);
         minimize.setTooltip(new Tooltip());
         minimize.getTooltip().textProperty().bind(Sys.rm().getTextBinding("minimize"));
 
-        maximize.getStyleClass().addAll("jd-internal-window-button", "jd-menubar-button-solid");
+        maximize.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
         maximize.setFocusTraversable(false);
         maximize.textProperty()
                 .bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
@@ -166,7 +166,7 @@ public class InternalWindow extends Pane {
         full.setTooltip(new Tooltip());
         full.getTooltip().textProperty().bind(Sys.rm().getTextBinding("full"));
 
-        close.getStyleClass().addAll("jd-internal-window-button", "jd-menubar-button-solid");
+        close.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
         close.setFocusTraversable(false);
         close.setTooltip(new Tooltip());
         close.getTooltip().textProperty().bind(Sys.rm().getTextBinding("close"));
