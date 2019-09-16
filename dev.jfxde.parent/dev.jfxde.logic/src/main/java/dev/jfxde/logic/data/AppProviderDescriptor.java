@@ -311,6 +311,11 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
         return resourceManager.getMediumIcon("jd-medium-icon");
     }
 
+    public Region getMediumIcon(String styleClass) {
+
+        return resourceManager.getMediumIcon(styleClass);
+    }
+
     public Region getSmallIcon() {
 
         return resourceManager.getSmallIcon("jd-small-icon");

@@ -17,6 +17,20 @@
 /* Platform classes ***********************************************************/
 
 .root {
+
+	-jd-base-color: black;
+	-jd-base-color-alpha5: rgba(0%, 0%, 0%, 0.5);
+	-jd-base-color-alpha7: rgba(0%, 0%, 0%, 0.7);
+	-jd-text-background-color: -jd-base-color;
+
+    -jd-light-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha5, 200%) 0%, derive(-jd-base-color-alpha5, 50%) 50%, derive(-jd-base-color-alpha5, -50%) 100%);
+    -jd-dark-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha7, 200%) 0%, derive(-jd-base-color-alpha7, 50%) 50%, derive(-jd-base-color-alpha7, -50%) 100%);
+    -jd-text-fill: ladder(-jd-base-color, derive(-jd-base-color, 200%) 0%, derive(-jd-base-color,50%) 50%, derive(-jd-base-color, -100%) 100%);
+    -jd-border-color: -jd-text-fill;
+
+    -jd-passive-background-color: ladder(-jd-base-color, derive(-jd-base-color, 112%) 0%, derive(-jd-base-color, -33%) 100%);
+    -jd-active-background-color: ladder(-jd-base-color, derive(-jd-base-color, 155%) 0%, derive(-jd-base-color, -7%) 100%);
+
     -jd-button-color1: rgba(0.0,0.0,0.0,0.08);
     -jd-button-color2: linear-gradient(#5a61af, #51536d);
     -jd-button-color3: linear-gradient(#e4fbff 0.0%,#cee6fb 10.0%, #a5d3fb 50.0%, #88c6fb 51.0%, #d5faff 100.0%);
@@ -24,7 +38,7 @@
 
 .tooltip {
 	-fx-border-color: transparent;
-	-fx-background-color: #eee;
+	-fx-background-color: -jd-active-background-color;
 	-fx-text-fill: black;
 	-fx-font-size: 0.85em;
     -fx-padding: 2;
@@ -60,12 +74,10 @@
 }
 
 .jd-medium-icon {
-	-fx-background-color: #eff;
 	-fx-alignment: center;
 	-fx-text-alignment: center;
 	-fx-background-radius: 2.0;
 	-fx-border-radius: 2.0;
-	-fx-text-fill: black;
 }
 
 .jd-small-icon {
@@ -78,29 +90,28 @@
 /* Desktop ********************************************************************/
 
 .jd-desktop-environment {
-    -text-background: black;
-	-fx-background-color: -text-background;
+	-fx-background-color: -jd-text-background-color;
 }
 
 /* Shortcut pane **************************************************************/
 
 .jd-desktop-shortcut-pane {
-   -fx-background-color: -text-background;
+   -fx-background-color: -jd-text-background-color;
 }
 
 .jd-desktop-shortcut-icon {
-	-fx-background-color: #eff;
+	-fx-background-color: -jd-text-fill;
 	-fx-alignment: center;
 	-fx-text-alignment: center;
 	-fx-background-radius: 2.0;
 	-fx-border-radius: 2.0;
-	-fx-text-fill: red;
+	-fx-text-fill: -jd-text-background-color;
 }
 
 .jd-desktop-shortcut-name {
     -fx-border-color: transparent;
     -fx-background-color:transparent;
-    -fx-text-fill: ladder(-text-background, white 0.0%, white 59.0%, black 60.0%, black 100.0%);
+    -fx-text-fill: -jd-text-fill;
     -fx-font-smoothing-type: lcd;
     -fx-opacity: 1.0;
     -fx-background-insets: 0.0px;
@@ -115,6 +126,15 @@
 	-fx-font-weight: normal;
 }
 
+.jd-desktop-shortcut-name .content {
+	-fx-border-color: transparent;
+    -fx-background-color:transparent;
+    -fx-background-insets: 0.0px;
+    -fx-border-insets: 0.0px;
+    -fx-border-width: 0.0px;
+    -fx-padding: 0.0px;
+}
+
 .jd-desktop-shortcut-name .scroll-pane {
     -fx-hbar-policy: never;
     -fx-vbar-policy: never;
@@ -126,17 +146,8 @@
     -fx-padding: 0.0px;
 }
 
-.jd-desktop-shortcut-name.text-area .scroll-pane .viewport {
+.jd-desktop-shortcut-name .scroll-pane .viewport {
     -fx-border-color: transparent;
-    -fx-background-color:transparent;
-    -fx-background-insets: 0.0px;
-    -fx-border-insets: 0.0px;
-    -fx-border-width: 0.0px;
-    -fx-padding: 0.0px;
-}
-
-.jd-desktop-shortcut-name .content {
-	-fx-border-color: transparent;
     -fx-background-color:transparent;
     -fx-background-insets: 0.0px;
     -fx-border-insets: 0.0px;
@@ -158,15 +169,15 @@
 }
 
 .jd-desktop-shortcut-view:hover {
-	-fx-background-color: ladder(-text-background, rgba(255.0, 255.0, 255.0, 0.5) 0.0%, rgba(255.0, 255.0, 255.0, 0.5) 59.0%, rgba(0.0, 0.0, 0.0, 0.5) 60.0%, rgba(0.0, 0.0, 0.0, 0.5) 100.0%);
-	-fx-border-color: ladder(-text-background, white 0.0%, white 59.0%, black 60.0%, black 100.0%);
+	-fx-background-color: -jd-light-background-color;
+	-fx-border-color: -jd-border-color;
 	-fx-background-radius: 3.0;
 	-fx-border-radius: 3.0;
 }
 
 .jd-desktop-shortcut-view:active, .jd-desktop-shortcut-view:active:hover {
-	-fx-background-color: ladder(-text-background, rgba(255.0, 255.0, 255.0, 0.7) 0.0%, rgba(255.0, 255.0, 255.0, 0.7) 59.0%, rgba(0.0, 0.0, 0.0, 0.7) 60.0%, rgba(0.0, 0.0, 0.0, 0.7) 100.0%);
-	-fx-border-color: ladder(-text-background, white 0.0%, white 59.0%, black 60.0%, black 100.0%);
+	-fx-background-color: -jd-dark-background-color;
+	-fx-border-color: -jd-border-color;
 	-fx-background-radius: 3.0;
 	-fx-border-radius: 3.0;
 }
@@ -201,7 +212,7 @@
 /* Control bar ****************************************************************/
 
 .jd-controlbar {
-	-fx-border-color: #aaa;
+	-fx-border-color: -jd-passive-background-color;
 	-fx-background-color: rgba(0.0, 0.0, 0.0, 0.5);
 	-fx-background-radius: 5.0;
 	-fx-border-radius: 5.0;
@@ -215,17 +226,9 @@
 
 /* Internal window ************************************************************/
 
-.jd-internal-window:emphasized {
-	-fx-background-color: transparent;
-	-fx-border-color: #eee;
-	-fx-border-width: 1.0;
-	-fx-background-radius: 5.0;
-	-fx-border-radius: 5.0;
-}
-
 .jd-internal-window:active .jd-internal-window-payload {
-	-fx-background-color: #eee;
-	-fx-border-color: #eee;
+	-fx-background-color: -jd-active-background-color;
+	-fx-border-color: -jd-active-background-color;
 }
 
 .jd-internal-window:full .jd-internal-window-payload {
@@ -237,12 +240,12 @@
 }
 
 .jd-internal-window:active .jd-internal-window-title-bar {
-	-fx-background-color: #eee;
+	-fx-background-color: -jd-active-background-color;
 }
 
 .jd-internal-window-payload {
-	-fx-background-color: #aaa;
-	-fx-border-color: #aaa;
+	-fx-background-color: -jd-passive-background-color;
+	-fx-border-color: -jd-passive-background-color;
 	-fx-border-width: 4.0;
 	-fx-background-radius: 5.0;
 	-fx-border-radius: 5.0;
@@ -253,7 +256,7 @@
 }
 
 .jd-internal-window-title-bar {
-	-fx-background-color: #aaa;
+	-fx-background-color: -jd-passive-background-color;
 	-fx-padding: 2.0 2.0 4.0 2.0;
 }
 

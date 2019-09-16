@@ -44,7 +44,7 @@ public class ShortcutView extends VBox {
         AppProviderDescriptor appProviderDescriptor = Sys.am().getAppProviderDescriptor(shortcut.getFqn());
         Region icon = null;
         if (appProviderDescriptor != null) {
-            icon = appProviderDescriptor.getMediumIcon();
+            icon = appProviderDescriptor.getMediumIcon("jd-desktop-shortcut-icon");
         } else {
             Label iconLabel = new Label("?");
             iconLabel.setContentDisplay(ContentDisplay.TEXT_ONLY);
