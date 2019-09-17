@@ -3,36 +3,42 @@ package dev.jfxde.sysapps.settings;
 import dev.jfxde.api.AppContext;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.PropertyDescriptor;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.ChoiceBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.application.Platform;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableView;
+import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.scene.layout.StackPane;
 
 public class SettingsContent extends StackPane {
 
-    private TableView<PropertyDescriptor> settingTable = new TableView<>();
-
     @SuppressWarnings("unchecked")
     public SettingsContent(AppContext context) {
 
-        TableColumn<PropertyDescriptor, String> keyColumn = new TableColumn<>();
-        keyColumn.textProperty().bind(context.rc().getTextBinding("key"));
-        keyColumn.setCellValueFactory(new PropertyValueFactory<>("key"));
+        // Although not attached to the scene it throws a null pointer exception
+        // sometimes. When run later
+        // the exception does not appear.
+        Platform.runLater(() -> {
+            LazyTreeItem<PropertyDescriptor> root = new LazyTreeItem<>(new PropertyDescriptor(""), i -> Sys.sm().getSubsettings(i));
+            TreeTableView<PropertyDescriptor> table = new TreeTableView<>(root);
+            table.setShowRoot(false);
 
-        TableColumn<PropertyDescriptor, String> valueColumn = new TableColumn<>();
-        valueColumn.textProperty().bind(context.rc().getTextBinding("value"));
-        valueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
-        valueColumn.setMaxWidth(Double.MAX_VALUE);
-        valueColumn.setCellFactory(c -> new ChoiceBoxTableCell<>(Sys.am().getLocales()));
+            TreeTableColumn<PropertyDescriptor, String> keyColumn = new TreeTableColumn<>();
+            keyColumn.textProperty().bind(context.rc().getTextBinding("key"));
+            keyColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("label"));
+            keyColumn.setPrefWidth(150);
 
-        settingTable.getColumns().addAll(keyColumn, valueColumn);
-        settingTable.getStyleClass().add("jd-table-view");
-        settingTable.setEditable(true);
+            TreeTableColumn<PropertyDescriptor, String> valueColumn = new TreeTableColumn<>();
+            valueColumn.textProperty().bind(context.rc().getTextBinding("value"));
+            valueColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("value"));
+            valueColumn.setMaxWidth(Double.MAX_VALUE);
+            valueColumn.setCellFactory(c -> new SettingTableCell());
 
-        settingTable.setItems(Sys.sm().getSettings());
+            table.getColumns().addAll(keyColumn, valueColumn);
+            table.getStyleClass().add("jd-table-view");
+            table.setEditable(true);
 
-        getChildren().add(settingTable);
+            getChildren().add(table);
+
+        });
     }
-
 }

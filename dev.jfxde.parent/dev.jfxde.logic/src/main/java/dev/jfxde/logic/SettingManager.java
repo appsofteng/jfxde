@@ -3,7 +3,10 @@ package dev.jfxde.logic;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -12,11 +15,16 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 
 public final class SettingManager extends Manager {
 
+    public static String SYSTEM_LOCALE = "system.locale";
+    public static String SYSTEM_THEME_COLOR = "system.theme.color";
+
     private Properties userSettings;
     private ObservableList<PropertyDescriptor> settings = FXCollections.observableArrayList(s -> new Observable[] { s.valueProperty() });
+    private Set<String> keys = new HashSet<>();
 
     SettingManager() {
     }
@@ -32,13 +40,30 @@ public final class SettingManager extends Manager {
             userSettings.load(Files.newBufferedReader(FileManager.CONF_FILE));
         }
 
-        settings.setAll(userSettings.stringPropertyNames().stream().map(k -> new PropertyDescriptor(k, userSettings.getProperty(k)))
-                .collect(Collectors.toList()));
-        FXCollections.sort(settings);
+        setSettings();
 
         ResourceManager.setLocale(getLocale());
 
         setListeners();
+    }
+
+    private void setSettings() {
+        for (String key : userSettings.stringPropertyNames()) {
+            settings.add(new PropertyDescriptor(key, userSettings.getProperty(key)));
+            keys.add(key);
+            String[] parts = key.split("\\.");
+
+            String partKey = "";
+
+            for (int i = 0; i < parts.length - 1; i++) {
+                partKey += partKey.isEmpty() ? parts[i] : "." + parts[i];
+
+                if (!keys.contains(partKey)) {
+                    keys.add(partKey);
+                    settings.add(new PropertyDescriptor(partKey));
+                }
+            }
+        }
     }
 
     private void setListeners() {
@@ -64,12 +89,16 @@ public final class SettingManager extends Manager {
     }
 
     private String getLocale() {
-        return userSettings.getProperty("system.locale");
+        return userSettings.getProperty(SYSTEM_LOCALE);
     }
 
     private void setLocale(String locale) {
         ResourceManager.setLocale(locale);
         Sys.am().sortApp();
+    }
+
+    public String getThemeColor() {
+        return userSettings.getProperty(SYSTEM_THEME_COLOR);
     }
 
     public ObservableList<PropertyDescriptor> getSettings() {
@@ -84,6 +113,13 @@ public final class SettingManager extends Manager {
         FXCollections.sort(properties);
 
         return properties;
+    }
+
+    public List<PropertyDescriptor> getSubsettings(PropertyDescriptor propertyDescriptor) {
+
+        FilteredList<PropertyDescriptor> subsettings = new FilteredList<PropertyDescriptor>(settings, p -> p.isSubproperty(propertyDescriptor));
+
+        return subsettings;
     }
 
     private void storeSettings() {
