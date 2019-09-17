@@ -39,6 +39,7 @@ public class Main extends Application {
 		stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
 		stage.setFullScreenExitHint("");
 		DesktopEnvironment desktopEnvironment = new DesktopEnvironment();
+
 		Scene scene = new Scene(desktopEnvironment, 700, 600, false, SceneAntialiasing.BALANCED);
 		scene.getStylesheets().add(Sys.rm().getCss("standard"));
 		stage.setScene(scene);

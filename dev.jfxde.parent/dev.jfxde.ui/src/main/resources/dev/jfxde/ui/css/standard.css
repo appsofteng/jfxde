@@ -19,17 +19,21 @@
 .root {
 
 	-jd-base-color: black;
+	-jd-base-color-alpha4: rgba(0%, 0%, 0%, 0.4);
 	-jd-base-color-alpha5: rgba(0%, 0%, 0%, 0.5);
+	-jd-base-color-alpha6: rgba(0%, 0%, 0%, 0.6);
 	-jd-base-color-alpha7: rgba(0%, 0%, 0%, 0.7);
 	-jd-text-background-color: -jd-base-color;
 
-    -jd-light-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha5, 200%) 0%, derive(-jd-base-color-alpha5, 50%) 50%, derive(-jd-base-color-alpha5, -50%) 100%);
-    -jd-dark-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha7, 200%) 0%, derive(-jd-base-color-alpha7, 50%) 50%, derive(-jd-base-color-alpha7, -50%) 100%);
-    -jd-text-fill: ladder(-jd-base-color, derive(-jd-base-color, 200%) 0%, derive(-jd-base-color,50%) 50%, derive(-jd-base-color, -100%) 100%);
+    -jd-light-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha4, 200%) 0%, derive(-jd-base-color-alpha4, 50%) 50%, derive(-jd-base-color-alpha4, -50%) 100%);
+    -jd-dark-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha6, 200%) 0%, derive(-jd-base-color-alpha6, 50%) 50%, derive(-jd-base-color-alpha6, -50%) 100%);
+
+    -jd-text-fill: ladder(-jd-base-color, derive(-jd-base-color, 200%) 0%, derive(-jd-base-color, 120%) 10%, derive(-jd-base-color, 120%) 20%, derive(-jd-base-color, 120%) 29%, derive(-jd-base-color, -70%) 30%, derive(-jd-base-color, -70%) 40%, derive(-jd-base-color, -80%) 60%, derive(-jd-base-color, -100%) 100%);
+
     -jd-border-color: -jd-text-fill;
 
-    -jd-passive-background-color: ladder(-jd-base-color, derive(-jd-base-color, 112%) 0%, derive(-jd-base-color, -33%) 100%);
-    -jd-active-background-color: ladder(-jd-base-color, derive(-jd-base-color, 155%) 0%, derive(-jd-base-color, -7%) 100%);
+    -jd-passive-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha5, 112%) 0%, derive(-jd-base-color-alpha5, -33%) 100%);
+    -jd-active-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha7, 155%) 0%, derive(-jd-base-color-alpha7, -7%) 100%);
 
     -jd-button-color1: rgba(0.0,0.0,0.0,0.08);
     -jd-button-color2: linear-gradient(#5a61af, #51536d);

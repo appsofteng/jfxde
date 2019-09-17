@@ -12,122 +12,134 @@ import javafx.geometry.VPos;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 public class DesktopEnvironment extends Region {
 
-	private StackPane desktopStack = new StackPane();
-	private MenuBar menuBar = new MenuBar();
-	private ControlBar controlBar = new ControlBar();
-	private DesktopPane activeDesktopPane;
+    private StackPane desktopStack = new StackPane();
+    private MenuBar menuBar = new MenuBar();
+    private ControlBar controlBar = new ControlBar();
+    private DesktopPane activeDesktopPane;
 
-	static final Duration SHOW_HIDE_DURATION = Duration.millis(800);
-	private static final double DESKTOP_EXITED_Y_DIFF = 30;
-	private double desktopStackExitedX;
-	private double desktopStackExitedY;
+    static final Duration SHOW_HIDE_DURATION = Duration.millis(800);
+    private static final double DESKTOP_EXITED_Y_DIFF = 30;
+    private double desktopStackExitedX;
+    private double desktopStackExitedY;
 
-	public DesktopEnvironment() {
-		getChildren().addAll(desktopStack, menuBar, controlBar);
-		getStyleClass().add("jd-desktop-environment");
-		setDesktopHandlers();
-		setActiveDesktop();
-		setDialogListener();
-	}
+    public DesktopEnvironment() {
+        getChildren().addAll(desktopStack, menuBar, controlBar);
+        setThemeColor(Sys.sm().getThemeColor());
+        getStyleClass().add("jd-desktop-environment");
+        setDesktopHandlers();
+        setActiveDesktop();
+        setDialogListener();
+    }
 
-	@Override
-	protected void layoutChildren() {
-		layoutInArea(desktopStack, 0, 0, getWidth(), getHeight(), 0, new Insets(2, 2, 2, 2), HPos.CENTER, VPos.CENTER);
-		layoutInArea(controlBar, -controlBar.getWidth() - 2, 0, 250, getHeight(), 0, new Insets(2, 0, 2, 2), HPos.LEFT,
-				VPos.TOP);
-		double menuBarWidth = menuBar.isDefaultMenuBar() ? menuBar.getWidth() : getWidth();
+    public void setThemeColor(String color) {
 
-		layoutInArea(menuBar, getWidth() - menuBarWidth, -menuBar.getHeight() - 2, menuBarWidth, menuBar.getHeight(), 0,
-				new Insets(2, 2, 0, 2), HPos.RIGHT, VPos.TOP);
-	}
-	
-	private void setDialogListener() {
-		Sys.am().toBeStartedApp().addListener((v, o, n) -> {
-			if (n != null) {
-				DialogDisplayer.start(getScene().getWindow(), n);
-			}
-		});
-	}
+        String style = "-jd-base-color: " + color + ";";
+        for (int i = 4; i < 8; i++) {
+            style += "-jd-base-color-alpha" + i + ": " + Color.web(color, i/10.0).toString().replace("0x", "#") + ";";
+        }
 
-	private void setDesktopHandlers() {
+        setStyle(style);
+    }
 
-		desktopStack.setOnMouseEntered(e -> {
+    @Override
+    protected void layoutChildren() {
+        layoutInArea(desktopStack, 0, 0, getWidth(), getHeight(), 0, new Insets(2, 2, 2, 2), HPos.CENTER, VPos.CENTER);
+        layoutInArea(controlBar, -controlBar.getWidth() - 2, 0, 250, getHeight(), 0, new Insets(1, 0, 1, 2), HPos.LEFT,
+                VPos.TOP);
+        double menuBarWidth = menuBar.isDefaultMenuBar() ? menuBar.getWidth() : getWidth();
 
-			if (e.getX() >= 0 && e.getX() <= controlBar.getWidth()
-					&& Math.abs(e.getY() - desktopStackExitedY) > DESKTOP_EXITED_Y_DIFF && desktopStackExitedX <= 0
-					&& desktopStackExitedY > 0 && e.getY() > menuBar.getHeight()) {
-				controlBar.show();
-				menuBar.hide();
-			}
-		});
+        layoutInArea(menuBar, getWidth() - menuBarWidth, -menuBar.getHeight() - 2, menuBarWidth, menuBar.getHeight(), 0,
+                new Insets(2, 2, 0, 2), HPos.RIGHT, VPos.TOP);
+    }
 
-		desktopStack.setOnMouseExited(e -> {
+    private void setDialogListener() {
+        Sys.am().toBeStartedApp().addListener((v, o, n) -> {
+            if (n != null) {
+                DialogDisplayer.start(getScene().getWindow(), n);
+            }
+        });
+    }
 
-			desktopStackExitedX = e.getX();
-			desktopStackExitedY = e.getY();
+    private void setDesktopHandlers() {
 
-			// menuBar.getWidth() cannot be used because it takes some time
-			// before the width is changed after removal of app menu bar.
-			if (e.getY() <= 0 && !menuBar.isDefaultMenuBar()
-					|| e.getY() <= 0 && e.getX() >= desktopStack.getWidth() - menuBar.getButtonBox().getWidth()) {
-				menuBar.show();
-				controlBar.hide();
+        desktopStack.setOnMouseEntered(e -> {
 
-			} else if (e.getX() <= 0 && e.getY() > menuBar.getHeight()) {
-				menuBar.hide();
-			}
-		});
+            if (e.getX() >= 0 && e.getX() <= controlBar.getWidth()
+                    && Math.abs(e.getY() - desktopStackExitedY) > DESKTOP_EXITED_Y_DIFF && desktopStackExitedX <= 0
+                    && desktopStackExitedY > 0 && e.getY() > menuBar.getHeight()) {
+                controlBar.show();
+                menuBar.hide();
+            }
+        });
 
-		desktopStack.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-			controlBar.hide();
-			menuBar.hide();
-		});
-	}
+        desktopStack.setOnMouseExited(e -> {
 
-	private void setActiveDesktop() {
-		setActiveDesktop(Sys.dm().getActiveDesktop());
-		setFor(Sys.dm().getActiveWindow());
+            desktopStackExitedX = e.getX();
+            desktopStackExitedY = e.getY();
 
-		Sys.dm().activeDesktopProperty().addListener((v, o, activeDesktop) -> {
-			setActiveDesktop(activeDesktop);
-		});
+            // menuBar.getWidth() cannot be used because it takes some time
+            // before the width is changed after removal of app menu bar.
+            if (e.getY() <= 0 && !menuBar.isDefaultMenuBar()
+                    || e.getY() <= 0 && e.getX() >= desktopStack.getWidth() - menuBar.getButtonBox().getWidth()) {
+                menuBar.show();
+                controlBar.hide();
 
-		Sys.dm().activeWindowProperty().addListener((v, o, w) -> {
-			setFor(w);
-		});
-	}
+            } else if (e.getX() <= 0 && e.getY() > menuBar.getHeight()) {
+                menuBar.hide();
+            }
+        });
 
-	private void setActiveDesktop(Desktop activeDesktop) {
+        desktopStack.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+            controlBar.hide();
+            menuBar.hide();
+        });
+    }
 
-		activeDesktopPane = desktopStack.getChildren().stream().map(c -> (DesktopPane) c)
-				.filter(d -> d.getDesktop() == activeDesktop).findFirst().orElse(null);
+    private void setActiveDesktop() {
+        setActiveDesktop(Sys.dm().getActiveDesktop());
+        setFor(Sys.dm().getActiveWindow());
 
-		if (activeDesktopPane == null) {
-			activeDesktopPane = new DesktopPane(activeDesktop);
-			desktopStack.getChildren().add(activeDesktopPane);
-		}
+        Sys.dm().activeDesktopProperty().addListener((v, o, activeDesktop) -> {
+            setActiveDesktop(activeDesktop);
+        });
 
-		activeDesktopPane.toFront();
-	}
+        Sys.dm().activeWindowProperty().addListener((v, o, w) -> {
+            setFor(w);
+        });
+    }
 
-	private void setFor(Window window) {
-		if (window != null) {
-			menuBar.getRestore().textProperty().bind(Bindings.when(window.stateProperty().isEqualTo(State.FULL))
-					.then(Fonts.Octicons.SCREEN_NORMAL).otherwise(Fonts.Octicons.SCREEN_FULL));
-			menuBar.getRestore().getTooltip().textProperty()
-					.bind(Bindings.when(window.stateProperty().isEqualTo(State.FULL))
-							.then(Sys.rm().getTextBinding("restore")).otherwise(Sys.rm().getTextBinding("full")));
-			menuBar.getRestore().setDisable(false);
-		} else {
-			menuBar.setActiveAppMenuBar(null);
-			menuBar.getRestore().textProperty().unbind();
-			menuBar.getRestore().setText(Fonts.Octicons.SCREEN_FULL);
-			menuBar.getRestore().getTooltip().textProperty().unbind();
-			menuBar.getRestore().setDisable(true);
-		}
-	}
+    private void setActiveDesktop(Desktop activeDesktop) {
+
+        activeDesktopPane = desktopStack.getChildren().stream().map(c -> (DesktopPane) c)
+                .filter(d -> d.getDesktop() == activeDesktop).findFirst().orElse(null);
+
+        if (activeDesktopPane == null) {
+            activeDesktopPane = new DesktopPane(activeDesktop);
+            desktopStack.getChildren().add(activeDesktopPane);
+        }
+
+        activeDesktopPane.toFront();
+    }
+
+    private void setFor(Window window) {
+        if (window != null) {
+            menuBar.getRestore().textProperty().bind(Bindings.when(window.stateProperty().isEqualTo(State.FULL))
+                    .then(Fonts.Octicons.SCREEN_NORMAL).otherwise(Fonts.Octicons.SCREEN_FULL));
+            menuBar.getRestore().getTooltip().textProperty()
+                    .bind(Bindings.when(window.stateProperty().isEqualTo(State.FULL))
+                            .then(Sys.rm().getTextBinding("restore")).otherwise(Sys.rm().getTextBinding("full")));
+            menuBar.getRestore().setDisable(false);
+        } else {
+            menuBar.setActiveAppMenuBar(null);
+            menuBar.getRestore().textProperty().unbind();
+            menuBar.getRestore().setText(Fonts.Octicons.SCREEN_FULL);
+            menuBar.getRestore().getTooltip().textProperty().unbind();
+            menuBar.getRestore().setDisable(true);
+        }
+    }
 }
