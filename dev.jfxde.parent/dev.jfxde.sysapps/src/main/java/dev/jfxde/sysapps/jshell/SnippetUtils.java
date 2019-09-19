@@ -50,6 +50,17 @@ public final class SnippetUtils {
 
     public static String toString(Snippet snippet, JShell jshell) {
 
+        String value = "";
+
+        if (snippet instanceof VarSnippet) {
+            value = jshell.varValue((VarSnippet)snippet);
+        }
+
+        return toString(snippet, value);
+    }
+
+    public static String toString(Snippet snippet, String value) {
+
         String output = String.format("%4s : ", snippet.id());
 
         if (snippet instanceof ImportSnippet) {
@@ -59,7 +70,9 @@ public final class SnippetUtils {
         } else if (snippet instanceof TypeDeclSnippet) {
             output += toString((TypeDeclSnippet)snippet);
         } else if (snippet instanceof VarSnippet) {
-            output += toString((VarSnippet)snippet, jshell.varValue((VarSnippet)snippet));
+            output += toString((VarSnippet)snippet, value);
+        } else if (snippet instanceof ExpressionSnippet) {
+            output += toString((ExpressionSnippet)snippet, value);
         }
 
         return output;
@@ -82,6 +95,11 @@ public final class SnippetUtils {
     }
 
     public static String toString(VarSnippet snippet, String value) {
+
+        return snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
+    }
+
+    public static String toString(ExpressionSnippet snippet, String value) {
 
         return snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
     }

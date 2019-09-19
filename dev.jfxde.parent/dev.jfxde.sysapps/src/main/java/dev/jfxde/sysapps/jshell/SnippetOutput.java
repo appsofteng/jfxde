@@ -2,7 +2,6 @@ package dev.jfxde.sysapps.jshell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -15,21 +14,17 @@ import dev.jfxde.logic.data.ConsoleOutput;
 import dev.jfxde.logic.data.ConsoleOutput.Type;
 import dev.jfxde.sysapps.util.CodeAreaUtils;
 import jdk.jshell.EvalException;
-import jdk.jshell.ExpressionSnippet;
 import jdk.jshell.JShell;
-import jdk.jshell.MethodSnippet;
-import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Kind;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
 import jdk.jshell.SourceCodeAnalysis;
-import jdk.jshell.TypeDeclSnippet;
 import jdk.jshell.VarSnippet;
 
 public class SnippetOutput extends JShellOutput {
 
     SnippetOutput(AppContext context, JShell jshell, CodeArea outputArea) {
-       super(context, jshell, outputArea);
+        super(context, jshell, outputArea);
     }
 
     @Override
@@ -43,7 +38,7 @@ public class SnippetOutput extends JShellOutput {
         while (!source.isEmpty()) {
 
             List<SnippetEvent> snippetEvents = jshell.eval(source);
-            snippetEvents.forEach(e -> CodeAreaUtils.addOutputLater(outputArea, getOutputs(e)));
+            snippetEvents.forEach(e -> CodeAreaUtils.addOutputLater(outputArea, getOutput(e)));
 
             info = sourceAnalysis.analyzeCompletion(info.remaining());
             source = info.source();
@@ -52,93 +47,101 @@ public class SnippetOutput extends JShellOutput {
         CodeAreaUtils.addOutputLater(outputArea, "\n");
     }
 
-    private List<ConsoleOutput> getOutputs(SnippetEvent event) {
+    private ConsoleOutput getOutput(SnippetEvent event) {
 
-        List<ConsoleOutput> outputs = new ArrayList<>();
-
-        StringBuilder sb = new StringBuilder();
-        Snippet snippet = event.snippet();
-        Type type = Type.NORMAL;
+        String message = "";
+        Type type = Type.COMMENT;
 
         if (event.exception() != null) {
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            event.exception().printStackTrace(new PrintStream(out));
-            String msg = out.toString();
-
-            if (event.exception() instanceof EvalException) {
-                EvalException e = (EvalException) event.exception();
-                msg = msg.replace(event.exception().getClass().getName(), e.getExceptionClassName());
-            }
-
-            msg = msg.replace("\r", "");
-            sb.append("Exception ").append(msg);
-
             type = Type.ERROR;
-
+            message = getExceptionMessage(event);
         } else if (event.status() == Status.REJECTED) {
-            jshell.diagnostics(event.snippet()).forEach(d -> {
-                if (d.isError()) {
-                    sb.append("Error:\n");
-                }
-                sb.append(d.getMessage(null)).append("\n");
-
-                Tuple2<String, Integer> line = SnippetUtils.getLine(snippet.source(), (int) d.getStartPosition(),
-                        (int) d.getEndPosition());
-                sb.append(line._1).append("\n");
-
-                String underscore = LongStream
-                        .range(0,
-                                d.getEndPosition() - line._2)
-                        .mapToObj(p -> p >= 0 && p < d.getStartPosition() - line._2 ? " "
-                                : p > d.getStartPosition() - line._2 && p < d.getEndPosition() - 1 - line._2 ? "-"
-                                        : "^")
-                        .collect(Collectors.joining());
-
-                sb.append(underscore);
-                sb.append("\n");
-
-            });
-
             type = Type.ERROR;
-        } else if (event.value() != null) {
-            if (snippet.kind() == Kind.EXPRESSION) {
-                sb.append(((ExpressionSnippet) snippet).name() + " ==> " + event.value());
-            } else if (snippet.kind() == Kind.VAR) {
-                sb.append(((VarSnippet) snippet).name() + " ==> " + event.value());
-            }
-        } else if (snippet.kind() == Kind.METHOD) {
-            MethodSnippet methodSnippet = ((MethodSnippet) snippet);
-            if (event.previousStatus() == Status.NONEXISTENT) {
-                sb.append("created method " + methodSnippet.name() + "(" + methodSnippet.parameterTypes() + ")");
-            } else if (event.status() == Status.OVERWRITTEN) {
-                sb.append("modified method " + methodSnippet.name() + "(" + methodSnippet.parameterTypes() + ")");
-            }
-
-            type = Type.COMMENT;
-        } else if (snippet.kind() == Kind.TYPE_DECL) {
-            TypeDeclSnippet typeSnippet = ((TypeDeclSnippet) snippet);
-            if (event.previousStatus() == Status.NONEXISTENT) {
-                sb.append("created " + SnippetUtils.getSubkind(typeSnippet) + " " + typeSnippet.name());
-            } else if (event.status() == Status.OVERWRITTEN) {
-                if (event.causeSnippet().subKind() == typeSnippet.subKind()) {
-                    sb.append("modified " + SnippetUtils.getSubkind(typeSnippet) + " " + typeSnippet.name());
-                } else {
-                    sb.append("replaced " + SnippetUtils.getSubkind(typeSnippet) + " " + typeSnippet.name());
-                }
-            }
-
-            type = Type.COMMENT;
+            message = getRejectedMessage(event);
+        } else {
+            message = getSuccessMessage(event);
         }
 
-        String output = sb.toString().trim();
+        message = message.strip();
 
-        if (!output.isBlank()) {
-            output += "\n";
+        if (!message.isBlank()) {
+            message += "\n";
         }
 
-        outputs.add(new ConsoleOutput(output, type));
+        ConsoleOutput o = new ConsoleOutput(message, type);
 
-        return outputs;
+        return o;
+    }
+
+    private String getExceptionMessage(SnippetEvent event) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        event.exception().printStackTrace(new PrintStream(out));
+        String msg = out.toString();
+
+        if (event.exception() instanceof EvalException) {
+            EvalException e = (EvalException) event.exception();
+            msg = msg.replace(event.exception().getClass().getName(), e.getExceptionClassName());
+        }
+
+        msg = "Exception " + msg.replace("\r", "");
+
+        return msg;
+    }
+
+    private String getRejectedMessage(SnippetEvent event) {
+        StringBuilder sb = new StringBuilder();
+
+        jshell.diagnostics(event.snippet()).forEach(d -> {
+            if (d.isError()) {
+                sb.append("Error:\n");
+            }
+            sb.append(d.getMessage(null)).append("\n");
+
+            Tuple2<String, Integer> line = SnippetUtils.getLine(event.snippet().source(), (int) d.getStartPosition(),(int) d.getEndPosition());
+            sb.append(line._1).append("\n");
+
+            String underscore = LongStream
+                    .range(0,
+                            d.getEndPosition() - line._2)
+                    .mapToObj(p -> p >= 0 && p < d.getStartPosition() - line._2 ? " "
+                            : p > d.getStartPosition() - line._2 && p < d.getEndPosition() - 1 - line._2 ? "-"
+                                    : "^")
+                    .collect(Collectors.joining());
+
+            sb.append(underscore).append("\n");
+        });
+
+        return sb.toString();
+    }
+
+    private String getSuccessMessage(SnippetEvent event) {
+
+        if (event.previousStatus() == event.status()) {
+            return "";
+        }
+
+        String msg = "";
+
+        if (event.snippet().kind() == Kind.EXPRESSION) {
+            msg = "";
+        } else if (event.previousStatus() == Status.NONEXISTENT) {
+            msg = "created";
+        } else if (event.status() == Status.OVERWRITTEN) {
+            if (event.causeSnippet().subKind() == event.snippet().subKind()) {
+                msg = "modified";
+            } else {
+                msg = "replaced";
+            }
+        }
+
+        String value = event.value();
+
+        if (value == null && event.causeSnippet() != null  && event.causeSnippet() instanceof VarSnippet) {
+            value = jshell.varValue((VarSnippet)event.causeSnippet());
+        }
+
+        msg += SnippetUtils.toString(event.snippet(), value);
+
+        return msg;
     }
 }
