@@ -1,6 +1,18 @@
-package dev.jfxde.api.ui;
+package dev.jfxde.fonts;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Fonts {
+
+    public static List<String> getUrls() {
+
+        List<String> resources = List.of("/dev/jfxde/fonts/FontAwesome5Free-Solid-900.otf",
+                "/dev/jfxde/fonts/FontAwesome5Free-Regular-400.otf",
+                "/dev/jfxde/fonts/octicons.ttf");
+
+        return resources.stream().map(r -> Fonts.class.getResource(r).toExternalForm()).collect(Collectors.toList());
+    }
 
     public static class FontAwesome {
 
@@ -34,7 +46,7 @@ public class Fonts {
 
     public static class Unicode {
 
-    	public static final String FULLWIDTH_PLUS_SIGN = "\uFF0B";
+        public static final String FULLWIDTH_PLUS_SIGN = "\uFF0B";
         public static final String WHITE_LARGE_SQUARE = "\u2b1c";
         public static final String NORTH_WEST_ARROW_TO_CORNER = "\u21f1";
         public static final String UPPER_RIGHT_DROP_SHADOWED_WHITE_SQUARE = "\u2750";

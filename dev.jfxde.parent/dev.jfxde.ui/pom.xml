@@ -49,6 +49,10 @@
 		</dependency>
 		<dependency>
 			<groupId>dev.jfxde</groupId>
+			<artifactId>dev.jfxde.fonts</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>dev.jfxde</groupId>
 			<artifactId>dev.jfxde.logic</artifactId>
 		</dependency>
 		<dependency>

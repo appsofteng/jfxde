@@ -4,11 +4,13 @@ module dev.jfxde.apps {
     requires jdk.jsobject;
     requires jdk.net;
     requires javafx.controls;
-    requires dev.jfxde.api;
     requires javafx.web;
     requires org.controlsfx.controls;
     requires javafx.graphics;
     requires javafx.base;
+
+    requires dev.jfxde.api;
+    requires dev.jfxde.fonts;
 
     provides dev.jfxde.api.App with dev.jfxde.apps.webbrowser.WebBrowserApp;
 

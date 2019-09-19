@@ -2,7 +2,7 @@ package dev.jfxde.apps.webbrowser;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.api.AppRequest;
-import dev.jfxde.api.ui.Fonts;
+import dev.jfxde.fonts.Fonts;
 import javafx.application.Platform;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;

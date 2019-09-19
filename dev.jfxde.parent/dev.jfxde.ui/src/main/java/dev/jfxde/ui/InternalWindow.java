@@ -1,6 +1,6 @@
 package dev.jfxde.ui;
 
-import dev.jfxde.api.ui.Fonts;
+import dev.jfxde.fonts.Fonts;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.Window;
 import dev.jfxde.logic.data.Window.State;

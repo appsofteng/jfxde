@@ -11,6 +11,7 @@
 		<module>dev.jfxde.api</module>
 		<module>dev.jfxde.data</module>
 		<module>dev.jfxde.logic</module>
+		<module>dev.jfxde.fonts</module>
 		<module>dev.jfxde.ui</module>
 		<module>dev.jfxde.sysapps</module>
 		<module>dev.jfxde.apps</module>
@@ -114,6 +115,11 @@
 			<dependency>
 				<groupId>dev.jfxde</groupId>
 				<artifactId>dev.jfxde.logic</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.jfxde</groupId>
+				<artifactId>dev.jfxde.fonts</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
