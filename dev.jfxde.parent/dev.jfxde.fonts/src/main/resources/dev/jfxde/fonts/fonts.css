@@ -1,0 +1,14 @@
+@font-face {
+   font-family: name inside the file
+   src: url("FontAwesome5Free-Solid-900.otf");
+}
+
+@font-face {
+   font-family: name inside the file
+   src: url("FontAwesome5Free-Regular-400.otf");
+}
+
+@font-face {
+   font-family: name inside the file
+   src: url("octicons.ttf");
+}

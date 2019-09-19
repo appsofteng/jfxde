@@ -39,6 +39,7 @@
 			<includes>
 				<include>dev.jfxde:dev.jfxde.api</include>
 				<include>dev.jfxde:dev.jfxde.logic</include>
+				<include>dev.jfxde:dev.jfxde.fonts</include>
 				<include>dev.jfxde:dev.jfxde.ui</include>
 				<include>dev.jfxde:dev.jfxde.data</include>
 				<include>dev.jfxde:dev.jfxde.sysapps</include>
