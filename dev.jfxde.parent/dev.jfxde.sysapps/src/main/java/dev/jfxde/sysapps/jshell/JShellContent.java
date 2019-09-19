@@ -18,6 +18,8 @@ import javafx.application.Platform;
 import javafx.collections.ListChangeListener.Change;
 import javafx.concurrent.Task;
 import javafx.geometry.Bounds;
+import javafx.geometry.Orientation;
+import javafx.scene.control.SplitPane;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
@@ -49,8 +51,11 @@ public class JShellContent extends BorderPane {
         inputArea.setWrapText(true);
         inputArea.getStyleClass().add("jd-input");
 
-        setCenter(new VirtualizedScrollPane<>(outputArea));
-        setBottom(new VirtualizedScrollPane<>(inputArea));
+        SplitPane splitPane = new SplitPane(new VirtualizedScrollPane<>(outputArea), new VirtualizedScrollPane<>(inputArea));
+        splitPane.setOrientation(Orientation.VERTICAL);
+        splitPane.setDividerPositions(0.7f);
+
+        setCenter(splitPane);
 
         setListeners();
 
