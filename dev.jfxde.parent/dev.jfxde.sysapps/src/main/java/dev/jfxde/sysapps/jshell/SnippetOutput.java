@@ -9,8 +9,8 @@ import java.util.stream.LongStream;
 
 import org.fxmisc.richtext.CodeArea;
 import org.reactfx.util.Tuple2;
-import org.reactfx.util.Tuples;
 
+import dev.jfxde.api.AppContext;
 import dev.jfxde.logic.data.ConsoleOutput;
 import dev.jfxde.logic.data.ConsoleOutput.Type;
 import dev.jfxde.sysapps.util.CodeAreaUtils;
@@ -28,8 +28,8 @@ import jdk.jshell.VarSnippet;
 
 public class SnippetOutput extends JShellOutput {
 
-    SnippetOutput(JShell jshell, CodeArea outputArea) {
-       super(jshell, outputArea);
+    SnippetOutput(AppContext context, JShell jshell, CodeArea outputArea) {
+       super(context, jshell, outputArea);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class SnippetOutput extends JShellOutput {
                 }
                 sb.append(d.getMessage(null)).append("\n");
 
-                Tuple2<String, Integer> line = getLine(snippet.source(), (int) d.getStartPosition(),
+                Tuple2<String, Integer> line = SnippetUtils.getLine(snippet.source(), (int) d.getStartPosition(),
                         (int) d.getEndPosition());
                 sb.append(line._1).append("\n");
 
@@ -119,12 +119,12 @@ public class SnippetOutput extends JShellOutput {
         } else if (snippet.kind() == Kind.TYPE_DECL) {
             TypeDeclSnippet typeSnippet = ((TypeDeclSnippet) snippet);
             if (event.previousStatus() == Status.NONEXISTENT) {
-                sb.append("created " + getSubkind(typeSnippet) + " " + typeSnippet.name());
+                sb.append("created " + SnippetUtils.getSubkind(typeSnippet) + " " + typeSnippet.name());
             } else if (event.status() == Status.OVERWRITTEN) {
                 if (event.causeSnippet().subKind() == typeSnippet.subKind()) {
-                    sb.append("modified " + getSubkind(typeSnippet) + " " + typeSnippet.name());
+                    sb.append("modified " + SnippetUtils.getSubkind(typeSnippet) + " " + typeSnippet.name());
                 } else {
-                    sb.append("replaced " + getSubkind(typeSnippet) + " " + typeSnippet.name());
+                    sb.append("replaced " + SnippetUtils.getSubkind(typeSnippet) + " " + typeSnippet.name());
                 }
             }
 
@@ -140,23 +140,5 @@ public class SnippetOutput extends JShellOutput {
         outputs.add(new ConsoleOutput(output, type));
 
         return outputs;
-    }
-
-    private String getSubkind(Snippet snippet) {
-        String name = snippet.subKind().name();
-        String subkind = name.substring(0, name.indexOf("_"));
-
-        return subkind;
-    }
-
-    private Tuple2<String, Integer> getLine(String text, int start, int end) {
-        int lineStart = text.lastIndexOf("\n", start) + 1;
-        int lineEnd = text.indexOf("\n", end);
-        lineEnd = lineEnd == -1 ? text.length() : lineEnd;
-        String line = text.substring(lineStart, lineEnd);
-
-        Tuple2<String, Integer> result = Tuples.t(line, lineStart);
-
-        return result;
     }
 }

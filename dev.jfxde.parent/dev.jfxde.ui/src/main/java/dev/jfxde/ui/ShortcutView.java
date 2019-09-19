@@ -101,6 +101,7 @@ public class ShortcutView extends VBox {
                     pauseBeforeEdit = null;
                 }
 
+                namePressedPoint = null;
                 Sys.am().start(shortcut.getFqn(), shortcut.getUri());
                 return;
             }
