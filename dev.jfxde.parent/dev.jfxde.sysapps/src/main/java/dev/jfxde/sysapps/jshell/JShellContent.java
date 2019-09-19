@@ -54,10 +54,23 @@ public class JShellContent extends BorderPane {
 
         setListeners();
 
-        jshell = JShell.builder().out(consoleManager.getCout()).err(consoleManager.getCerr()).build();
+        IdGenerator idGenerator = new IdGenerator();
+        jshell = JShell.builder().idGenerator(idGenerator).out(consoleManager.getCout()).err(consoleManager.getCerr()).build();
+        idGenerator.setJshell(jshell);
+        jshell.sourceCodeAnalysis();
 
-        snippetOutput = new SnippetOutput(jshell, outputArea);
-        commandOutput = new CommandOutput(jshell, outputArea);
+        initImports();
+
+        snippetOutput = new SnippetOutput(context, jshell, outputArea);
+        commandOutput = new CommandOutput(context, jshell, outputArea);
+    }
+
+    private void initImports() {
+
+        List<String> packages = List.of("java.io.*", "java.math.*", "java.net.*", "java.nio.file.*", "java.util.*", "java.util.concurrent.*",
+                "java.util.function.*", "java.util.prefs.*", "java.util.regex.*", "java.util.stream.*");
+
+        packages.forEach(p -> jshell.eval(String.format("import %s;", p)));
     }
 
     private void setListeners() {

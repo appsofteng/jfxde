@@ -29,6 +29,13 @@ public final class CodeAreaUtils {
         codeArea.requestFollowCaret();
     }
 
+    public static void addOutputLater(CodeArea codeArea, ConsoleOutput output) {
+
+        Platform.runLater(() -> {
+            CodeAreaUtils.addOutput(codeArea, List.of(output));
+        });
+    }
+
     public static void addOutputLater(CodeArea codeArea, List<? extends ConsoleOutput> outputs) {
 
         if (!outputs.isEmpty()) {

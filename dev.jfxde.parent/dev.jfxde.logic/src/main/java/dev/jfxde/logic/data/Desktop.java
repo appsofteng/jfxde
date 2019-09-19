@@ -62,8 +62,8 @@ public class Desktop extends DataObj {
         }
 
         if (window != null) {
-            window.setActive(true);
             setActiveShortcut(null);
+            window.setActive(true);
         }
 
         activeWindow.set(window);
@@ -151,8 +151,8 @@ public class Desktop extends DataObj {
         }
 
         if (shortcut != null) {
-            shortcut.setActive(true);
             setActiveWindow(null);
+            shortcut.setActive(true);
         }
 
         activeShortcut.set(shortcut);
