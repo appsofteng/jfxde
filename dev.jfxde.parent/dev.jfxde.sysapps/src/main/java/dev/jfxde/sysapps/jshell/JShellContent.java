@@ -62,7 +62,7 @@ public class JShellContent extends BorderPane {
         initImports();
 
         snippetOutput = new SnippetOutput(context, jshell, outputArea);
-        commandOutput = new CommandOutput(context, jshell, outputArea);
+        commandOutput = new CommandOutput(context, jshell, outputArea, history);
     }
 
     private void initImports() {
