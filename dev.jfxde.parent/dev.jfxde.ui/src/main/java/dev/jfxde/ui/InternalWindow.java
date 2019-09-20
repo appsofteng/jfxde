@@ -61,7 +61,6 @@ public class InternalWindow extends Pane {
         } else {
             deactivate();
         }
-
     };
 
     private ChangeListener<State> stateListener = (v, o, n) -> {

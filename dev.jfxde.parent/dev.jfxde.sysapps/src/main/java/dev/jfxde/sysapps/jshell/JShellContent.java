@@ -122,6 +122,12 @@ public class JShellContent extends BorderPane {
             }
         });
 
+        inputArea.sceneProperty().addListener((v, o, n) -> {
+            if (n != null) {
+               inputArea.requestFocus();
+            }
+        });
+
         inputArea.caretPositionProperty().addListener((v, o, n) -> {
             if (codeCompletion != null) {
                 codeCompletion();
@@ -202,12 +208,6 @@ public class JShellContent extends BorderPane {
         Task<Void> task = TaskUtils.createTask(() -> output.output(input));
 
         return task;
-    }
-
-    @Override
-    public void requestFocus() {
-        super.requestFocus();
-        inputArea.requestFocus();
     }
 
     public void stop() {
