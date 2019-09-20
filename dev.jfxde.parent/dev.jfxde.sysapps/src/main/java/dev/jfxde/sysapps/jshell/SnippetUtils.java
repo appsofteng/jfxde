@@ -1,5 +1,7 @@
 package dev.jfxde.sysapps.jshell;
 
+import java.util.stream.Collectors;
+
 import org.reactfx.util.Tuple2;
 import org.reactfx.util.Tuples;
 
@@ -9,6 +11,7 @@ import jdk.jshell.JShell;
 import jdk.jshell.MethodSnippet;
 import jdk.jshell.PersistentSnippet;
 import jdk.jshell.Snippet;
+import jdk.jshell.StatementSnippet;
 import jdk.jshell.TypeDeclSnippet;
 import jdk.jshell.VarSnippet;
 
@@ -73,6 +76,8 @@ public final class SnippetUtils {
             output += toString((VarSnippet)snippet, value);
         } else if (snippet instanceof ExpressionSnippet) {
             output += toString((ExpressionSnippet)snippet, value);
+        } else if (snippet instanceof StatementSnippet) {
+            output += toString((StatementSnippet)snippet);
         }
 
         return output;
@@ -102,5 +107,10 @@ public final class SnippetUtils {
     public static String toString(ExpressionSnippet snippet, String value) {
 
         return snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
+    }
+
+    public static String toString(StatementSnippet snippet) {
+
+        return snippet.source().strip().lines().map(String::strip).collect(Collectors.joining()) + "\n";
     }
 }

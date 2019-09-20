@@ -2,6 +2,7 @@ package dev.jfxde.sysapps.jshell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -13,6 +14,7 @@ import dev.jfxde.api.AppContext;
 import dev.jfxde.logic.data.ConsoleOutput;
 import dev.jfxde.logic.data.ConsoleOutput.Type;
 import dev.jfxde.sysapps.util.CodeAreaUtils;
+import javafx.application.Platform;
 import jdk.jshell.EvalException;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet.Kind;
@@ -35,16 +37,26 @@ public class SnippetOutput extends JShellOutput {
 
         String source = info.source();
 
+        List<ConsoleOutput> outputs = new ArrayList<>();
+
         while (!source.isEmpty()) {
 
             List<SnippetEvent> snippetEvents = jshell.eval(source);
-            snippetEvents.forEach(e -> CodeAreaUtils.addOutputLater(outputArea, getOutput(e)));
+            snippetEvents.forEach(e -> outputs.add(getOutput(e)));
 
             info = sourceAnalysis.analyzeCompletion(info.remaining());
             source = info.source();
         }
 
-        CodeAreaUtils.addOutputLater(outputArea, "\n");
+        outputs.add(new ConsoleOutput("\n"));
+
+        Platform.runLater(() -> {
+            if (!outputArea.getText().endsWith("\n")) {
+                outputs.add(0, new ConsoleOutput("\n"));
+            }
+
+            CodeAreaUtils.addOutput(outputArea, outputs);
+        });
     }
 
     private ConsoleOutput getOutput(SnippetEvent event) {
@@ -65,6 +77,7 @@ public class SnippetOutput extends JShellOutput {
         message = message.strip();
 
         if (!message.isBlank()) {
+
             message += "\n";
         }
 
@@ -97,7 +110,7 @@ public class SnippetOutput extends JShellOutput {
             }
             sb.append(d.getMessage(null)).append("\n");
 
-            Tuple2<String, Integer> line = SnippetUtils.getLine(event.snippet().source(), (int) d.getStartPosition(),(int) d.getEndPosition());
+            Tuple2<String, Integer> line = SnippetUtils.getLine(event.snippet().source(), (int) d.getStartPosition(), (int) d.getEndPosition());
             sb.append(line._1).append("\n");
 
             String underscore = LongStream
@@ -136,8 +149,8 @@ public class SnippetOutput extends JShellOutput {
 
         String value = event.value();
 
-        if (value == null && event.causeSnippet() != null  && event.causeSnippet() instanceof VarSnippet) {
-            value = jshell.varValue((VarSnippet)event.causeSnippet());
+        if (value == null && event.causeSnippet() != null && event.causeSnippet() instanceof VarSnippet) {
+            value = jshell.varValue((VarSnippet) event.causeSnippet());
         }
 
         msg += SnippetUtils.toString(event.snippet(), value);

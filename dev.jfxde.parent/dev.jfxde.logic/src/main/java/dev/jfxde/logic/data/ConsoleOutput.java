@@ -4,38 +4,41 @@ import java.util.logging.Level;
 
 public class ConsoleOutput {
 
-	private final String text;
-	private final Type type;
+    private final String text;
+    private final Type type;
 
-	public ConsoleOutput(String text, Type type) {
-		this.text = text;
-		this.type = type;
-	}
+    public ConsoleOutput(String text) {
+        this(text, Type.NORMAL);
+    }
 
-	public String getText() {
-		return text;
-	}
+    public ConsoleOutput(String text, Type type) {
+        this.text = text;
+        this.type = type;
+    }
 
-	public Type getType() {
-		return type;
-	}
+    public String getText() {
+        return text;
+    }
 
-	public boolean isEof() {
-		return "\n".equals(text);
-	}
+    public Type getType() {
+        return type;
+    }
 
-	public enum Type {
-		NORMAL(Level.INFO), COMMENT(Level.INFO),  ERROR(Level.SEVERE);
+    public boolean isEof() {
+        return "\n".equals(text);
+    }
 
-		private final Level level;
+    public enum Type {
+        NORMAL(Level.INFO), COMMENT(Level.INFO), ERROR(Level.SEVERE);
 
-		private Type(Level level) {
-			this.level = level;
-		}
+        private final Level level;
 
+        private Type(Level level) {
+            this.level = level;
+        }
 
-		public Level getLevel() {
-			return level;
-		}
-	}
+        public Level getLevel() {
+            return level;
+        }
+    }
 }

@@ -1,8 +1,12 @@
 package dev.jfxde.sysapps.jshell;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.fxmisc.flowless.VirtualizedScrollPane;
@@ -30,6 +34,8 @@ import jdk.jshell.JShell;
 import jdk.jshell.SourceCodeAnalysis.Suggestion;
 
 public class JShellContent extends BorderPane {
+
+    private static final Logger LOGGER = Logger.getLogger(JShellContent.class.getName());
 
     private CodeArea inputArea = new CodeArea();
     private CodeArea outputArea = new CodeArea();
@@ -67,18 +73,21 @@ public class JShellContent extends BorderPane {
         idGenerator.setJshell(jshell);
         jshell.sourceCodeAnalysis();
 
-        initImports();
+        loadStartSnippets();
 
         snippetOutput = new SnippetOutput(context, jshell, outputArea);
         commandOutput = new CommandOutput(context, jshell, outputArea, history);
     }
 
-    private void initImports() {
+    private void loadStartSnippets() {
 
-        List<String> packages = List.of("java.io.*", "java.math.*", "java.net.*", "java.nio.file.*", "java.util.*", "java.util.concurrent.*",
-                "java.util.function.*", "java.util.prefs.*", "java.util.regex.*", "java.util.stream.*");
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("start-snippets.txt")));
+            reader.lines().forEach(s -> jshell.eval(s));
+        } catch (Exception e) {
 
-        packages.forEach(p -> jshell.eval(String.format("import %s;", p)));
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
     }
 
     private void setListeners() {
@@ -124,7 +133,7 @@ public class JShellContent extends BorderPane {
 
         inputArea.sceneProperty().addListener((v, o, n) -> {
             if (n != null) {
-               inputArea.requestFocus();
+                inputArea.requestFocus();
             }
         });
 
