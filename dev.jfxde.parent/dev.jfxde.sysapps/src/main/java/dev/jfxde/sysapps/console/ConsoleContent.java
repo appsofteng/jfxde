@@ -11,27 +11,23 @@ import dev.jfxde.api.AppContext;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.ConsoleOutput;
 import dev.jfxde.sysapps.util.CodeAreaUtils;
+import dev.jfxde.sysapps.util.ContextMenuBuilder;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener.Change;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.layout.BorderPane;
 
 public class ConsoleContent extends BorderPane {
 
-	private AppContext context;
 	private CodeArea codeArea = new CodeArea();
 
 	public ConsoleContent(AppContext context) {
-		this.context = context;
 		getStylesheets().add(context.rc().getCss("console"));
 
 		codeArea.setEditable(false);
 		codeArea.getStylesheets().add(context.rc().getCss("code-area"));
 		setCenter(new VirtualizedScrollPane<>(codeArea));
 		setListeners();
-		setContextMenu();
+		ContextMenuBuilder.get(codeArea, context).copy().clear(e -> Platform.runLater(() -> Sys.cm().clear()));
 		CodeAreaUtils.addOutput(codeArea, Sys.cm().getCopyOutputs());
 	}
 
@@ -55,23 +51,6 @@ public class ConsoleContent extends BorderPane {
 				}
 			}
 		});
-	}
-
-	private void setContextMenu() {
-		ContextMenu contextMenu = new ContextMenu();
-
-		MenuItem copy = new MenuItem();
-		copy.textProperty().bind(context.rc().getTextBinding("copy"));
-		copy.setOnAction(e -> codeArea.copy());
-		copy.disableProperty().bind(Bindings.createBooleanBinding(() -> codeArea.getSelection().getLength() == 0, codeArea.selectionProperty()));
-
-		MenuItem clear = new MenuItem();
-		clear.textProperty().bind(context.rc().getTextBinding("clear"));
-		clear.setOnAction(e -> Platform.runLater(() -> Sys.cm().clear()));
-		clear.disableProperty().bind(Bindings.createBooleanBinding(() -> codeArea.getLength() == 0, codeArea.lengthProperty()));
-
-		contextMenu.getItems().addAll(copy, clear);
-		codeArea.setContextMenu(contextMenu);
 	}
 
     void dispose() {

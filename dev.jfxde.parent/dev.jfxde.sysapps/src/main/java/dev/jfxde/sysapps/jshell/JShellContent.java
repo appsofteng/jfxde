@@ -14,6 +14,7 @@ import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.TaskUtils;
 import dev.jfxde.logic.data.ConsoleOutput;
 import dev.jfxde.sysapps.util.CodeAreaUtils;
+import dev.jfxde.sysapps.util.ContextMenuBuilder;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener.Change;
 import javafx.concurrent.Task;
@@ -45,11 +46,13 @@ public class JShellContent extends BorderPane {
         outputArea.setEditable(false);
         outputArea.getStylesheets().add(context.rc().getCss("code-area"));
         outputArea.setFocusTraversable(false);
+        ContextMenuBuilder.get(outputArea, context).copy().selectAll().clear();
 
         inputArea.requestFocus();
         inputArea.getStylesheets().add(context.rc().getCss("area"));
         inputArea.setWrapText(true);
         inputArea.getStyleClass().add("jd-input");
+        ContextMenuBuilder.get(inputArea, context).copy().cut().paste().selectAll();
 
         SplitPane splitPane = new SplitPane(new VirtualizedScrollPane<>(outputArea), new VirtualizedScrollPane<>(inputArea));
         splitPane.setOrientation(Orientation.VERTICAL);
