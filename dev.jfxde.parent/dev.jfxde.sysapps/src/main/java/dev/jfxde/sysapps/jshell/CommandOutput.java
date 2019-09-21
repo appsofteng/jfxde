@@ -12,6 +12,8 @@ import dev.jfxde.sysapps.jshell.commands.HistoryCommand;
 import dev.jfxde.sysapps.jshell.commands.ImportCommand;
 import dev.jfxde.sysapps.jshell.commands.ListCommand;
 import dev.jfxde.sysapps.jshell.commands.MethodCommand;
+import dev.jfxde.sysapps.jshell.commands.RerunCommand;
+import dev.jfxde.sysapps.jshell.commands.SnippetMatch;
 import dev.jfxde.sysapps.jshell.commands.TypeCommand;
 import dev.jfxde.sysapps.jshell.commands.VarCommand;
 import dev.jfxde.sysapps.util.CodeAreaUtils;
@@ -21,11 +23,12 @@ public class CommandOutput extends JShellOutput {
 
     private final List<Command> commands;
 
-    CommandOutput(AppContext context, JShell jshell, CodeArea outputArea, List<String> history) {
+    CommandOutput(AppContext context, JShell jshell, CodeArea outputArea, SnippetOutput snippetOutput, List<String> history) {
         super(context, jshell, outputArea, history);
 
-        commands = List.of(new DropCommand(jshell, outputArea), new HistoryCommand(jshell, outputArea, history), new ImportCommand(jshell, outputArea), new ListCommand(jshell, outputArea), new MethodCommand(jshell, outputArea),
-                new TypeCommand(jshell, outputArea), new VarCommand(jshell, outputArea));
+        SnippetMatch snippetMatch = new SnippetMatch(jshell);
+        commands = List.of(new DropCommand(jshell, outputArea, snippetMatch), new HistoryCommand(jshell, outputArea, history), new ImportCommand(jshell, outputArea), new ListCommand(jshell, outputArea), new MethodCommand(jshell, outputArea),
+                new RerunCommand(jshell, outputArea, snippetOutput, snippetMatch), new TypeCommand(jshell, outputArea), new VarCommand(jshell, outputArea));
     }
 
     @Override

@@ -16,7 +16,7 @@ public class ImportCommand extends Command {
     }
 
     @Override
-    public void execute(SnippetMatch input) {
+    public void execute(String input) {
         String output = jshell.imports().map(SnippetUtils::toString).sorted().collect(Collectors.joining()) + "\n";
 
         CodeAreaUtils.addOutputLater(outputArea, output);

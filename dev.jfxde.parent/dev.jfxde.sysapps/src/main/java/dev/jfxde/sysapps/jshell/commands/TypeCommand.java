@@ -15,7 +15,7 @@ public class TypeCommand extends Command {
     }
 
     @Override
-    public void execute(SnippetMatch input) {
+    public void execute(String input) {
         String output = jshell.types().map(SnippetUtils::toString).sorted().collect(Collectors.joining()) + "\n";
 
         CodeAreaUtils.addOutputLater(outputArea, output);

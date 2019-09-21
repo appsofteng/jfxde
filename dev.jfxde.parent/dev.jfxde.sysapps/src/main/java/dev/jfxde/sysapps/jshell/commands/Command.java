@@ -1,6 +1,5 @@
 package dev.jfxde.sysapps.jshell.commands;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.fxmisc.richtext.CodeArea;
@@ -33,13 +32,7 @@ public abstract class Command {
         return name;
     }
 
-    public void execute(String input) {
-        String[] parts = input.split(" +");
-        parts = Arrays.copyOfRange(parts, 1, parts.length);
-        execute(new SnippetMatch(parts));
-    }
-
-    protected abstract void execute(SnippetMatch input);
+    public abstract void execute(String input);
 
     @Override
     public String toString() {

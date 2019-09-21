@@ -17,6 +17,7 @@ import dev.jfxde.sysapps.util.CodeAreaUtils;
 import javafx.application.Platform;
 import jdk.jshell.EvalException;
 import jdk.jshell.JShell;
+import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Kind;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
@@ -48,6 +49,23 @@ public class SnippetOutput extends JShellOutput {
             source = info.source();
         }
 
+        writeOutputs(outputs);
+    }
+
+    public void output(List<Snippet> snippets) {
+
+        List<ConsoleOutput> outputs = new ArrayList<>();
+
+        for (Snippet snippet : snippets) {
+            outputs.add(new ConsoleOutput(snippet.source() + "\n"));
+            List<SnippetEvent> snippetEvents = jshell.eval(snippet.source());
+            snippetEvents.forEach(e -> outputs.add(getOutput(e)));
+        }
+
+        writeOutputs(outputs);
+    }
+
+    private void writeOutputs(List<ConsoleOutput> outputs) {
         outputs.add(new ConsoleOutput("\n"));
 
         Platform.runLater(() -> {

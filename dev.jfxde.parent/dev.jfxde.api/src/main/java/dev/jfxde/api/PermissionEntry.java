@@ -11,8 +11,9 @@ import java.security.Permission;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface PermissionEntry {
-    
+    public static final String NULL_STRING = "\0";
+
     Class<? extends Permission> type();
-    String target() default "";
-    String actions() default "";
+    String target() default PermissionEntry.NULL_STRING;
+    String actions() default PermissionEntry.NULL_STRING;
 }

@@ -1,5 +1,8 @@
 package dev.jfxde.sysapps.jshell.commands;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jfxde.logic.data.ConsoleOutput;
@@ -7,20 +10,26 @@ import dev.jfxde.logic.data.ConsoleOutput.Type;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
 import dev.jfxde.sysapps.util.CodeAreaUtils;
 import jdk.jshell.JShell;
+import jdk.jshell.Snippet;
 
 public class DropCommand extends Command {
 
-    public DropCommand(JShell jshell, CodeArea outputArea) {
+    private SnippetMatch snippetMatch;
+
+    public DropCommand(JShell jshell, CodeArea outputArea, SnippetMatch snippetMatch) {
         super("/drop", jshell, outputArea);
+        this.snippetMatch = snippetMatch;
     }
 
     @Override
-    public void execute(SnippetMatch input) {
+    public void execute(String input) {
+
+        String[] parts = input.split(" +");
+        parts = Arrays.copyOfRange(parts, 1, parts.length);
+        List<Snippet> snippets = snippetMatch.matches(parts);
+
         StringBuilder sb = new StringBuilder();
-        jshell.snippets()
-                .filter(s -> jshell.status(s).isActive())
-                .filter(s -> input.matches(s))
-                .forEach(s -> {
+        snippets.forEach(s -> {
                     sb.append("dropped" + SnippetUtils.toString(s, jshell));
                     jshell.drop(s);
                 });

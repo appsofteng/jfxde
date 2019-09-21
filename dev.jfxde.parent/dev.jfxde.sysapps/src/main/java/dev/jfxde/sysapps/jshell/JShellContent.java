@@ -31,7 +31,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import jdk.jshell.JShell;
-import jdk.jshell.SourceCodeAnalysis.Suggestion;
+import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
 
 public class JShellContent extends BorderPane {
 
@@ -62,7 +62,7 @@ public class JShellContent extends BorderPane {
 
         SplitPane splitPane = new SplitPane(new VirtualizedScrollPane<>(outputArea), new VirtualizedScrollPane<>(inputArea));
         splitPane.setOrientation(Orientation.VERTICAL);
-        splitPane.setDividerPositions(0.7f);
+        splitPane.setDividerPositions(0.8f);
 
         setCenter(splitPane);
 
@@ -70,13 +70,14 @@ public class JShellContent extends BorderPane {
 
         IdGenerator idGenerator = new IdGenerator();
         jshell = JShell.builder().idGenerator(idGenerator).out(consoleManager.getCout()).err(consoleManager.getCerr()).build();
+
         idGenerator.setJshell(jshell);
         jshell.sourceCodeAnalysis();
 
-        loadStartSnippets();
-
         snippetOutput = new SnippetOutput(context, jshell, outputArea);
-        commandOutput = new CommandOutput(context, jshell, outputArea, history);
+        commandOutput = new CommandOutput(context, jshell, outputArea, snippetOutput, history);
+
+        loadStartSnippets();
     }
 
     private void loadStartSnippets() {
@@ -148,6 +149,8 @@ public class JShellContent extends BorderPane {
         String input = inputArea.getText();
         inputArea.replaceText("");
 
+        // Null char may come from clipboard.
+        input = input.replace("\0", "");
         CodeAreaUtils.addOutput(outputArea, input + "\n");
 
         if (input.isBlank()) {
@@ -190,10 +193,21 @@ public class JShellContent extends BorderPane {
 
         int[] anchor = new int[1];
 
-        List<String> suggestions = jshell.sourceCodeAnalysis()
-                .completionSuggestions(inputArea.getText(), inputArea.getCaretPosition(), anchor).stream()
-                .map(Suggestion::continuation).collect(Collectors.toList());
-        codeCompletion = new CodeCompletionPopup(suggestions);
+        List<CompletionItem> items = jshell.sourceCodeAnalysis()
+                .completionSuggestions(inputArea.getText(), inputArea.getCaretPosition(), anchor)
+                .stream()
+                .map(s -> new SuggestionCompletionItem(inputArea, s, anchor)).collect(Collectors.toList());
+
+        QualifiedNames qualifiedNames = jshell.sourceCodeAnalysis().listQualifiedNames(inputArea.getText(), inputArea.getCaretPosition());
+
+        if (!qualifiedNames.isResolvable()) {
+            List<CompletionItem> names = qualifiedNames.getNames().stream()
+                    .map(n -> new QualifiedNameCompletionItem(jshell, n)).collect(Collectors.toList());
+
+            items.addAll(names);
+        }
+
+        codeCompletion = new CodeCompletionPopup(items);
 
         Optional<Bounds> boundsOption = inputArea.caretBoundsProperty().getValue();
 
@@ -201,10 +215,10 @@ public class JShellContent extends BorderPane {
             Bounds bounds = boundsOption.get();
             codeCompletion.show(inputArea, bounds.getMaxX(), bounds.getMaxY());
             codeCompletion.setOnHidden(ev -> {
-                String selection = codeCompletion.getSelection();
+                CompletionItem selection = codeCompletion.getSelection();
                 codeCompletion = null;
                 if (selection != null) {
-                    inputArea.replaceText(anchor[0], inputArea.getCaretPosition(), selection);
+                    selection.complete();
                 }
             });
         }

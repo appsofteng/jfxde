@@ -17,7 +17,7 @@ public class HistoryCommand extends Command {
     }
 
     @Override
-    public void execute(SnippetMatch input) {
+    public void execute(String input) {
         String output = history.stream().collect(Collectors.joining("\n"));
 
         CodeAreaUtils.addOutputLater(outputArea, new ConsoleOutput(output + "\n\n", Type.COMMENT));

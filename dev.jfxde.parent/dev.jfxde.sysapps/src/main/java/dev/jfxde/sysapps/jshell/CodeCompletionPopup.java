@@ -23,7 +23,7 @@ import javafx.stage.Popup;
 
 public class CodeCompletionPopup extends Popup {
 
-    private ListView<String> suggestionView = new ListView<>();
+    private ListView<CompletionItem> itemView = new ListView<>();
     private EventHandler<KeyEvent> handler = e -> {
 
      if (e.getCode() == KeyCode.ENTER) {
@@ -39,64 +39,64 @@ public class CodeCompletionPopup extends Popup {
         }
     };
 
-    public CodeCompletionPopup(List<String> suggestions) {
+    public CodeCompletionPopup(List<? extends CompletionItem> items) {
         // does not work well because it blocks mouse press events outside the popup
         // setAutoHide(true);
 
         // not working when the list inside the popup has the focus
         setHideOnEscape(false);
 
-        suggestionView.setItems(FXCollections.observableArrayList(suggestions));
-        suggestionView.setFocusTraversable(false);
-        suggestionView.setPrefHeight(100);
-        getContent().add(suggestionView);
+        itemView.setItems(FXCollections.observableArrayList(items));
+        itemView.setFocusTraversable(false);
+        itemView.setPrefHeight(100);
+        getContent().add(itemView);
         setInputmap();
     }
 
     private void setInputmap() {
 
-        Nodes.addInputMap(suggestionView,
+        Nodes.addInputMap(itemView,
                 sequence(consume(keyPressed(ENTER), e -> selected()),
                         consume(keyPressed(ESCAPE), e -> close()),
-                        consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> suggestionView.setFocusTraversable(true)),
+                        consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> itemView.setFocusTraversable(true)),
                         consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 2), e -> selected())));
     }
 
     private void select(int i) {
-        suggestionView.getSelectionModel().select(i);
+        itemView.getSelectionModel().select(i);
     }
 
     private void selectPrevious() {
 
-        if (suggestionView.getSelectionModel().getSelectedIndex() == 0) {
-            suggestionView.getSelectionModel().select(suggestionView.getItems().size() - 1);
+        if (itemView.getSelectionModel().getSelectedIndex() == 0) {
+            itemView.getSelectionModel().select(itemView.getItems().size() - 1);
         } else {
-            suggestionView.getSelectionModel().selectPrevious();
+            itemView.getSelectionModel().selectPrevious();
         }
 
-        suggestionView.scrollTo(suggestionView.getSelectionModel().getSelectedIndex());
+        itemView.scrollTo(itemView.getSelectionModel().getSelectedIndex());
     }
 
     private void selectNext() {
-        if (suggestionView.getSelectionModel().getSelectedIndex() == suggestionView.getItems().size() - 1) {
-            suggestionView.getSelectionModel().select(0);
+        if (itemView.getSelectionModel().getSelectedIndex() == itemView.getItems().size() - 1) {
+            itemView.getSelectionModel().select(0);
         } else {
-            suggestionView.getSelectionModel().selectNext();
+            itemView.getSelectionModel().selectNext();
         }
 
-        suggestionView.scrollTo(suggestionView.getSelectionModel().getSelectedIndex());
+        itemView.scrollTo(itemView.getSelectionModel().getSelectedIndex());
     }
 
-    public String getSelection() {
-        return suggestionView.getSelectionModel().getSelectedItem();
+    public CompletionItem getSelection() {
+        return itemView.getSelectionModel().getSelectedItem();
     }
 
-    public ReadOnlyObjectProperty<String> selectedItemProperty() {
-        return suggestionView.getSelectionModel().selectedItemProperty();
+    public ReadOnlyObjectProperty<CompletionItem> selectedItemProperty() {
+        return itemView.getSelectionModel().selectedItemProperty();
     }
 
     public void close() {
-        suggestionView.getSelectionModel().clearSelection();
+        itemView.getSelectionModel().clearSelection();
         getOwnerNode().removeEventFilter(KeyEvent.KEY_PRESSED, handler);
         hide();
     }

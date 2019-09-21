@@ -19,3 +19,7 @@ grant codeBase "jrt:/jdk.jdi" {
 grant codeBase "jrt:/jdk.compiler" {
     permission java.security.AllPermission;
 };
+
+grant codeBase "jrt:/jdk.zipfs" {
+    permission java.security.AllPermission;
+};

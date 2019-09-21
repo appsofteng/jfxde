@@ -4,7 +4,7 @@ import java.util.logging.Level;
 
 public class ConsoleOutput {
 
-    private final String text;
+    private String text;
     private final Type type;
 
     public ConsoleOutput(String text) {

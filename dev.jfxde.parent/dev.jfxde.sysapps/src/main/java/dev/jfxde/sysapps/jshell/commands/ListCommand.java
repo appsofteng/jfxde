@@ -15,7 +15,7 @@ public class ListCommand extends Command {
     }
 
     @Override
-    public void execute(SnippetMatch input) {
+    public void execute(String input) {
         String output = jshell.snippets().filter(s -> jshell.status(s).isActive()).map(s -> SnippetUtils.toString(s, jshell))
                 .collect(Collectors.joining()) + "\n";
 

@@ -15,7 +15,7 @@ public class VarCommand extends Command {
     }
 
     @Override
-    public void execute(SnippetMatch input) {
+    public void execute(String input) {
         String output = jshell.variables().map(s -> SnippetUtils.toString(s, jshell.varValue(s))).collect(Collectors.joining()) + "\n";
 
         CodeAreaUtils.addOutputLater(outputArea, output);
