@@ -19,16 +19,17 @@ public class SnippetMatch {
     public SnippetMatch(JShell jshell) {
 
         jshell.onSnippetEvent(e -> {
-            String name = SnippetUtils.getName(e.snippet());
-            if (e.status().isActive()) {
-                snippetsById.put(e.snippet().id(), e.snippet());
-                List<Snippet> snippets = snippetsByName.computeIfAbsent(name, k -> new ArrayList<>());
-                snippets.add(e.snippet());
-            } else {
-                snippetsById.remove(e.snippet().id());
-                List<Snippet> snippets = snippetsByName.getOrDefault(name, List.of());
-                snippets.removeIf(s -> s.id().equals(e.snippet().id()));
+
+            if (e.snippet() == null || e.snippet().id() == null) {
+                return;
             }
+
+            String name = SnippetUtils.getName(e.snippet());
+
+            snippetsById.put(e.snippet().id(), e.snippet());
+            List<Snippet> snippets = snippetsByName.computeIfAbsent(name, k -> new ArrayList<>());
+            snippets.add(e.snippet());
+
         });
     }
 

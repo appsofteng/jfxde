@@ -30,6 +30,10 @@ public final class SnippetUtils {
             name = ((PersistentSnippet)snippet).name();
         }
 
+        if (name == null) {
+            name = "";
+        }
+
         return name;
     }
 
