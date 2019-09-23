@@ -61,7 +61,7 @@ public class MenuBar extends BorderPane {
 					if (nn != null) {
 						Stage stage = (Stage)nn;
 				        fullScreen.textProperty().bind(Bindings.when(stage.fullScreenProperty()).then(Fonts.FontAwesome.COMPRESS).otherwise(Fonts.FontAwesome.EXPAND));
-				        fullScreen.getTooltip().textProperty().bind(Bindings.when(stage.fullScreenProperty()).then(Sys.rm().getTextBinding("restoreScreen")).otherwise(Sys.rm().getTextBinding("fullScreen")));
+				        fullScreen.getTooltip().textProperty().bind(Bindings.when(stage.fullScreenProperty()).then(Sys.rm().getStringBinding("restoreScreen")).otherwise(Sys.rm().getStringBinding("fullScreen")));
 					}
 				});
 			}

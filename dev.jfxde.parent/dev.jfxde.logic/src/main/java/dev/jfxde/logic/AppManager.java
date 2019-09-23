@@ -77,7 +77,7 @@ public final class AppManager extends Manager {
                 AppManifest appManifest = provider.type().getAnnotation(AppManifest.class);
 
                 if (appProviderDescriptorMap.containsKey(appManifest.fqn())) {
-                    new SecurityException(Sys.rm().getText("duplicateApp") + " " + appManifest.fqn());
+                    new SecurityException(Sys.rm().getString("duplicateApp") + " " + appManifest.fqn());
                 }
 
                 AppProviderDescriptor descriptor = getAppProviderDescriptor(provider);

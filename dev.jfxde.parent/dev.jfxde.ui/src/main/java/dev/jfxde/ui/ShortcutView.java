@@ -153,7 +153,7 @@ public class ShortcutView extends VBox {
 
     private void setContextMenu() {
         MenuItem delete = new MenuItem();
-        delete.textProperty().bind(Sys.rm().getTextBinding("delete"));
+        delete.textProperty().bind(Sys.rm().getStringBinding("delete"));
         delete.setOnAction(e -> Sys.dm().removeShortcut(shortcut));
         ContextMenu contextMenu = new ContextMenu();
         contextMenu.getItems().add(delete);

@@ -138,17 +138,17 @@ public class InternalWindow extends Pane {
         newWindow.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
         newWindow.setFocusTraversable(false);
         newWindow.setTooltip(new Tooltip());
-        newWindow.getTooltip().textProperty().bind(Sys.rm().getTextBinding("newWindow"));
+        newWindow.getTooltip().textProperty().bind(Sys.rm().getStringBinding("newWindow"));
 
         tile.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
         tile.setFocusTraversable(false);
         tile.setTooltip(new Tooltip());
-        tile.getTooltip().textProperty().bind(Sys.rm().getTextBinding("tile"));
+        tile.getTooltip().textProperty().bind(Sys.rm().getStringBinding("tile"));
 
         minimize.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
         minimize.setFocusTraversable(false);
         minimize.setTooltip(new Tooltip());
-        minimize.getTooltip().textProperty().bind(Sys.rm().getTextBinding("minimize"));
+        minimize.getTooltip().textProperty().bind(Sys.rm().getStringBinding("minimize"));
 
         maximize.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
         maximize.setFocusTraversable(false);
@@ -158,17 +158,17 @@ public class InternalWindow extends Pane {
                         .otherwise(Fonts.Unicode.WHITE_LARGE_SQUARE));
         maximize.setTooltip(new Tooltip());
         maximize.getTooltip().textProperty().bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
-                .then(Sys.rm().getTextBinding("restore")).otherwise(Sys.rm().getTextBinding("maximize")));
+                .then(Sys.rm().getStringBinding("restore")).otherwise(Sys.rm().getStringBinding("maximize")));
 
         full.getStyleClass().addAll("jd-internal-window-button", "jd-octicons");
         full.setFocusTraversable(false);
         full.setTooltip(new Tooltip());
-        full.getTooltip().textProperty().bind(Sys.rm().getTextBinding("full"));
+        full.getTooltip().textProperty().bind(Sys.rm().getStringBinding("full"));
 
         close.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
         close.setFocusTraversable(false);
         close.setTooltip(new Tooltip());
-        close.getTooltip().textProperty().bind(Sys.rm().getTextBinding("close"));
+        close.getTooltip().textProperty().bind(Sys.rm().getStringBinding("close"));
 
         buttonBox.getChildren().addAll(newWindow, tile, minimize, maximize, full, close);
         buttonBox.setMinWidth(USE_PREF_SIZE);
@@ -176,22 +176,22 @@ public class InternalWindow extends Pane {
 
     private void setTitleMenu() {
         MenuItem minimizeOthers = new MenuItem();
-        minimizeOthers.textProperty().bind(Sys.rm().getTextBinding("minimizeOthers"));
+        minimizeOthers.textProperty().bind(Sys.rm().getStringBinding("minimizeOthers"));
         minimizeOthers.disableProperty().bind(Bindings.size(windowPane.getVisibleWindows()).isEqualTo(1));
         minimizeOthers.setOnAction(e -> window.getDesktop().minimizeOthers());
 
         MenuItem minimizeAll = new MenuItem();
-        minimizeAll.textProperty().bind(Sys.rm().getTextBinding("minimizeAll"));
+        minimizeAll.textProperty().bind(Sys.rm().getStringBinding("minimizeAll"));
         minimizeAll.setOnAction(e -> window.getDesktop().minimizeAll());
 
         MenuItem closeOthers = new MenuItem();
-        closeOthers.textProperty().bind(Sys.rm().getTextBinding("closeOthers"));
+        closeOthers.textProperty().bind(Sys.rm().getStringBinding("closeOthers"));
         closeOthers.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows())
                 .or(Bindings.size(windowPane.getClosableWindows()).lessThan(2)));
         closeOthers.setOnAction(e -> window.getDesktop().closeOthers());
 
         MenuItem closeAll = new MenuItem();
-        closeAll.textProperty().bind(Sys.rm().getTextBinding("closeAll"));
+        closeAll.textProperty().bind(Sys.rm().getStringBinding("closeAll"));
         closeAll.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows()));
         closeAll.setOnAction(e -> window.getDesktop().closeAll());
 

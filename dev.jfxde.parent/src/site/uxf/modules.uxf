@@ -225,11 +225,44 @@
     <id>Relation</id>
     <coordinates>
       <x>470</x>
-      <y>140</y>
+      <y>110</y>
       <w>230</w>
-      <h>80</h>
+      <h>110</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>10.0;10.0;210.0;10.0;210.0;60.0</additional_attributes>
+    <additional_attributes>10.0;10.0;210.0;10.0;210.0;90.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>380</x>
+      <y>100</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>jfxext</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>470</x>
+      <y>140</y>
+      <w>230</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>10.0;10.0;210.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>470</x>
+      <y>100</y>
+      <w>260</w>
+      <h>280</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>10.0;10.0;240.0;10.0;240.0;260.0;160.0;260.0</additional_attributes>
   </element>
 </diagram>

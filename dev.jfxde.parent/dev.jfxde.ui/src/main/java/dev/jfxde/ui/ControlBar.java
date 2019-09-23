@@ -61,7 +61,7 @@ public class ControlBar extends VBox {
 	private TitledPane createAppPane() {
 
 		TextField search = new TextField();
-		search.promptTextProperty().bind(Sys.rm().getTextBinding("search"));
+		search.promptTextProperty().bind(Sys.rm().getStringBinding("search"));
 		Sys.am().appProviderFilterProperty().bind(search.textProperty());
 
 		ListView<AppProviderDescriptor> appView = new ListView<>();
@@ -71,7 +71,7 @@ public class ControlBar extends VBox {
 		VBox vbox = new VBox(search, appView);
 
 		TitledPane pane = new TitledPane();
-		pane.textProperty().bind(Sys.rm().getTextBinding("apps"));
+		pane.textProperty().bind(Sys.rm().getStringBinding("apps"));
 		pane.setContent(vbox);
 
 		return pane;
@@ -80,7 +80,7 @@ public class ControlBar extends VBox {
 	private TitledPane createStartedAppPane() {
 
 		TextField search = new TextField();
-		search.promptTextProperty().bind(Sys.rm().getTextBinding("search"));
+		search.promptTextProperty().bind(Sys.rm().getStringBinding("search"));
 		Sys.am().appFilterProperty().bind(search.textProperty());
 
 		ListView<AppDescriptor> appView = new ListView<>();
@@ -97,7 +97,7 @@ public class ControlBar extends VBox {
 		VBox vbox = new VBox(search, appView);
 
 		TitledPane pane = new TitledPane();
-		pane.textProperty().bind(Sys.rm().getTextBinding("started"));
+		pane.textProperty().bind(Sys.rm().getStringBinding("started"));
 		pane.setContent(vbox);
 
 		return pane;
@@ -106,7 +106,7 @@ public class ControlBar extends VBox {
 	private TitledPane createDesktopPane() {
 
 		TitledPane pane = new TitledPane();
-		pane.textProperty().bind(Sys.rm().getTextBinding("desktops"));
+		pane.textProperty().bind(Sys.rm().getStringBinding("desktops"));
 
 		List<Button> desktopButtons = Sys.dm().getDesktops().stream().map(this::createDesktopButton)
 				.collect(Collectors.toList());
@@ -158,7 +158,7 @@ public class ControlBar extends VBox {
 
 				ContextMenu contextMenu = new ContextMenu();
 				MenuItem createShortcut = new MenuItem();
-				createShortcut.textProperty().bind(Sys.rm().getTextBinding("createShortcut"));
+				createShortcut.textProperty().bind(Sys.rm().getStringBinding("createShortcut"));
 				createShortcut.setOnAction(
 						e -> Sys.dm().addShortcut(item));
 

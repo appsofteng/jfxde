@@ -69,7 +69,7 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
         this.resourceManager = new ResourceManager(provider.type(), appManifest.altText(), Sys.rm());
         this.appManifest = appManifest;
         this.provider = provider;
-        this.name.bind(resourceManager.getTextBinding(appManifest.name()));
+        this.name.bind(resourceManager.getStringBinding(appManifest.name()));
         this.fqn.set(appManifest.fqn());
         this.version.set(appManifest.version());
         this.vendor.set(appManifest.vendor());

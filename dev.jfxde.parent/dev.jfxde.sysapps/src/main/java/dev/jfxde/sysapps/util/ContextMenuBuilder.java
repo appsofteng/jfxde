@@ -35,7 +35,7 @@ public class ContextMenuBuilder {
     public ContextMenuBuilder copy() {
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+C"));
-        item.textProperty().bind(context.rc().getTextBinding("copy"));
+        item.textProperty().bind(context.rc().getStringBinding("copy"));
         item.setOnAction(e -> codeArea.copy());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> codeArea.getSelection().getLength() == 0, codeArea.selectionProperty()));
 
@@ -47,7 +47,7 @@ public class ContextMenuBuilder {
     public ContextMenuBuilder cut() {
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+X"));
-        item.textProperty().bind(context.rc().getTextBinding("cut"));
+        item.textProperty().bind(context.rc().getStringBinding("cut"));
         item.setOnAction(e -> codeArea.cut());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> codeArea.getSelection().getLength() == 0, codeArea.selectionProperty()));
 
@@ -60,7 +60,7 @@ public class ContextMenuBuilder {
 
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+V"));
-        item.textProperty().bind(context.rc().getTextBinding("paste"));
+        item.textProperty().bind(context.rc().getStringBinding("paste"));
         item.setOnAction(e -> codeArea.paste());
 
         codeArea.getContextMenu().setOnShowing(e -> {
@@ -74,7 +74,7 @@ public class ContextMenuBuilder {
     public ContextMenuBuilder selectAll() {
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+A"));
-        item.textProperty().bind(context.rc().getTextBinding("selectAll"));
+        item.textProperty().bind(context.rc().getStringBinding("selectAll"));
         item.setOnAction(e -> codeArea.selectAll());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> codeArea.getSelectedText().length() == codeArea.getText().length(),
                 codeArea.selectedTextProperty()));
@@ -85,7 +85,7 @@ public class ContextMenuBuilder {
 
     public ContextMenuBuilder clear() {
         MenuItem item = new MenuItem();
-        item.textProperty().bind(context.rc().getTextBinding("clear"));
+        item.textProperty().bind(context.rc().getStringBinding("clear"));
         item.setOnAction(e -> codeArea.clear());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> codeArea.getLength() == 0, codeArea.lengthProperty()));
 
@@ -96,7 +96,7 @@ public class ContextMenuBuilder {
 
     public ContextMenuBuilder clear(EventHandler<ActionEvent> handler) {
         MenuItem item = new MenuItem();
-        item.textProperty().bind(context.rc().getTextBinding("clear"));
+        item.textProperty().bind(context.rc().getStringBinding("clear"));
         item.setOnAction(handler);
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> codeArea.getLength() == 0, codeArea.lengthProperty()));
 

@@ -23,12 +23,12 @@ public class SettingsContent extends StackPane {
             table.setShowRoot(false);
 
             TreeTableColumn<PropertyDescriptor, String> keyColumn = new TreeTableColumn<>();
-            keyColumn.textProperty().bind(context.rc().getTextBinding("key"));
+            keyColumn.textProperty().bind(context.rc().getStringBinding("key"));
             keyColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("label"));
             keyColumn.setPrefWidth(150);
 
             TreeTableColumn<PropertyDescriptor, String> valueColumn = new TreeTableColumn<>();
-            valueColumn.textProperty().bind(context.rc().getTextBinding("value"));
+            valueColumn.textProperty().bind(context.rc().getStringBinding("value"));
             valueColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("value"));
             valueColumn.setMaxWidth(Double.MAX_VALUE);
             valueColumn.setCellFactory(c -> new SettingTableCell());

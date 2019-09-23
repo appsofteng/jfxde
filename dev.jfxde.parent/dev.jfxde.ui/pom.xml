@@ -53,6 +53,10 @@
 		</dependency>
 		<dependency>
 			<groupId>dev.jfxde</groupId>
+			<artifactId>dev.jfxde.jfxext</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>dev.jfxde</groupId>
 			<artifactId>dev.jfxde.logic</artifactId>
 		</dependency>
 		<dependency>

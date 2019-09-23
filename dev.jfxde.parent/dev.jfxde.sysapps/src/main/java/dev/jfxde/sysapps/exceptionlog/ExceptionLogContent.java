@@ -40,7 +40,7 @@ public class ExceptionLogContent extends TabPane {
     @SuppressWarnings("unchecked")
     private Tab createExceptionTab() {   
         Tab tab = new Tab();
-        tab.textProperty().bind(sysContext.rc().getTextBinding("exceptions"));
+        tab.textProperty().bind(sysContext.rc().getStringBinding("exceptions"));
         tab.setClosable(false);
         
         exceptionTable = new TableView<>();
@@ -48,23 +48,23 @@ public class ExceptionLogContent extends TabPane {
         exceptionTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         TableColumn<ExceptionDescriptor, String> nameColumn = new TableColumn<>();
-        nameColumn.textProperty().bind(sysContext.rc().getTextBinding("name"));
+        nameColumn.textProperty().bind(sysContext.rc().getStringBinding("name"));
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         
         TableColumn<ExceptionDescriptor, String> messageColumn = new TableColumn<>();
-        messageColumn.textProperty().bind(sysContext.rc().getTextBinding("message"));
+        messageColumn.textProperty().bind(sysContext.rc().getStringBinding("message"));
         messageColumn.setCellValueFactory(new PropertyValueFactory<>("message"));
         
         TableColumn<ExceptionDescriptor, LocalDateTime> timestampColumn = new TableColumn<>();
-        timestampColumn.textProperty().bind(sysContext.rc().getTextBinding("timestamp"));
+        timestampColumn.textProperty().bind(sysContext.rc().getStringBinding("timestamp"));
         timestampColumn.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
         
         TableColumn<ExceptionDescriptor, LocalDateTime> causeColumn = new TableColumn<>();
-        causeColumn.textProperty().bind(sysContext.rc().getTextBinding("cause"));
+        causeColumn.textProperty().bind(sysContext.rc().getStringBinding("cause"));
         causeColumn.setCellValueFactory(new PropertyValueFactory<>("cause"));
         
         TableColumn<ExceptionDescriptor, LocalDateTime> causeMessageColumn = new TableColumn<>();
-        causeMessageColumn.textProperty().bind(sysContext.rc().getTextBinding("causeMessage"));
+        causeMessageColumn.textProperty().bind(sysContext.rc().getStringBinding("causeMessage"));
         causeMessageColumn.setCellValueFactory(new PropertyValueFactory<>("causeMessage"));
 
         exceptionTable.getColumns().addAll(nameColumn, messageColumn, causeColumn, causeMessageColumn, timestampColumn);
@@ -73,7 +73,7 @@ public class ExceptionLogContent extends TabPane {
         
         Button remove = new Button();
         remove.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        remove.textProperty().bind(sysContext.rc().getTextBinding("remove"));
+        remove.textProperty().bind(sysContext.rc().getStringBinding("remove"));
         remove.disableProperty().bind(Bindings.isEmpty(exceptionTable.getSelectionModel().getSelectedItems()));
 
         remove.setOnAction(e -> {
@@ -94,7 +94,7 @@ public class ExceptionLogContent extends TabPane {
     
     private Tab createStackTraceTab() {
         Tab tab = new Tab();
-        tab.textProperty().bind(sysContext.rc().getTextBinding("stackTrace"));
+        tab.textProperty().bind(sysContext.rc().getStringBinding("stackTrace"));
         tab.setClosable(false);
         
         TextArea textArea = new TextArea();

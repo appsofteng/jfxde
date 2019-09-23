@@ -52,7 +52,7 @@ public class AppManagerContent extends TabPane {
     @SuppressWarnings("unchecked")
     private Tab createAppTab() {
         Tab tab = new Tab();
-        tab.textProperty().bind(context.rc().getTextBinding("apps"));
+        tab.textProperty().bind(context.rc().getStringBinding("apps"));
         tab.setClosable(false);
 
         appProviderDescriptorTable = new TableView<>();
@@ -62,28 +62,28 @@ public class AppManagerContent extends TabPane {
         appProviderDescriptorTable.setItems(Sys.am().getAppProviderDescriptors());
 
         TableColumn<AppProviderDescriptor, Label> nameColumn = new TableColumn<>();
-        nameColumn.textProperty().bind(context.rc().getTextBinding("name"));
+        nameColumn.textProperty().bind(context.rc().getStringBinding("name"));
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("iconName"));
 
         TableColumn<AppProviderDescriptor, String> fqnColumn = new TableColumn<>();
-        fqnColumn.textProperty().bind(context.rc().getTextBinding("fqn"));
+        fqnColumn.textProperty().bind(context.rc().getStringBinding("fqn"));
         fqnColumn.setCellValueFactory(new PropertyValueFactory<>("fqn"));
 
         TableColumn<AppProviderDescriptor, String> versionColumn = new TableColumn<>();
-        versionColumn.textProperty().bind(context.rc().getTextBinding("version"));
+        versionColumn.textProperty().bind(context.rc().getStringBinding("version"));
         versionColumn.setCellValueFactory(new PropertyValueFactory<>("version"));
 
         TableColumn<AppProviderDescriptor, String> vendorColumn = new TableColumn<>();
-        vendorColumn.textProperty().bind(context.rc().getTextBinding("vendor"));
+        vendorColumn.textProperty().bind(context.rc().getStringBinding("vendor"));
         vendorColumn.setCellValueFactory(new PropertyValueFactory<>("vendor"));
 
         TableColumn<AppProviderDescriptor, String> websiteColumn = new TableColumn<>();
-        websiteColumn.textProperty().bind(context.rc().getTextBinding("website"));
+        websiteColumn.textProperty().bind(context.rc().getStringBinding("website"));
         websiteColumn.setCellValueFactory(new PropertyValueFactory<>("website"));
         websiteColumn.setCellFactory(HyperlinkTableCell.forTableColumn(url -> context.ac().start(url)));
 
         TableColumn<AppProviderDescriptor, Boolean> allowedColumn = new TableColumn<>();
-        allowedColumn.textProperty().bind(context.rc().getTextBinding("allowed"));
+        allowedColumn.textProperty().bind(context.rc().getStringBinding("allowed"));
         allowedColumn.setCellValueFactory(new PropertyValueFactory<>("allowed"));
         allowedColumn.setCellFactory(c -> {
             CheckBoxTableCell<AppProviderDescriptor, Boolean> cb = new CheckBoxTableCell<>();
@@ -103,22 +103,22 @@ public class AppManagerContent extends TabPane {
     @SuppressWarnings("unchecked")
     private Tab createPermissionTab() {
         Tab tab = new Tab();
-        tab.textProperty().bind(context.rc().getTextBinding("permissions"));
+        tab.textProperty().bind(context.rc().getStringBinding("permissions"));
         tab.setClosable(false);
 
         TableView<PermissionDescriptor> table = new TableView<>();
         tab.setContent(table);
 
         TableColumn<PermissionDescriptor, String> typeColumn = new TableColumn<>();
-        typeColumn.textProperty().bind(context.rc().getTextBinding("type"));
+        typeColumn.textProperty().bind(context.rc().getStringBinding("type"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
 
         TableColumn<PermissionDescriptor, String> targetColumn = new TableColumn<>();
-        targetColumn.textProperty().bind(context.rc().getTextBinding("target"));
+        targetColumn.textProperty().bind(context.rc().getStringBinding("target"));
         targetColumn.setCellValueFactory(new PropertyValueFactory<>("target"));
 
         TableColumn<PermissionDescriptor, String> actionsColumn = new TableColumn<>();
-        actionsColumn.textProperty().bind(context.rc().getTextBinding("actions"));
+        actionsColumn.textProperty().bind(context.rc().getStringBinding("actions"));
         actionsColumn.setCellValueFactory(new PropertyValueFactory<>("actions"));
 
         table.getColumns().addAll(typeColumn, targetColumn, actionsColumn);
@@ -132,22 +132,22 @@ public class AppManagerContent extends TabPane {
     @SuppressWarnings("unchecked")
     private Tab createStartedAppTab() {
         Tab tab = new Tab();
-        tab.textProperty().bind(context.rc().getTextBinding("started"));
+        tab.textProperty().bind(context.rc().getStringBinding("started"));
         tab.setClosable(false);
 
         TableView<AppDescriptor> table = new TableView<>();
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         TableColumn<AppDescriptor, String> nameColumn = new TableColumn<>();
-        nameColumn.textProperty().bind(context.rc().getTextBinding("name"));
+        nameColumn.textProperty().bind(context.rc().getStringBinding("name"));
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         TableColumn<AppDescriptor, String> titleColumn = new TableColumn<>();
-        titleColumn.textProperty().bind(context.rc().getTextBinding("title"));
+        titleColumn.textProperty().bind(context.rc().getStringBinding("title"));
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("display"));
 
         TableColumn<AppDescriptor, Long> desktopColumn = new TableColumn<>();
-        desktopColumn.textProperty().bind(context.rc().getTextBinding("desktop"));
+        desktopColumn.textProperty().bind(context.rc().getStringBinding("desktop"));
         desktopColumn.setCellValueFactory(c -> c.getValue().getWindow().getDesktop().idProperty().asObject());
 
         table.getColumns().addAll(nameColumn, titleColumn, desktopColumn);
@@ -156,7 +156,7 @@ public class AppManagerContent extends TabPane {
 
         Button activate = new Button();
         activate.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        activate.textProperty().bind(context.rc().getTextBinding("activate"));
+        activate.textProperty().bind(context.rc().getStringBinding("activate"));
         activate.disableProperty().bind(Bindings.createBooleanBinding(() -> table.getSelectionModel().getSelectedItems().size() != 1
                 || table.getSelectionModel().getSelectedItem().getApp() == app, table.getSelectionModel().getSelectedItems()));
 
@@ -168,7 +168,7 @@ public class AppManagerContent extends TabPane {
 
         Button stop = new Button();
         stop.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        stop.textProperty().bind(context.rc().getTextBinding("stop"));
+        stop.textProperty().bind(context.rc().getStringBinding("stop"));
         stop.disableProperty().bind(Bindings.isEmpty(table.getSelectionModel().getSelectedItems()));
 
         stop.setOnAction(e -> {
@@ -190,29 +190,29 @@ public class AppManagerContent extends TabPane {
 	@SuppressWarnings("unchecked")
 	private Tab createTaskTab() {
 		Tab tab = new Tab();
-		tab.textProperty().bind(context.rc().getTextBinding("tasks"));
+		tab.textProperty().bind(context.rc().getStringBinding("tasks"));
 		tab.setClosable(false);
 
 		TableView<TaskDescriptor<?>> table = new TableView<>();
 		table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
 		TableColumn<TaskDescriptor<?>, String> appColumn = new TableColumn<>();
-		appColumn.textProperty().bind(context.rc().getTextBinding("app"));
+		appColumn.textProperty().bind(context.rc().getStringBinding("app"));
 		appColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
 		TableColumn<TaskDescriptor<?>, String> titleColumn = new TableColumn<>();
-		titleColumn.textProperty().bind(context.rc().getTextBinding("title"));
+		titleColumn.textProperty().bind(context.rc().getStringBinding("title"));
 		titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
 		addCellToolip(titleColumn);
 
 		TableColumn<TaskDescriptor<?>, Double> progressColumn = new TableColumn<>();
-		progressColumn.textProperty().bind(context.rc().getTextBinding("progress"));
+		progressColumn.textProperty().bind(context.rc().getStringBinding("progress"));
 		progressColumn.setCellValueFactory(c -> c.getValue().getTask().progressProperty().asObject());
 		progressColumn.setCellFactory(ProgressBarTableCell.forTableColumn());
 
 		TableColumn<TaskDescriptor<?>, String> stateColumn = new TableColumn<>();
-		stateColumn.textProperty().bind(context.rc().getTextBinding("state"));
-		stateColumn.setCellValueFactory(c -> context.rc().getTextBinding(c.getValue().getTask().stateProperty()));
+		stateColumn.textProperty().bind(context.rc().getStringBinding("state"));
+		stateColumn.setCellValueFactory(c -> context.rc().getStringBinding(c.getValue().getTask().stateProperty()));
 
 		table.getColumns().addAll(appColumn, titleColumn, progressColumn, stateColumn);
 
@@ -220,7 +220,7 @@ public class AppManagerContent extends TabPane {
 
 		Button cancel = new Button();
 		cancel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-		cancel.textProperty().bind(context.rc().getTextBinding("cancel"));
+		cancel.textProperty().bind(context.rc().getStringBinding("cancel"));
 		cancel.disableProperty().bind(Bindings.createBooleanBinding(() -> {
 
 			return table.getSelectionModel().getSelectedItems().size() != 1
@@ -234,7 +234,7 @@ public class AppManagerContent extends TabPane {
 
 		Button remove = new Button();
 		remove.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-		remove.textProperty().bind(context.rc().getTextBinding("remove"));
+		remove.textProperty().bind(context.rc().getStringBinding("remove"));
 		remove.disableProperty().bind(Bindings.isEmpty(table.getSelectionModel().getSelectedItems()));
 
 		remove.setOnAction(e -> {

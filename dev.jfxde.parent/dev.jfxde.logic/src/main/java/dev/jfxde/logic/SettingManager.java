@@ -93,7 +93,9 @@ public final class SettingManager extends Manager {
     }
 
     private void setLocale(String locale) {
+
         ResourceManager.setLocale(locale);
+
         Sys.am().sortApp();
     }
 

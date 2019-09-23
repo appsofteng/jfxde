@@ -21,9 +21,9 @@ public final class DialogDisplayer {
 
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.initOwner(owner);
-		alert.setTitle(Sys.rm().getText("confirmation"));
-		alert.setHeaderText(Sys.rm().getText("appPermissions", descriptor.getName()));
-		alert.setContentText(Sys.rm().getText("appPermissionConfirmation"));
+		alert.setTitle(Sys.rm().getString("confirmation"));
+		alert.setHeaderText(Sys.rm().getString("appPermissions", descriptor.getName()));
+		alert.setContentText(Sys.rm().getString("appPermissionConfirmation"));
 		alert.getDialogPane().setExpandableContent(getAppPermissionTable(descriptor));
 
 		alert.showAndWait().filter(response -> response == ButtonType.OK)
@@ -35,15 +35,15 @@ public final class DialogDisplayer {
 		TableView<PermissionDescriptor> table = new TableView<>();
 
 		TableColumn<PermissionDescriptor, String> typeColumn = new TableColumn<>();
-		typeColumn.textProperty().bind(Sys.rm().getTextBinding("type"));
+		typeColumn.textProperty().bind(Sys.rm().getStringBinding("type"));
 		typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
 
 		TableColumn<PermissionDescriptor, String> targetColumn = new TableColumn<>();
-		targetColumn.textProperty().bind(Sys.rm().getTextBinding("target"));
+		targetColumn.textProperty().bind(Sys.rm().getStringBinding("target"));
 		targetColumn.setCellValueFactory(new PropertyValueFactory<>("target"));
 
 		TableColumn<PermissionDescriptor, String> actionsColumn = new TableColumn<>();
-		actionsColumn.textProperty().bind(Sys.rm().getTextBinding("actions"));
+		actionsColumn.textProperty().bind(Sys.rm().getStringBinding("actions"));
 		actionsColumn.setCellValueFactory(new PropertyValueFactory<>("actions"));
 
 		table.getColumns().addAll(typeColumn, targetColumn, actionsColumn);

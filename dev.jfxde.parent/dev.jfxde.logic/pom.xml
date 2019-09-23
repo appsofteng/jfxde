@@ -41,6 +41,10 @@
 		</dependency>
 		<dependency>
 			<groupId>dev.jfxde</groupId>
+			<artifactId>dev.jfxde.jfxext</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>dev.jfxde</groupId>
 			<artifactId>dev.jfxde.data</artifactId>
 		</dependency>
 		<dependency>

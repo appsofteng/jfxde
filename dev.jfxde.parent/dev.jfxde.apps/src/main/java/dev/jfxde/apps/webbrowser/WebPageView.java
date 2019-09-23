@@ -55,7 +55,7 @@ public class WebPageView extends StackPane {
 	}
 
 	private void setListeners() {
-		title.bind(context.rc().getTextBinding("new"));
+		title.bind(context.rc().getStringBinding("new"));
 		backDisable.bind(Bindings.equal(engine.getHistory().currentIndexProperty(), 0));
 		forwardDisable.bind(Bindings.isEmpty(engine.getHistory().getEntries()).or(engine.getHistory()
 				.currentIndexProperty().isEqualTo(Bindings.size(engine.getHistory().getEntries()).subtract(1))));
