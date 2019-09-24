@@ -1,4 +1,4 @@
-package dev.jfxde.sysapps.xjshell;
+package dev.jfxde.sysapps.jshell;
 
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;

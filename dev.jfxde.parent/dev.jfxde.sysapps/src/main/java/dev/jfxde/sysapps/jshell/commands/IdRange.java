@@ -1,4 +1,4 @@
-package dev.jfxde.sysapps.xjshell.commands;
+package dev.jfxde.sysapps.jshell.commands;
 
 public class IdRange {
 

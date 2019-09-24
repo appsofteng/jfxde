@@ -1,4 +1,4 @@
-package dev.jfxde.sysapps.xjshell;
+package dev.jfxde.sysapps.jshell;
 
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.ESCAPE;
@@ -8,7 +8,7 @@ import static org.fxmisc.wellbehaved.event.EventPattern.mousePressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.fxmisc.wellbehaved.event.Nodes;
 
@@ -39,7 +39,7 @@ public class CodeCompletionPopup extends Popup {
         }
     };
 
-    public CodeCompletionPopup(List<? extends CompletionItem> items) {
+    public CodeCompletionPopup(Collection<? extends CompletionItem> items) {
         // does not work well because it blocks mouse press events outside the popup
         // setAutoHide(true);
 
@@ -48,7 +48,7 @@ public class CodeCompletionPopup extends Popup {
 
         itemView.setItems(FXCollections.observableArrayList(items));
         itemView.setFocusTraversable(false);
-        itemView.setPrefHeight(100);
+        itemView.setPrefSize(450, 100);
         getContent().add(itemView);
         setInputmap();
     }

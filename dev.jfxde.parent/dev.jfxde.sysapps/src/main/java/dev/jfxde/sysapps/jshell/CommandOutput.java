@@ -1,20 +1,20 @@
-package dev.jfxde.sysapps.xjshell;
+package dev.jfxde.sysapps.jshell;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
-import dev.jfxde.sysapps.xjshell.commands.Command;
-import dev.jfxde.sysapps.xjshell.commands.DropCommand;
-import dev.jfxde.sysapps.xjshell.commands.HistoryCommand;
-import dev.jfxde.sysapps.xjshell.commands.ImportCommand;
-import dev.jfxde.sysapps.xjshell.commands.ListCommand;
-import dev.jfxde.sysapps.xjshell.commands.MethodCommand;
-import dev.jfxde.sysapps.xjshell.commands.RerunCommand;
-import dev.jfxde.sysapps.xjshell.commands.SnippetMatch;
-import dev.jfxde.sysapps.xjshell.commands.TypeCommand;
-import dev.jfxde.sysapps.xjshell.commands.VarCommand;
+import dev.jfxde.sysapps.jshell.commands.Command;
+import dev.jfxde.sysapps.jshell.commands.DropCommand;
+import dev.jfxde.sysapps.jshell.commands.HistoryCommand;
+import dev.jfxde.sysapps.jshell.commands.ImportCommand;
+import dev.jfxde.sysapps.jshell.commands.ListCommand;
+import dev.jfxde.sysapps.jshell.commands.MethodCommand;
+import dev.jfxde.sysapps.jshell.commands.RerunCommand;
+import dev.jfxde.sysapps.jshell.commands.SnippetMatch;
+import dev.jfxde.sysapps.jshell.commands.TypeCommand;
+import dev.jfxde.sysapps.jshell.commands.VarCommand;
 import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 

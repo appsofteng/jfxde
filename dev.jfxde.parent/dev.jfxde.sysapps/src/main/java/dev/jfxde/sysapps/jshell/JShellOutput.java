@@ -1,4 +1,4 @@
-package dev.jfxde.sysapps.xjshell;
+package dev.jfxde.sysapps.jshell;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;

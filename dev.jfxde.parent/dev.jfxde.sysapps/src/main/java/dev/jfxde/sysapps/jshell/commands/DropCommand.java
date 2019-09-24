@@ -1,11 +1,11 @@
-package dev.jfxde.sysapps.xjshell.commands;
+package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.Arrays;
 import java.util.List;
 
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
-import dev.jfxde.sysapps.xjshell.SnippetUtils;
+import dev.jfxde.sysapps.jshell.SnippetUtils;
 import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;

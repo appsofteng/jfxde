@@ -55,7 +55,14 @@ public final class TaskManager extends Manager {
 
     public void execute(Task<?> task) {
 
-        executorService.execute(task);
+        executorService.execute(() -> {
+            // The threads in the pool are not created by the caller and thus
+            // don't inherit the access control context.
+            AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+                task.run();
+                return null;
+            });
+        });
     }
 
     public void executeSequentially(Task<?> task) {

@@ -19,11 +19,11 @@ module dev.jfxde.sysapps {
 
     provides dev.jfxde.api.App with dev.jfxde.sysapps.appmanager.AppManagerApp,
             dev.jfxde.sysapps.console.ConsoleApp, dev.jfxde.sysapps.exceptionlog.ExceptionLogApp,
-            dev.jfxde.sysapps.jvmmonitor.JvmMonitorApp, dev.jfxde.sysapps.jshell.JShellApp, dev.jfxde.sysapps.xjshell.XJShellApp, dev.jfxde.sysapps.settings.SettingsApp;
+            dev.jfxde.sysapps.jvmmonitor.JvmMonitorApp, dev.jfxde.sysapps.jshell.JShellApp, dev.jfxde.sysapps.settings.SettingsApp;
 
     opens dev.jfxde.sysapps.appmanager.bundles;
     opens dev.jfxde.sysapps.console.css;
     opens dev.jfxde.sysapps.jvmmonitor.bundles;
-    opens dev.jfxde.sysapps.xjshell.bundles;
-    opens dev.jfxde.sysapps.xjshell.css;
+    opens dev.jfxde.sysapps.jshell.bundles;
+    opens dev.jfxde.sysapps.jshell.css;
 }

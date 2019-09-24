@@ -1,4 +1,4 @@
-package dev.jfxde.sysapps.xjshell;
+package dev.jfxde.sysapps.jshell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;

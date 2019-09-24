@@ -1,4 +1,4 @@
-package dev.jfxde.sysapps.xjshell.commands;
+package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
@@ -15,8 +15,8 @@ public class HistoryCommand extends Command {
 
     @Override
     public void execute(String input) {
-        String history = output.stream().map(TextStyleSpans::getText).collect(Collectors.joining("\n"));
+        String result = history.stream().map(TextStyleSpans::getText).collect(Collectors.joining("\n"));
 
-        output.add(new TextStyleSpans(history + "\n\n", ConsoleModel.COMMENT_STYLE));
+        output.add(new TextStyleSpans(result + "\n\n", ConsoleModel.COMMENT_STYLE));
     }
 }

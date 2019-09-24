@@ -1,4 +1,4 @@
-package dev.jfxde.sysapps.xjshell.commands;
+package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import dev.jfxde.sysapps.xjshell.SnippetUtils;
+import dev.jfxde.sysapps.jshell.SnippetUtils;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
 

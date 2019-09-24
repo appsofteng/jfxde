@@ -129,7 +129,7 @@ public class SplitConsoleView extends BorderPane {
         history.add(span);
         historyIndex = history.size();
 
-        inputArea.replaceText("");
+        inputArea.clear();
     }
 
     private void historyUp() {
