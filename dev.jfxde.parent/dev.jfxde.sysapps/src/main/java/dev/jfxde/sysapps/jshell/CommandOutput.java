@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.jfxde.api.AppContext;
+import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.jshell.commands.Command;
 import dev.jfxde.sysapps.jshell.commands.DropCommand;
@@ -22,13 +23,13 @@ public class CommandOutput extends JShellOutput {
 
     private final List<Command> commands;
 
-    CommandOutput(AppContext context, JShell jshell, ObservableList<TextStyleSpans> output, ObservableList<TextStyleSpans> history, SnippetOutput snippetOutput) {
-        super(context, jshell, output, history);
+    CommandOutput(AppContext context, JShell jshell, ConsoleModel consoleModel, ObservableList<TextStyleSpans> history, SnippetOutput snippetOutput) {
+        super(context, jshell, consoleModel, history);
 
         SnippetMatch snippetMatch = new SnippetMatch(jshell);
-        commands = List.of(new DropCommand(jshell, output, snippetMatch), new HistoryCommand(jshell, output, history), new ImportCommand(jshell, output),
-                new ListCommand(jshell, output), new MethodCommand(jshell, output),
-                new RerunCommand(jshell, output, snippetOutput, snippetMatch), new TypeCommand(jshell, output), new VarCommand(jshell, output));
+        commands = List.of(new DropCommand(jshell, consoleModel, snippetMatch), new HistoryCommand(jshell, consoleModel, history), new ImportCommand(jshell, consoleModel),
+                new ListCommand(jshell, consoleModel), new MethodCommand(jshell, consoleModel),
+                new RerunCommand(jshell, consoleModel, snippetOutput, snippetMatch), new TypeCommand(jshell, consoleModel), new VarCommand(jshell, consoleModel));
     }
 
     @Override
@@ -41,7 +42,7 @@ public class CommandOutput extends JShellOutput {
         }
 
         if (matchingCommands.size() > 1) {
-            output.add(new TextStyleSpans(String.format("Possible commands: %s%n%n", matchingCommands)));
+            consoleModel.getOutput().add(new TextStyleSpans(String.format("Possible commands: %s%n%n", matchingCommands)));
         } else {
             matchingCommands.get(0).execute(input);
         }

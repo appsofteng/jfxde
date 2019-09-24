@@ -1,5 +1,6 @@
 package dev.jfxde.sysapps.jshell.commands;
 
+import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,18 +10,18 @@ public abstract class Command {
 
     private final String name;
     protected final JShell jshell;
-    protected final ObservableList<TextStyleSpans> output;
+    protected final ConsoleModel consoleModel;
     protected final ObservableList<TextStyleSpans> history;
 
 
-    public Command(String name, JShell jshell, ObservableList<TextStyleSpans> output) {
-        this(name, jshell, output, FXCollections.emptyObservableList());
+    public Command(String name, JShell jshell, ConsoleModel consoleModel) {
+        this(name, jshell, consoleModel, FXCollections.emptyObservableList());
     }
 
-    public Command(String name, JShell jshell, ObservableList<TextStyleSpans> output, ObservableList<TextStyleSpans> history) {
+    public Command(String name, JShell jshell, ConsoleModel consoleModel, ObservableList<TextStyleSpans> history) {
         this.name = name;
         this.jshell = jshell;
-        this.output = output;
+        this.consoleModel = consoleModel;
         this.history = history;
     }
 

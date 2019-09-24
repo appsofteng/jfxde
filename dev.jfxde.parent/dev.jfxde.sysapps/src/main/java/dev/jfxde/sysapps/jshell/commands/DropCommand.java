@@ -6,7 +6,6 @@ import java.util.List;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
-import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
 
@@ -14,8 +13,8 @@ public class DropCommand extends Command {
 
     private SnippetMatch snippetMatch;
 
-    public DropCommand(JShell jshell, ObservableList<TextStyleSpans> output, SnippetMatch snippetMatch) {
-        super("/drop", jshell, output);
+    public DropCommand(JShell jshell, ConsoleModel consoleModel, SnippetMatch snippetMatch) {
+        super("/drop", jshell, consoleModel);
         this.snippetMatch = snippetMatch;
     }
 
@@ -32,6 +31,6 @@ public class DropCommand extends Command {
                     jshell.drop(s);
                 });
 
-        output.add(new TextStyleSpans(sb.toString() + "\n", ConsoleModel.COMMENT_STYLE));
+        consoleModel.getOutput().add(new TextStyleSpans(sb.toString() + "\n", ConsoleModel.COMMENT_STYLE));
     }
 }

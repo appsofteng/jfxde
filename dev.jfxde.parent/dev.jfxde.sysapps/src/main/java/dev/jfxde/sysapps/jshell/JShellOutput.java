@@ -1,6 +1,7 @@
 package dev.jfxde.sysapps.jshell;
 
 import dev.jfxde.api.AppContext;
+import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -10,17 +11,17 @@ public abstract class JShellOutput {
 
     protected AppContext context;
     protected JShell jshell;
-    protected ObservableList<TextStyleSpans> output;
+    protected ConsoleModel consoleModel;
     protected ObservableList<TextStyleSpans> history;
 
-    JShellOutput(AppContext context, JShell jshell, ObservableList<TextStyleSpans> output) {
-        this(context, jshell, output, FXCollections.emptyObservableList());
+    JShellOutput(AppContext context, JShell jshell, ConsoleModel consoleModel) {
+        this(context, jshell, consoleModel, FXCollections.emptyObservableList());
     }
 
-    JShellOutput(AppContext context, JShell jshell, ObservableList<TextStyleSpans> output, ObservableList<TextStyleSpans> history) {
+    JShellOutput(AppContext context, JShell jshell, ConsoleModel consoleModel, ObservableList<TextStyleSpans> history) {
         this.context = context;
         this.jshell = jshell;
-        this.output = output;
+        this.consoleModel = consoleModel;
         this.history = history;
     }
 

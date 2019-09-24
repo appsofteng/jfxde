@@ -51,8 +51,8 @@ public class JShellContent extends BorderPane {
 
         idGenerator.setJshell(jshell);
 
-        snippetOutput = new SnippetOutput(context, jshell, consoleView.getConsoleModel().getOutput());
-        commandOutput = new CommandOutput(context, jshell, consoleView.getConsoleModel().getOutput(), consoleView.getHistory(), snippetOutput);
+        snippetOutput = new SnippetOutput(context, jshell, consoleView.getConsoleModel());
+        commandOutput = new CommandOutput(context, jshell, consoleView.getConsoleModel(), consoleView.getHistory(), snippetOutput);
 
         loadStartSnippets();
     }

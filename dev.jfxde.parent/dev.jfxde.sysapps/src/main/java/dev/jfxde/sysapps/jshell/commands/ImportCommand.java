@@ -2,15 +2,15 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
+import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
-import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 
 public class ImportCommand extends Command {
 
-    public ImportCommand(JShell jshell, ObservableList<TextStyleSpans> output) {
-        super("/imports", jshell, output);
+    public ImportCommand(JShell jshell, ConsoleModel consoleModel) {
+        super("/imports", jshell, consoleModel);
 
     }
 
@@ -18,6 +18,6 @@ public class ImportCommand extends Command {
     public void execute(String input) {
         String imports = jshell.imports().map(SnippetUtils::toString).sorted().collect(Collectors.joining()) + "\n";
 
-        output.add(new TextStyleSpans(imports));
+        consoleModel.getOutput().add(new TextStyleSpans(imports));
     }
 }

@@ -9,14 +9,14 @@ import jdk.jshell.JShell;
 
 public class HistoryCommand extends Command {
 
-    public HistoryCommand(JShell jshell, ObservableList<TextStyleSpans> output, ObservableList<TextStyleSpans> history) {
-        super("/history", jshell, output, history);
+    public HistoryCommand(JShell jshell, ConsoleModel consoleModel, ObservableList<TextStyleSpans> history) {
+        super("/history", jshell, consoleModel, history);
     }
 
     @Override
     public void execute(String input) {
         String result = history.stream().map(TextStyleSpans::getText).collect(Collectors.joining("\n"));
 
-        output.add(new TextStyleSpans(result + "\n\n", ConsoleModel.COMMENT_STYLE));
+        consoleModel.getOutput().add(new TextStyleSpans(result + "\n\n", ConsoleModel.COMMENT_STYLE));
     }
 }

@@ -2,21 +2,21 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
+import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
-import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 
 public class MethodCommand extends Command {
 
-    public MethodCommand(JShell jshell, ObservableList<TextStyleSpans> output) {
-        super("/methods", jshell, output);
+    public MethodCommand(JShell jshell, ConsoleModel consoleModel) {
+        super("/methods", jshell, consoleModel);
     }
 
     @Override
     public void execute(String input) {
         String result = jshell.methods().map(SnippetUtils::toString).sorted().collect(Collectors.joining()) + "\n";
 
-        output.add(new TextStyleSpans(result));
+        consoleModel.getOutput().add(new TextStyleSpans(result));
     }
 }

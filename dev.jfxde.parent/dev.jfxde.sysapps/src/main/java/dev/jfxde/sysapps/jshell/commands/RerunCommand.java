@@ -2,9 +2,8 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.List;
 
-import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.sysapps.jshell.SnippetOutput;
-import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
 
@@ -13,8 +12,8 @@ public class RerunCommand extends Command {
     private final SnippetOutput snippetOutput;
     private SnippetMatch snippetMatch;
 
-    public RerunCommand(JShell jshell, ObservableList<TextStyleSpans> output, SnippetOutput snippetOutput, SnippetMatch snippetMatch) {
-        super("/{id|startID-endID}[ {id|startID-endID|name}...]", jshell, output);
+    public RerunCommand(JShell jshell, ConsoleModel consoleModel, SnippetOutput snippetOutput, SnippetMatch snippetMatch) {
+        super("/{id|startID-endID}[ {id|startID-endID|name}...]", jshell, consoleModel);
         this.snippetOutput = snippetOutput;
         this.snippetMatch = snippetMatch;
     }

@@ -11,7 +11,6 @@ import org.reactfx.util.Tuple2;
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
-import javafx.collections.ObservableList;
 import jdk.jshell.EvalException;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
@@ -23,8 +22,8 @@ import jdk.jshell.VarSnippet;
 
 public class SnippetOutput extends JShellOutput {
 
-    SnippetOutput(AppContext context, JShell jshell, ObservableList<TextStyleSpans> output) {
-        super(context, jshell, output);
+    SnippetOutput(AppContext context, JShell jshell, ConsoleModel consoleModel) {
+        super(context, jshell, consoleModel);
     }
 
     @Override
@@ -38,24 +37,24 @@ public class SnippetOutput extends JShellOutput {
         while (!source.isEmpty()) {
 
             List<SnippetEvent> snippetEvents = jshell.eval(source);
-            snippetEvents.forEach(e -> output.add(getOutput(e)));
+            snippetEvents.forEach(e -> consoleModel.addNewLineOutput(getOutput(e)));
 
             info = sourceAnalysis.analyzeCompletion(info.remaining());
             source = info.source();
         }
 
-        output.add(new TextStyleSpans("\n"));
+        consoleModel.getOutput().add(new TextStyleSpans("\n"));
     }
 
     public void output(List<Snippet> snippets) {
 
         for (Snippet snippet : snippets) {
-            output.add(new TextStyleSpans(snippet.source() + "\n"));
+            consoleModel.getOutput().add(new TextStyleSpans(snippet.source() + "\n"));
             List<SnippetEvent> snippetEvents = jshell.eval(snippet.source());
-            snippetEvents.forEach(e -> output.add(getOutput(e)));
+            snippetEvents.forEach(e -> consoleModel.addNewLineOutput(getOutput(e)));
         }
 
-        output.add(new TextStyleSpans("\n"));
+        consoleModel.getOutput().add(new TextStyleSpans("\n"));
     }
 
     private TextStyleSpans getOutput(SnippetEvent event) {
@@ -74,11 +73,6 @@ public class SnippetOutput extends JShellOutput {
         }
 
         message = message.strip();
-
-        if (!message.isBlank()) {
-
-            message += "\n";
-        }
 
         TextStyleSpans o = new TextStyleSpans(message, type);
 
