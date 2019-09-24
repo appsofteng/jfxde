@@ -17,7 +17,7 @@ public class SuggestionCompletionItem extends CompletionItem {
         this.codeArea = codeArea;
         this.suggestion = suggestion;
         this.anchor = anchor;
-        this.docCode = isMethod() ? code.substring(0, anchor[0]) + suggestion.continuation() : suggestion.continuation();
+        this.docCode = isMethod() ? code.substring(0, anchor[0]) + suggestion.continuation().substring(0, suggestion.continuation().lastIndexOf("(") + 1) : suggestion.continuation();
         setLabel();
     }
 
@@ -31,7 +31,7 @@ public class SuggestionCompletionItem extends CompletionItem {
     }
 
     private void setLabel() {
-        label = isMethod() ? suggestion.continuation().substring(0, suggestion.continuation().indexOf("(")) : suggestion.continuation();
+        label = isMethod() ? suggestion.continuation().substring(0, suggestion.continuation().lastIndexOf("(")) : suggestion.continuation();
         label = signature.isEmpty() ? label : label + " - " + signature;
     }
 
