@@ -21,6 +21,8 @@ public final class TaskUtils {
 			}
 		};
 
+		task.setOnFailed(e -> { throw new RuntimeException(task.getException());} );
+
 		return task;
 	}
 
@@ -33,6 +35,8 @@ public final class TaskUtils {
 				return call.call();
 			}
 		};
+
+		task.setOnFailed(e -> { throw new RuntimeException(task.getException());} );
 
 		return task;
 	}
@@ -50,6 +54,8 @@ public final class TaskUtils {
 			onSucceeded.accept(task.getValue());
 		});
 
+		task.setOnFailed(e -> { throw new RuntimeException(task.getException());} );
+
 		return task;
 	}
 
@@ -66,6 +72,8 @@ public final class TaskUtils {
 		task.setOnSucceeded(e -> {
 			onSucceeded.run();
 		});
+
+		task.setOnFailed(e -> { throw new RuntimeException(task.getException());} );
 
 		return task;
 	}
@@ -117,5 +125,4 @@ public final class TaskUtils {
 	public static interface TRunnable {
 	    void run() throws Exception;
 	}
-
 }

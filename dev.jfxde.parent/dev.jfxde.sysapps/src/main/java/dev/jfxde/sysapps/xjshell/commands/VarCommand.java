@@ -2,22 +2,21 @@ package dev.jfxde.sysapps.xjshell.commands;
 
 import java.util.stream.Collectors;
 
-import org.fxmisc.richtext.CodeArea;
-
-import dev.jfxde.sysapps.util.CodeAreaUtils;
+import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.xjshell.SnippetUtils;
+import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 
 public class VarCommand extends Command {
 
-    public VarCommand(JShell jshell, CodeArea outputArea) {
-        super("/vars", jshell, outputArea);
+    public VarCommand(JShell jshell, ObservableList<TextStyleSpans> output) {
+        super("/vars", jshell, output);
     }
 
     @Override
     public void execute(String input) {
-        String output = jshell.variables().map(s -> SnippetUtils.toString(s, jshell.varValue(s))).collect(Collectors.joining()) + "\n";
+        String vars = jshell.variables().map(s -> SnippetUtils.toString(s, jshell.varValue(s))).collect(Collectors.joining()) + "\n";
 
-        CodeAreaUtils.addOutputLater(outputArea, output);
+        output.add(new TextStyleSpans(vars));
     }
 }

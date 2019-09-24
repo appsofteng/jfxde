@@ -1,26 +1,26 @@
 package dev.jfxde.sysapps.xjshell.commands;
 
-import java.util.List;
-
-import org.fxmisc.richtext.CodeArea;
-
+import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 
 public abstract class Command {
 
     private final String name;
     protected final JShell jshell;
-    protected final CodeArea outputArea;
-    protected final List<String> history;
+    protected final ObservableList<TextStyleSpans> output;
+    protected final ObservableList<TextStyleSpans> history;
 
-    public Command(String name, JShell jshell, CodeArea outputArea) {
-       this(name, jshell, outputArea, List.of());
+
+    public Command(String name, JShell jshell, ObservableList<TextStyleSpans> output) {
+        this(name, jshell, output, FXCollections.emptyObservableList());
     }
 
-    public Command(String name, JShell jshell, CodeArea outputArea, List<String> history) {
+    public Command(String name, JShell jshell, ObservableList<TextStyleSpans> output, ObservableList<TextStyleSpans> history) {
         this.name = name;
         this.jshell = jshell;
-        this.outputArea = outputArea;
+        this.output = output;
         this.history = history;
     }
 

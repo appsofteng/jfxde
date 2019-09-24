@@ -9,8 +9,8 @@ import org.fxmisc.richtext.CodeArea;
 import dev.jfxde.jfxext.richtextfx.ContextMenuBuilder;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.control.SplitPane;
@@ -20,13 +20,43 @@ import javafx.scene.layout.BorderPane;
 
 public class SplitConsoleView extends BorderPane {
 
+    private ConsoleModel consoleModel;
     private CodeArea inputArea = new CodeArea();
     private CodeArea outputArea = new CodeArea();
+    private ObservableList<TextStyleSpans> history = FXCollections.observableArrayList();
     private int historyIndex;
-    private ObservableList<TextStyleSpans> input = FXCollections.observableArrayList();
-    private ObservableList<TextStyleSpans> output = FXCollections.observableArrayList();
 
     public SplitConsoleView() {
+        this(new ConsoleModel());
+    }
+
+    public SplitConsoleView(ConsoleModel consoleModel) {
+        this.consoleModel = consoleModel;
+        setGraphics();
+        setBehavior();
+    }
+
+    public ConsoleModel getConsoleModel() {
+        return consoleModel;
+    }
+
+    public CodeArea getInputArea() {
+        return inputArea;
+    }
+
+    public ObservableList<TextStyleSpans> getHistory() {
+        return history;
+    }
+
+    private ObservableList<TextStyleSpans> getInput() {
+        return consoleModel.getInput();
+    }
+
+    private ObservableList<TextStyleSpans> getOutput() {
+        return consoleModel.getOutput();
+    }
+
+    private void setGraphics() {
         getStylesheets().add(getClass().getResource("console.css").toExternalForm());
         outputArea.setEditable(false);
         outputArea.getStylesheets().add(getClass().getResource("code-area.css").toExternalForm());
@@ -44,16 +74,6 @@ public class SplitConsoleView extends BorderPane {
         splitPane.setDividerPositions(0.8f);
 
         setCenter(splitPane);
-
-        setBehavior();
-    }
-
-    public ObservableList<TextStyleSpans> getInput() {
-        return input;
-    }
-
-    public ObservableList<TextStyleSpans> getOutput() {
-        return output;
     }
 
     private void setBehavior() {
@@ -81,12 +101,13 @@ public class SplitConsoleView extends BorderPane {
             }
         });
 
-        output.addListener((Change<? extends TextStyleSpans> c) -> {
+        getOutput().addListener((Change<? extends TextStyleSpans> c) -> {
 
             while (c.next()) {
 
                 if (c.wasAdded()) {
                     List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
+
                     Platform.runLater(() -> {
                         for (TextStyleSpans span : added) {
                             int from = outputArea.getLength();
@@ -102,18 +123,20 @@ public class SplitConsoleView extends BorderPane {
     }
 
     private void enter() {
-        input.add(new TextStyleSpans(inputArea.getText(), inputArea.getStyleSpans(0, inputArea.getText().length())));
+        TextStyleSpans span = new TextStyleSpans(inputArea.getText(), inputArea.getStyleSpans(0, inputArea.getText().length()));
+        getInput().addAll(span, new TextStyleSpans("\n"));
 
-        historyIndex = input.size();
+        history.add(span);
+        historyIndex = history.size();
 
         inputArea.replaceText("");
     }
 
     private void historyUp() {
 
-        if (historyIndex > 0 && historyIndex <= input.size()) {
+        if (historyIndex > 0 && historyIndex <= history.size()) {
             historyIndex--;
-            TextStyleSpans span = input.get(historyIndex);
+            TextStyleSpans span = history.get(historyIndex);
             inputArea.replaceText(span.getText());
             inputArea.setStyleSpans(0, span.getStyleSpans());
         }
@@ -121,14 +144,19 @@ public class SplitConsoleView extends BorderPane {
 
     private void historyDown() {
 
-        if (historyIndex >= 0 && historyIndex < input.size() - 1) {
+        if (historyIndex >= 0 && historyIndex < history.size() - 1) {
             historyIndex++;
-            TextStyleSpans span = input.get(historyIndex);
+            TextStyleSpans span = history.get(historyIndex);
             inputArea.replaceText(span.getText());
             inputArea.setStyleSpans(0, span.getStyleSpans());
         } else {
             inputArea.replaceText("");
-            historyIndex = input.size();
+            historyIndex = history.size();
         }
+    }
+
+    public void dispose() {
+        inputArea.dispose();
+        outputArea.dispose();
     }
 }

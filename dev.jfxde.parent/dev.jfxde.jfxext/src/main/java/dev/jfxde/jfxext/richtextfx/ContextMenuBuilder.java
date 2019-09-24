@@ -15,9 +15,11 @@ import javafx.scene.input.KeyEvent;
 public class ContextMenuBuilder {
 
     private final GenericStyledArea<?,?,?> area;
+    private String baseName;
 
     private ContextMenuBuilder(GenericStyledArea<?,?,?> codeArea) {
         this.area = codeArea;
+        this.baseName = FXResourceBundle.class.getPackageName() + ".strings";
     }
 
     public static ContextMenuBuilder get(GenericStyledArea<?,?,?> codeArea) {
@@ -33,7 +35,7 @@ public class ContextMenuBuilder {
     public ContextMenuBuilder copy() {
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+C"));
-        item.textProperty().bind(FXResourceBundle.getBundle​("strings").getStringBinding("copy"));
+        item.textProperty().bind(FXResourceBundle.getBundle​(baseName).getStringBinding("copy"));
         item.setOnAction(e -> area.copy());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> area.getSelection().getLength() == 0, area.selectionProperty()));
 
@@ -45,7 +47,7 @@ public class ContextMenuBuilder {
     public ContextMenuBuilder cut() {
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+X"));
-        item.textProperty().bind(FXResourceBundle.getBundle​("strings").getStringBinding("cut"));
+        item.textProperty().bind(FXResourceBundle.getBundle​(baseName).getStringBinding("cut"));
         item.setOnAction(e -> area.cut());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> area.getSelection().getLength() == 0, area.selectionProperty()));
 
@@ -58,7 +60,7 @@ public class ContextMenuBuilder {
 
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+V"));
-        item.textProperty().bind(FXResourceBundle.getBundle​("strings").getStringBinding("paste"));
+        item.textProperty().bind(FXResourceBundle.getBundle​(baseName).getStringBinding("paste"));
         item.setOnAction(e -> area.paste());
 
         area.getContextMenu().setOnShowing(e -> {
@@ -72,7 +74,7 @@ public class ContextMenuBuilder {
     public ContextMenuBuilder selectAll() {
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+A"));
-        item.textProperty().bind(FXResourceBundle.getBundle​("strings").getStringBinding("selectAll"));
+        item.textProperty().bind(FXResourceBundle.getBundle​(baseName).getStringBinding("selectAll"));
         item.setOnAction(e -> area.selectAll());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> area.getSelectedText().length() == area.getText().length(),
                 area.selectedTextProperty()));
@@ -83,7 +85,7 @@ public class ContextMenuBuilder {
 
     public ContextMenuBuilder clear() {
         MenuItem item = new MenuItem();
-        item.textProperty().bind(FXResourceBundle.getBundle​("strings").getStringBinding("clear"));
+        item.textProperty().bind(FXResourceBundle.getBundle​(baseName).getStringBinding("clear"));
         item.setOnAction(e -> area.clear());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> area.getLength() == 0, area.lengthProperty()));
 
@@ -94,7 +96,7 @@ public class ContextMenuBuilder {
 
     public ContextMenuBuilder clear(EventHandler<ActionEvent> handler) {
         MenuItem item = new MenuItem();
-        item.textProperty().bind(FXResourceBundle.getBundle​("strings").getStringBinding("clear"));
+        item.textProperty().bind(FXResourceBundle.getBundle​(baseName).getStringBinding("clear"));
         item.setOnAction(handler);
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> area.getLength() == 0, area.lengthProperty()));
 

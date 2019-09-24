@@ -21,7 +21,7 @@ public class CustomPolicy extends Policy {
     }
 
     public void put(CodeSource codeSource, PermissionCollection collection) {
-        permissionCollections.put(codeSource, collection);
+        permissionCollections.merge(codeSource, collection, this::merge);
     }
 
     void remove(CodeSource codeSource) {
@@ -34,5 +34,11 @@ public class CustomPolicy extends Policy {
         PermissionCollection collection = permissionCollections.getOrDefault(domain.getCodeSource(), defaultPolicy.getPermissions(domain));
 
         return collection.implies(permission);
+    }
+
+    private PermissionCollection merge(PermissionCollection oldCol, PermissionCollection newCol) {
+        newCol.elementsAsStream().forEach(p -> oldCol.add(p));
+
+        return oldCol;
     }
 }

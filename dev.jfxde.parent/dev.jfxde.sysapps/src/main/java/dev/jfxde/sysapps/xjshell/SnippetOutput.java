@@ -2,19 +2,16 @@ package dev.jfxde.sysapps.xjshell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
-import org.fxmisc.richtext.CodeArea;
 import org.reactfx.util.Tuple2;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.logic.data.ConsoleOutput;
-import dev.jfxde.logic.data.ConsoleOutput.Type;
-import dev.jfxde.sysapps.util.CodeAreaUtils;
-import javafx.application.Platform;
+import dev.jfxde.jfxext.control.ConsoleModel;
+import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import javafx.collections.ObservableList;
 import jdk.jshell.EvalException;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
@@ -24,10 +21,10 @@ import jdk.jshell.SnippetEvent;
 import jdk.jshell.SourceCodeAnalysis;
 import jdk.jshell.VarSnippet;
 
-public class SnippetOutput extends XJShellOutput {
+public class SnippetOutput extends JShellOutput {
 
-    SnippetOutput(AppContext context, JShell jshell, CodeArea outputArea) {
-        super(context, jshell, outputArea);
+    SnippetOutput(AppContext context, JShell jshell, ObservableList<TextStyleSpans> output) {
+        super(context, jshell, output);
     }
 
     @Override
@@ -38,55 +35,39 @@ public class SnippetOutput extends XJShellOutput {
 
         String source = info.source();
 
-        List<ConsoleOutput> outputs = new ArrayList<>();
-
         while (!source.isEmpty()) {
 
             List<SnippetEvent> snippetEvents = jshell.eval(source);
-            snippetEvents.forEach(e -> outputs.add(getOutput(e)));
+            snippetEvents.forEach(e -> output.add(getOutput(e)));
 
             info = sourceAnalysis.analyzeCompletion(info.remaining());
             source = info.source();
         }
 
-        writeOutputs(outputs);
+        output.add(new TextStyleSpans("\n"));
     }
 
     public void output(List<Snippet> snippets) {
 
-        List<ConsoleOutput> outputs = new ArrayList<>();
-
         for (Snippet snippet : snippets) {
-            outputs.add(new ConsoleOutput(snippet.source() + "\n"));
+            output.add(new TextStyleSpans(snippet.source() + "\n"));
             List<SnippetEvent> snippetEvents = jshell.eval(snippet.source());
-            snippetEvents.forEach(e -> outputs.add(getOutput(e)));
+            snippetEvents.forEach(e -> output.add(getOutput(e)));
         }
 
-        writeOutputs(outputs);
+        output.add(new TextStyleSpans("\n"));
     }
 
-    private void writeOutputs(List<ConsoleOutput> outputs) {
-        outputs.add(new ConsoleOutput("\n"));
-
-        Platform.runLater(() -> {
-            if (!outputArea.getText().endsWith("\n")) {
-                outputs.add(0, new ConsoleOutput("\n"));
-            }
-
-            CodeAreaUtils.addOutput(outputArea, outputs);
-        });
-    }
-
-    private ConsoleOutput getOutput(SnippetEvent event) {
+    private TextStyleSpans getOutput(SnippetEvent event) {
 
         String message = "";
-        Type type = Type.COMMENT;
+        String type = ConsoleModel.COMMENT_STYLE;
 
         if (event.exception() != null) {
-            type = Type.ERROR;
+            type = ConsoleModel.ERROR_STYLE;
             message = getExceptionMessage(event);
         } else if (event.status() == Status.REJECTED) {
-            type = Type.ERROR;
+            type = ConsoleModel.ERROR_STYLE;
             message = getRejectedMessage(event);
         } else {
             message = getSuccessMessage(event);
@@ -99,7 +80,7 @@ public class SnippetOutput extends XJShellOutput {
             message += "\n";
         }
 
-        ConsoleOutput o = new ConsoleOutput(message, type);
+        TextStyleSpans o = new TextStyleSpans(message, type);
 
         return o;
     }

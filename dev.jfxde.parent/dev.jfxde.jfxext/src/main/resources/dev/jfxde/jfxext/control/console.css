@@ -1,3 +1,7 @@
+.jd-console-normal {
+    -fx-fill: inherit;
+}
+
 .jd-console-error {
     -fx-fill: red;
 }

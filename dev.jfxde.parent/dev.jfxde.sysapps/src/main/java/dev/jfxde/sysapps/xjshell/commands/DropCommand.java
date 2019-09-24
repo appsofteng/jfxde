@@ -3,12 +3,10 @@ package dev.jfxde.sysapps.xjshell.commands;
 import java.util.Arrays;
 import java.util.List;
 
-import org.fxmisc.richtext.CodeArea;
-
-import dev.jfxde.logic.data.ConsoleOutput;
-import dev.jfxde.logic.data.ConsoleOutput.Type;
-import dev.jfxde.sysapps.util.CodeAreaUtils;
+import dev.jfxde.jfxext.control.ConsoleModel;
+import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.xjshell.SnippetUtils;
+import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
 
@@ -16,8 +14,8 @@ public class DropCommand extends Command {
 
     private SnippetMatch snippetMatch;
 
-    public DropCommand(JShell jshell, CodeArea outputArea, SnippetMatch snippetMatch) {
-        super("/drop", jshell, outputArea);
+    public DropCommand(JShell jshell, ObservableList<TextStyleSpans> output, SnippetMatch snippetMatch) {
+        super("/drop", jshell, output);
         this.snippetMatch = snippetMatch;
     }
 
@@ -34,6 +32,6 @@ public class DropCommand extends Command {
                     jshell.drop(s);
                 });
 
-        CodeAreaUtils.addOutputLater(outputArea, new ConsoleOutput(sb.toString() + "\n", Type.COMMENT));
+        output.add(new TextStyleSpans(sb.toString() + "\n", ConsoleModel.COMMENT_STYLE));
     }
 }

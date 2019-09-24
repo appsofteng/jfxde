@@ -12,18 +12,21 @@ public class TextStyleSpans {
     private StyleSpans<Collection<String>> styleSpans;
 
     public TextStyleSpans(String text) {
-        this(text, null);
+        this.text = text;
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        spansBuilder.add(Collections.emptyList(), text.length());
+        styleSpans = spansBuilder.create();
+    }
+
+    public TextStyleSpans(String text, String style) {
+        this.text = text;
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        spansBuilder.add(Collections.singleton(style), text.length());
+        styleSpans = spansBuilder.create();
     }
 
     public TextStyleSpans(String text, StyleSpans<Collection<String>> styleSpans) {
         this.text = text;
-
-        if (styleSpans == null) {
-            StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
-            spansBuilder.add(Collections.emptyList(), text.length());
-            styleSpans = spansBuilder.create();
-        }
-
         this.styleSpans = styleSpans;
     }
 

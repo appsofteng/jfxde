@@ -3,9 +3,9 @@ package dev.jfxde.sysapps.xjshell;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
 
-public final class XJShellUtils {
+public final class JShellUtils {
 
-    private XJShellUtils() {
+    private JShellUtils() {
     }
 
     public static Snippet getSnippet(JShell jshell, Integer id) {

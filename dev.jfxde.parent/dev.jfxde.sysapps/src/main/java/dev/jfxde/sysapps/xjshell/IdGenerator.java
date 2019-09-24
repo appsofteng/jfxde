@@ -22,7 +22,7 @@ public class IdGenerator implements BiFunction<Snippet, Integer, String> {
         if (id > maxId) {
             maxId = id;
         } else {
-            Snippet existingSnippet = XJShellUtils.getSnippet(jshell, id);
+            Snippet existingSnippet = JShellUtils.getSnippet(jshell, id);
 
             if (existingSnippet != null && jshell.status(existingSnippet) == Status.DROPPED) {
                 newId = String.valueOf(++maxId);

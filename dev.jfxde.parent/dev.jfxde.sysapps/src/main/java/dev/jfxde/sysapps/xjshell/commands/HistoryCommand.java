@@ -1,25 +1,22 @@
 package dev.jfxde.sysapps.xjshell.commands;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
-import org.fxmisc.richtext.CodeArea;
-
-import dev.jfxde.logic.data.ConsoleOutput;
-import dev.jfxde.logic.data.ConsoleOutput.Type;
-import dev.jfxde.sysapps.util.CodeAreaUtils;
+import dev.jfxde.jfxext.control.ConsoleModel;
+import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 
 public class HistoryCommand extends Command {
 
-    public HistoryCommand(JShell jshell, CodeArea outputArea, List<String> history) {
-        super("/history", jshell, outputArea, history);
+    public HistoryCommand(JShell jshell, ObservableList<TextStyleSpans> output, ObservableList<TextStyleSpans> history) {
+        super("/history", jshell, output, history);
     }
 
     @Override
     public void execute(String input) {
-        String output = history.stream().collect(Collectors.joining("\n"));
+        String history = output.stream().map(TextStyleSpans::getText).collect(Collectors.joining("\n"));
 
-        CodeAreaUtils.addOutputLater(outputArea, new ConsoleOutput(output + "\n\n", Type.COMMENT));
+        output.add(new TextStyleSpans(history + "\n\n", ConsoleModel.COMMENT_STYLE));
     }
 }
