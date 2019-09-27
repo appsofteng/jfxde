@@ -5,6 +5,7 @@ import static javafx.scene.layout.Region.USE_PREF_SIZE;
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -130,6 +131,11 @@ public final class ResourceManager extends Manager implements ResourceController
 
     public StringBinding getStringBinding(ReadOnlyObjectProperty<?> key, Object... args) {
         return getBundle().getStringBinding(key, args);
+    }
+
+    @Override
+    public Map<String, String> getStrings(Set<String> keys) {
+        return keys.stream().collect(Collectors.toMap(k -> k, k -> getString(k)));
     }
 
     public String getCss(String name) {

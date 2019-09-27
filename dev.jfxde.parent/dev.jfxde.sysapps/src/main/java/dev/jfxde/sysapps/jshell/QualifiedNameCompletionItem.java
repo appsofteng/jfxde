@@ -1,36 +1,37 @@
 package dev.jfxde.sysapps.jshell;
 
-import dev.jfxde.jfxext.control.editor.CompletionItem;
+import java.util.Map;
+
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.collections.ObservableList;
+import jdk.jshell.JShell;
 
-public class QualifiedNameCompletionItem extends CompletionItem {
+public class QualifiedNameCompletionItem extends JShellCompletionItem {
 
     private final ObservableList<TextStyleSpans> input;
-    private final String name;
 
-    public QualifiedNameCompletionItem(ObservableList<TextStyleSpans> input, String name) {
+    public QualifiedNameCompletionItem(JShell jshell, Map<String,String> bundle, ObservableList<TextStyleSpans> input, String signature) {
+        super(jshell, bundle, signature, signature);
         this.input = input;
-        this.name = name;
     }
 
     @Override
     public void complete() {
-        input.add(new TextStyleSpans(String.format("import %s;%n", name)));
+        input.add(new TextStyleSpans(String.format("import %s;%n", signature)));
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof QualifiedNameCompletionItem && ((QualifiedNameCompletionItem)obj).name.equals(name);
+        return obj instanceof QualifiedNameCompletionItem && ((QualifiedNameCompletionItem)obj).signature.equals(signature);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return signature.hashCode();
     }
 
     @Override
     public String toString() {
-        return name;
+        return signature;
     }
 }

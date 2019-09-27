@@ -90,9 +90,9 @@ public class CompletionPopup extends Tooltip {
 
         itemView.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
             webView.getEngine().loadContent(n.getDocumentation());
-            docPopup.hide();
+//            docPopup.hide();
+//            docPopup.setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
             double offset = Screen.getPrimary().getBounds().getWidth() - getAnchorX() - getPrefWidth() > getAnchorX() ? getPrefWidth() : -docPopup.getPrefWidth();
-            docPopup.setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
             docPopup.show(this, getAnchorX() + offset, getAnchorY());
         });

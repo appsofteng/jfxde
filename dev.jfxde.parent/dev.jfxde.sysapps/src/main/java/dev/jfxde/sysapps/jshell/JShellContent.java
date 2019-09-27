@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +19,7 @@ import dev.jfxde.jfxext.control.SplitConsoleView;
 import dev.jfxde.jfxext.control.editor.CompletionBehavior;
 import dev.jfxde.jfxext.control.editor.CompletionItem;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import dev.jfxde.jfxext.util.JavadocUtils;
 import dev.jfxde.jfxext.util.TaskUtils;
 import dev.jfxde.logic.Sys;
 import javafx.collections.ListChangeListener.Change;
@@ -31,13 +33,14 @@ public class JShellContent extends BorderPane {
 
     private static final Logger LOGGER = Logger.getLogger(JShellContent.class.getName());
 
+    private AppContext context;
     private SplitConsoleView consoleView;
     private JShell jshell;
     private SnippetOutput snippetOutput;
     private CommandOutput commandOutput;
 
     public JShellContent(AppContext context) {
-
+        this.context = context;
         consoleView = new SplitConsoleView();
         setCenter(consoleView);
         setBehavior();
@@ -109,11 +112,12 @@ public class JShellContent extends BorderPane {
         int cursor = inputArea.getCaretPosition();
 
         int[] anchor = new int[1];
+        Map<String,String> docBlockNames = context.rc().getStrings(JavadocUtils.getBlockTagNames());
 
         Set<SuggestionCompletionItem> suggestionItems = jshell.sourceCodeAnalysis()
                 .completionSuggestions(code, cursor, anchor)
                 .stream()
-                .map(s -> new SuggestionCompletionItem(jshell, inputArea,code, s, anchor))
+                .map(s -> new SuggestionCompletionItem(jshell, docBlockNames, inputArea,code, s, anchor))
                 .collect(Collectors.toSet());
 
         for (SuggestionCompletionItem item : suggestionItems) {
@@ -125,7 +129,7 @@ public class JShellContent extends BorderPane {
             }
 
             for (Documentation doc : docs) {
-                items.add(new SuggestionCompletionItem(jshell, inputArea, item.getSuggestion(), item.getAnchor(), item.getDocCode(),
+                items.add(new SuggestionCompletionItem(jshell, docBlockNames, inputArea, item.getSuggestion(), item.getAnchor(), item.getDocCode(),
                         doc.signature()));
             }
         }
@@ -137,7 +141,7 @@ public class JShellContent extends BorderPane {
         if (!qualifiedNames.isResolvable()) {
             Set<CompletionItem> names = qualifiedNames.getNames()
                     .stream()
-                    .map(n -> new QualifiedNameCompletionItem(consoleView.getConsoleModel().getInput(), n))
+                    .map(n -> new QualifiedNameCompletionItem(jshell, docBlockNames, consoleView.getConsoleModel().getInput(), n))
                     .sorted()
                     .collect(Collectors.toSet());
 

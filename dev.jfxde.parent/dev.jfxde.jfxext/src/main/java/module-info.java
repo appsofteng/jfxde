@@ -12,6 +12,8 @@ module dev.jfxde.jfxext {
     requires reactfx;
     requires wellbehavedfx;
 
+    requires com.github.javaparser.core;
+
     exports dev.jfxde.jfxext.control to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
     exports dev.jfxde.jfxext.control.editor to dev.jfxde.sysapps;
     exports dev.jfxde.jfxext.richtextfx to dev.jfxde.sysapps, dev.jfxde.logic;

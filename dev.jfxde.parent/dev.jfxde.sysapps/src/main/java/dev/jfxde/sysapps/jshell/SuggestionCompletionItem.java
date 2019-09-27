@@ -1,50 +1,42 @@
 package dev.jfxde.sysapps.jshell;
 
-import java.util.List;
+import java.util.Map;
 
 import org.fxmisc.richtext.CodeArea;
 
-import dev.jfxde.jfxext.control.editor.CompletionItem;
 import jdk.jshell.JShell;
-import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.Suggestion;
 
-public class SuggestionCompletionItem extends CompletionItem {
+public class SuggestionCompletionItem extends JShellCompletionItem {
 
-    private JShell jshell;
     private CodeArea codeArea;
     private final Suggestion suggestion;
     private final int[] anchor;
-    private final String docCode;
-    private String signature = "";
     private String label = "";
 
-    public SuggestionCompletionItem(JShell jshell, CodeArea codeArea, String code, Suggestion suggestion, int[] anchor) {
-        this.jshell = jshell;
+    public SuggestionCompletionItem(JShell jshell, Map<String, String> bundle, CodeArea codeArea, String code, Suggestion suggestion, int[] anchor) {
+        super(jshell, bundle, "", "");
         this.codeArea = codeArea;
         this.suggestion = suggestion;
         this.anchor = anchor;
-        this.docCode = isMethod() ? code.substring(0, anchor[0]) + suggestion.continuation().substring(0, suggestion.continuation().lastIndexOf("(") + 1) : suggestion.continuation();
+        this.docCode = isMethod()
+                ? code.substring(0, anchor[0]) + suggestion.continuation().substring(0, suggestion.continuation().lastIndexOf("(") + 1)
+                : suggestion.continuation();
         setLabel();
     }
 
-    public SuggestionCompletionItem(JShell jshell, CodeArea codeArea, Suggestion suggestion, int[] anchor, String docCode, String signature) {
-        this.jshell = jshell;
+    public SuggestionCompletionItem(JShell jshell, Map<String, String> bundle, CodeArea codeArea, Suggestion suggestion, int[] anchor, String docCode,
+            String signature) {
+        super(jshell, bundle, docCode, signature);
         this.codeArea = codeArea;
         this.suggestion = suggestion;
         this.anchor = anchor;
-        this.docCode = docCode;
-        this.signature = signature;
         setLabel();
     }
 
     private void setLabel() {
         label = isMethod() ? suggestion.continuation().substring(0, suggestion.continuation().lastIndexOf("(")) : suggestion.continuation();
         label = signature.isEmpty() ? label : label + " - " + signature;
-    }
-
-    public String getDocCode() {
-        return docCode;
     }
 
     public Suggestion getSuggestion() {
@@ -80,14 +72,5 @@ public class SuggestionCompletionItem extends CompletionItem {
 
     private boolean isMethod() {
         return suggestion.continuation().contains("(");
-    }
-
-    @Override
-    protected String loadDocumentation() {
-        List<Documentation> docs = jshell.sourceCodeAnalysis().documentation(getDocCode(), getDocCode().length(), true);
-
-        String documentation = "<strong>" + signature + "</strong><br><br>" + docs.stream().filter(d -> d.signature().equals(signature)).findFirst().map(Documentation::javadoc).orElse("");
-
-        return documentation;
     }
 }
