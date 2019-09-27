@@ -1,4 +1,4 @@
-package dev.jfxde.logic;
+package dev.jfxde.jfxext.util;
 
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;

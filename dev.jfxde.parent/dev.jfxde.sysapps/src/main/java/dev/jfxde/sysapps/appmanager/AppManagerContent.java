@@ -4,13 +4,13 @@ import java.util.List;
 
 import dev.jfxde.api.App;
 import dev.jfxde.api.AppContext;
+import dev.jfxde.jfxext.util.LayoutUtils;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.AppDescriptor;
 import dev.jfxde.logic.data.AppProviderDescriptor;
 import dev.jfxde.logic.data.PermissionDescriptor;
 import dev.jfxde.logic.data.TaskDescriptor;
 import dev.jfxde.ui.HyperlinkTableCell;
-import dev.jfxde.ui.LayoutUtils;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

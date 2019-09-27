@@ -1,4 +1,4 @@
-package dev.jfxde.sysapps.jshell;
+package dev.jfxde.jfxext.control.editor;
 
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.ESCAPE;
@@ -12,21 +12,30 @@ import java.util.Collection;
 
 import org.fxmisc.wellbehaved.event.Nodes;
 
+import dev.jfxde.jfxext.util.LayoutUtils;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.stage.Popup;
+import javafx.scene.layout.StackPane;
+import javafx.scene.web.WebView;
+import javafx.stage.Screen;
 
-public class CodeCompletionPopup extends Popup {
+public class CompletionPopup extends Tooltip {
 
+    private static final double DEFAULT_WIDTH = 450;
+    private static final double DEFAULT_HEIGHT = 200;
     private ListView<CompletionItem> itemView = new ListView<>();
+    private Tooltip docPopup = new Tooltip();
+    private WebView webView = new WebView();
     private EventHandler<KeyEvent> handler = e -> {
 
-     if (e.getCode() == KeyCode.ENTER) {
+        if (e.getCode() == KeyCode.ENTER) {
             e.consume();
             selected();
         } else if (e.getCode() == KeyCode.ESCAPE) {
@@ -35,11 +44,11 @@ public class CodeCompletionPopup extends Popup {
         } else if (e.getCode() == KeyCode.UP) {
             selectPrevious();
         } else if (e.getCode() == KeyCode.DOWN) {
-           selectNext();
+            selectNext();
         }
     };
 
-    public CodeCompletionPopup(Collection<? extends CompletionItem> items) {
+    public CompletionPopup(Collection<? extends CompletionItem> items) {
         // does not work well because it blocks mouse press events outside the popup
         // setAutoHide(true);
 
@@ -48,8 +57,23 @@ public class CodeCompletionPopup extends Popup {
 
         itemView.setItems(FXCollections.observableArrayList(items));
         itemView.setFocusTraversable(false);
-        itemView.setPrefSize(450, 100);
-        getContent().add(itemView);
+
+        setMinSize(10, 10);
+        setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+
+        StackPane pane = new StackPane(itemView);
+        pane.setPadding(new Insets(5));
+        setGraphic(pane);
+        LayoutUtils.makeResizable(this, pane, 5);
+
+        docPopup.setMinSize(10, 10);
+        docPopup.setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        webView.setFocusTraversable(false);
+        pane = new StackPane(webView);
+        pane.setPadding(new Insets(5));
+        docPopup.setGraphic(pane);
+        LayoutUtils.makeResizable(docPopup, pane, 5);
+
         setInputmap();
     }
 
@@ -60,6 +84,18 @@ public class CodeCompletionPopup extends Popup {
                         consume(keyPressed(ESCAPE), e -> close()),
                         consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> itemView.setFocusTraversable(true)),
                         consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 2), e -> selected())));
+
+        Nodes.addInputMap(webView,
+                sequence(consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> webView.setFocusTraversable(true))));
+
+        itemView.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
+            webView.getEngine().loadContent(n.getDocumentation());
+            docPopup.hide();
+            double offset = Screen.getPrimary().getBounds().getWidth() - getAnchorX() - getPrefWidth() > getAnchorX() ? getPrefWidth() : -docPopup.getPrefWidth();
+            docPopup.setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+
+            docPopup.show(this, getAnchorX() + offset, getAnchorY());
+        });
     }
 
     private void select(int i) {
@@ -104,6 +140,12 @@ public class CodeCompletionPopup extends Popup {
     public void selected() {
         getOwnerNode().removeEventFilter(KeyEvent.KEY_PRESSED, handler);
         hide();
+    }
+
+    @Override
+    public void hide() {
+        docPopup.hide();
+        super.hide();
     }
 
     @Override

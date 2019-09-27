@@ -1,0 +1,9 @@
+.tooltip {
+	-fx-border-color: transparent;
+	-fx-background-color: -jd-active-background-color;
+	-fx-text-fill: black;
+	-fx-font-size: 1em;
+    -fx-padding: 0;
+    -fx-background-radius: 2.0;
+    -fx-border-radius: 2.0;
+}

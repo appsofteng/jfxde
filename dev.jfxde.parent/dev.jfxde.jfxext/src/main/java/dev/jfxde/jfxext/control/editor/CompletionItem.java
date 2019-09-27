@@ -1,4 +1,4 @@
-package dev.jfxde.sysapps.jshell;
+package dev.jfxde.jfxext.control.editor;
 
 public abstract class CompletionItem implements Comparable<CompletionItem> {
 
@@ -7,7 +7,16 @@ public abstract class CompletionItem implements Comparable<CompletionItem> {
     public abstract void complete();
 
     public String getDocumentation() {
+
+        if (documentation == null) {
+            documentation = loadDocumentation();
+        }
+
         return documentation;
+    }
+
+    protected String loadDocumentation() {
+        return "";
     }
 
     @Override

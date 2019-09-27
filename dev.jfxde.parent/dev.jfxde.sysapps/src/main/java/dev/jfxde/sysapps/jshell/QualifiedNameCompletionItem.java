@@ -1,5 +1,6 @@
 package dev.jfxde.sysapps.jshell;
 
+import dev.jfxde.jfxext.control.editor.CompletionItem;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.collections.ObservableList;
 

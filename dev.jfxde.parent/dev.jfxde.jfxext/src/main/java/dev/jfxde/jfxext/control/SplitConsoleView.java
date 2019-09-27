@@ -6,6 +6,7 @@ import java.util.List;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
+import dev.jfxde.jfxext.control.editor.Editor;
 import dev.jfxde.jfxext.richtextfx.ContextMenuBuilder;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.application.Platform;
@@ -21,7 +22,8 @@ import javafx.scene.layout.BorderPane;
 public class SplitConsoleView extends BorderPane {
 
     private ConsoleModel consoleModel;
-    private CodeArea inputArea = new CodeArea();
+    private Editor<CodeArea> editor = new Editor<>(new CodeArea());
+    private CodeArea inputArea = editor.getArea();
     private CodeArea outputArea = new CodeArea();
     private ObservableList<TextStyleSpans> history = FXCollections.observableArrayList();
     private int historyIndex;
@@ -40,10 +42,6 @@ public class SplitConsoleView extends BorderPane {
         return consoleModel;
     }
 
-    public CodeArea getInputArea() {
-        return inputArea;
-    }
-
     public ObservableList<TextStyleSpans> getHistory() {
         return history;
     }
@@ -54,6 +52,10 @@ public class SplitConsoleView extends BorderPane {
 
     private ObservableList<TextStyleSpans> getOutput() {
         return consoleModel.getOutput();
+    }
+
+    public Editor<CodeArea> getEditor() {
+        return editor;
     }
 
     private void setGraphics() {

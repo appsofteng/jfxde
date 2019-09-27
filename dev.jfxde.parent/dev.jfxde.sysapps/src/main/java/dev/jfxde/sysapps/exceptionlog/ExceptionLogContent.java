@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import dev.jfxde.api.AppContext;
+import dev.jfxde.jfxext.util.LayoutUtils;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.ExceptionDescriptor;
-import dev.jfxde.ui.LayoutUtils;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;

@@ -1,4 +1,4 @@
-package dev.jfxde.jfxext.util;
+package dev.jfxde.jfxext.richtextfx;
 
 import java.util.function.Consumer;
 

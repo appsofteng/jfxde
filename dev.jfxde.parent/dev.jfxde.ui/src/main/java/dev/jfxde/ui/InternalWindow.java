@@ -1,6 +1,7 @@
 package dev.jfxde.ui;
 
 import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfxext.util.LayoutUtils;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.Window;
 import dev.jfxde.logic.data.Window.State;
@@ -127,6 +128,7 @@ public class InternalWindow extends Pane {
         payload.getStyleClass().add("jd-internal-window-payload");
         getStyleClass().add("jd-internal-window");
         payload.minWidthProperty().bind(titleBar.minWidthProperty().add(10));
+        payload.setMinHeight(70);
 
         payload.setPrefSize(width, height);
         getChildren().add(payload);
@@ -172,6 +174,7 @@ public class InternalWindow extends Pane {
 
         buttonBox.getChildren().addAll(newWindow, tile, minimize, maximize, full, close);
         buttonBox.setMinWidth(USE_PREF_SIZE);
+        buttonBox.setMinHeight(USE_PREF_SIZE);
     }
 
     private void setTitleMenu() {
