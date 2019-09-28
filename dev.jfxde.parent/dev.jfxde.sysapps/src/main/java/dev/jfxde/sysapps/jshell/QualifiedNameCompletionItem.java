@@ -17,7 +17,7 @@ public class QualifiedNameCompletionItem extends JShellCompletionItem {
 
     @Override
     public void complete() {
-        input.add(new TextStyleSpans(String.format("import %s;%n", signature)));
+        input.add(new TextStyleSpans(String.format("import %s;\n", signature)));
     }
 
     @Override

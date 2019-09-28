@@ -20,6 +20,8 @@ import javafx.beans.property.SimpleObjectProperty;
 public class FXResourceBundle {
     private static ObjectProperty<Locale> locale = new SimpleObjectProperty<>();
 
+    private static final String DEFAULT_BUNDLE_NAME = "strings";
+    private static final String DEFAULT_BASE_NAME = FXResourceBundle.class.getPackageName() + "." + DEFAULT_BUNDLE_NAME;
     private String baseName;
     private Module module;
     private FXResourceBundle parent;
@@ -42,6 +44,10 @@ public class FXResourceBundle {
 
     public static void setLocale(String value) {
         locale.set(Locale.forLanguageTag(value));
+    }
+
+    public static FXResourceBundle getDefaultBundle() {
+        return getBundle​(DEFAULT_BASE_NAME, null, null);
     }
 
     public static FXResourceBundle getBundle​(String baseName) {

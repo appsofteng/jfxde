@@ -9,6 +9,7 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
 import java.util.Collection;
+import java.util.function.Function;
 
 import org.fxmisc.wellbehaved.event.Nodes;
 
@@ -23,16 +24,15 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
-import javafx.scene.web.WebView;
 import javafx.stage.Screen;
 
 public class CompletionPopup extends Tooltip {
 
-    private static final double DEFAULT_WIDTH = 450;
-    private static final double DEFAULT_HEIGHT = 200;
+    static final double DEFAULT_WIDTH = 450;
+    static final double DEFAULT_HEIGHT = 200;
     private ListView<CompletionItem> itemView = new ListView<>();
-    private Tooltip docPopup = new Tooltip();
-    private WebView webView = new WebView();
+    private DocPopup docPopup;
+
     private EventHandler<KeyEvent> handler = e -> {
 
         if (e.getCode() == KeyCode.ENTER) {
@@ -48,7 +48,8 @@ public class CompletionPopup extends Tooltip {
         }
     };
 
-    public CompletionPopup(Collection<? extends CompletionItem> items) {
+    public CompletionPopup(Collection<? extends CompletionItem> items, Function<String, String> documentation) {
+        docPopup = new DocPopup(documentation);
         // does not work well because it blocks mouse press events outside the popup
         // setAutoHide(true);
 
@@ -66,18 +67,10 @@ public class CompletionPopup extends Tooltip {
         setGraphic(pane);
         LayoutUtils.makeResizable(this, pane, 5);
 
-        docPopup.setMinSize(10, 10);
-        docPopup.setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        webView.setFocusTraversable(false);
-        pane = new StackPane(webView);
-        pane.setPadding(new Insets(5));
-        docPopup.setGraphic(pane);
-        LayoutUtils.makeResizable(docPopup, pane, 5);
-
-        setInputmap();
+        setBehavior();
     }
 
-    private void setInputmap() {
+    private void setBehavior() {
 
         Nodes.addInputMap(itemView,
                 sequence(consume(keyPressed(ENTER), e -> selected()),
@@ -85,12 +78,9 @@ public class CompletionPopup extends Tooltip {
                         consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> itemView.setFocusTraversable(true)),
                         consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 2), e -> selected())));
 
-        Nodes.addInputMap(webView,
-                sequence(consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> webView.setFocusTraversable(true))));
-
         itemView.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
             if (n != null) {
-                webView.getEngine().loadContent(n.getDocumentation());
+                docPopup.loadContent(n.getDocumentation());
                 double offset = Screen.getPrimary().getBounds().getWidth() - getAnchorX() - getPrefWidth() > getAnchorX() ? getPrefWidth()
                         : -docPopup.getPrefWidth();
 

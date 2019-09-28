@@ -7,122 +7,133 @@ import javafx.concurrent.Task;
 
 public final class TaskUtils {
 
-	private TaskUtils() {
+    private TaskUtils() {
 
-	}
+    }
 
-	public static Task<Void> createTask(TRunnable call) {
-		Task<Void> task = new Task<>() {
+    public static Task<Void> createTask(TRunnable call) {
+        Task<Void> task = new Task<>() {
 
-			@Override
-			protected Void call() throws Exception {
-				call.run();
-				return null;
-			}
-		};
+            @Override
+            protected Void call() throws Exception {
+                call.run();
+                return null;
+            }
 
-		task.setOnFailed(e -> { throw new RuntimeException(task.getException());} );
+            protected void failed() {
+                throw new RuntimeException(getException());
+            };
+        };
 
-		return task;
-	}
+        return task;
+    }
 
+    public static Task<Void> createTask(TRunnable call, Runnable finished) {
+        Task<Void> task = new Task<>() {
 
-	public static <T> Task<T> createTask(Callable<T> call) {
-		Task<T> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                call.run();
+                return null;
+            }
 
-			@Override
-			protected T call() throws Exception {
-				return call.call();
-			}
-		};
+            protected void succeeded() {
+                finished.run();
+            };
 
-		task.setOnFailed(e -> { throw new RuntimeException(task.getException());} );
+            protected void cancelled() {
+                finished.run();
+            };
 
-		return task;
-	}
+            protected void failed() {
+                finished.run();
+            };
+        };
 
-	public static <T> Task<T> createTask(Callable<T> call, Consumer<T> onSucceeded) {
-		Task<T> task = new Task<>() {
+        return task;
+    }
 
-			@Override
-			protected T call() throws Exception {
-				return call.call();
-			}
-		};
+    public static <T> Task<T> createTask(Callable<T> call) {
+        Task<T> task = new Task<>() {
 
-		task.setOnSucceeded(e -> {
-			onSucceeded.accept(task.getValue());
-		});
+            @Override
+            protected T call() throws Exception {
+                return call.call();
+            }
 
-		task.setOnFailed(e -> { throw new RuntimeException(task.getException());} );
+            protected void failed() {
+                throw new RuntimeException(getException());
+            };
+        };
 
-		return task;
-	}
+        return task;
+    }
 
-	public static <T> Task<T> createTask(Runnable call, Runnable onSucceeded) {
-		Task<T> task = new Task<>() {
+    public static <T> Task<T> createTask(Callable<T> call, Consumer<T> onSucceeded) {
+        Task<T> task = new Task<>() {
 
-			@Override
-			protected T call() throws Exception {
-				call.run();
-				return null;
-			}
-		};
+            @Override
+            protected T call() throws Exception {
+                return call.call();
+            }
 
-		task.setOnSucceeded(e -> {
-			onSucceeded.run();
-		});
+            protected void succeeded() {
+                onSucceeded.accept(getValue());
+            };
 
-		task.setOnFailed(e -> { throw new RuntimeException(task.getException());} );
+            protected void failed() {
+                throw new RuntimeException(getException());
+            };
+        };
 
-		return task;
-	}
+        return task;
+    }
 
-	public static <T> Task<T> createTask(Callable<T> call, Consumer<T> onSucceeded, Runnable onFailed) {
-		Task<T> task = new Task<>() {
+    public static <T> Task<T> createTask(Callable<T> call, Consumer<T> onSucceeded, Runnable onFailed) {
+        Task<T> task = new Task<>() {
 
-			@Override
-			protected T call() throws Exception {
-				return call.call();
-			}
-		};
+            @Override
+            protected T call() throws Exception {
+                return call.call();
+            }
 
-		task.setOnSucceeded(e -> {
-			onSucceeded.accept(task.getValue());
-		});
+            protected void succeeded() {
+                onSucceeded.accept(getValue());
+            };
 
-		task.setOnFailed(e -> {
-			onFailed.run();
-		});
+            protected void failed() {
+                onFailed.run();
+            };
+        };
 
-		return task;
-	}
+        return task;
+    }
 
-	public static <T> Task<T> createTask(Callable<T> call, Consumer<T> onSucceeded, Runnable onFailed, Runnable onCancelled) {
-		Task<T> task = new Task<>() {
+    public static <T> Task<T> createTask(Callable<T> call, Consumer<T> onSucceeded, Runnable onFailed, Runnable onCancelled) {
+        Task<T> task = new Task<>() {
 
-			@Override
-			protected T call() throws Exception {
-				return call.call();
-			}
-		};
+            @Override
+            protected T call() throws Exception {
+                return call.call();
+            }
 
-		task.setOnSucceeded(e -> {
-			onSucceeded.accept(task.getValue());
-		});
+            protected void succeeded() {
+                onSucceeded.accept(getValue());
+            };
 
-		task.setOnFailed(e -> {
-			onFailed.run();
-		});
+            protected void cancelled() {
+                onCancelled.run();
+            };
 
-		task.setOnCancelled(e -> {
-			onCancelled.run();
-		});
+            protected void failed() {
+                onFailed.run();
+            };
+        };
 
-		return task;
-	}
+        return task;
+    }
 
-	public static interface TRunnable {
-	    void run() throws Exception;
-	}
+    public static interface TRunnable {
+        void run() throws Exception;
+    }
 }

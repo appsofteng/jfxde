@@ -3,6 +3,7 @@ package dev.jfxde.jfxext.control.editor;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.fxmisc.richtext.GenericStyledArea;
 
@@ -14,9 +15,11 @@ public class CompletionBehavior<T extends GenericStyledArea<?,?,?>> extends Beha
 
     private CompletionPopup codeCompletion;
     private Consumer<CompletionBehavior<T>> complete;
+    private Function<String, String> documentation;
 
-    public CompletionBehavior(Consumer<CompletionBehavior<T>> complete) {
+    public CompletionBehavior(Consumer<CompletionBehavior<T>> complete, Function<String, String> documentation) {
         this.complete = complete;
+        this.documentation = documentation;
     }
 
 
@@ -46,7 +49,7 @@ public class CompletionBehavior<T extends GenericStyledArea<?,?,?>> extends Beha
     }
 
     public void showCompletionItems(Collection<CompletionItem> items) {
-        codeCompletion = new CompletionPopup(items);
+        codeCompletion = new CompletionPopup(items, documentation);
 
         Optional<Bounds> boundsOption = area.caretBoundsProperty().getValue();
 

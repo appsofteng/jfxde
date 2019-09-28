@@ -1,12 +1,9 @@
 package dev.jfxde.sysapps.jshell;
 
-import java.util.List;
 import java.util.Map;
 
 import dev.jfxde.jfxext.control.editor.CompletionItem;
-import dev.jfxde.jfxext.util.JavadocUtils;
 import jdk.jshell.JShell;
-import jdk.jshell.SourceCodeAnalysis.Documentation;
 
 public abstract  class JShellCompletionItem extends CompletionItem {
 
@@ -24,10 +21,7 @@ public abstract  class JShellCompletionItem extends CompletionItem {
 
     @Override
     protected String loadDocumentation() {
-        List<Documentation> docs = jshell.sourceCodeAnalysis().documentation(docCode, docCode.length(), true);
-
-        String javadoc = docs.stream().filter(d -> d.signature().equals(signature)).findFirst().map(Documentation::javadoc).orElse("");
-        String documentation = "<strong><code>" + signature + "</code></strong><br><br>" + JavadocUtils.toHtml(javadoc, bundle);
+        String documentation = JShellUtils.getDocumentation(jshell, docCode, signature, bundle);
 
         return documentation;
     }

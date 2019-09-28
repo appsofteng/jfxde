@@ -21,7 +21,6 @@ import dev.jfxde.jfxext.control.editor.CompletionItem;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.jfxext.util.JavadocUtils;
 import dev.jfxde.jfxext.util.TaskUtils;
-import dev.jfxde.logic.Sys;
 import javafx.collections.ListChangeListener.Change;
 import javafx.concurrent.Task;
 import javafx.scene.layout.BorderPane;
@@ -50,7 +49,7 @@ public class JShellContent extends BorderPane {
                 .out(consoleView.getConsoleModel().getOut())
                 .err(consoleView.getConsoleModel().getErr())
                 .build();
-
+        jshell.sourceCodeAnalysis();
         idGenerator.setJshell(jshell);
 
         snippetOutput = new SnippetOutput(context, jshell, consoleView.getConsoleModel());
@@ -73,7 +72,7 @@ public class JShellContent extends BorderPane {
             }
         });
 
-        consoleView.getEditor().add(new CompletionBehavior<>(this::codeCompletion));
+        consoleView.getEditor().add(new CompletionBehavior<>(this::codeCompletion, this::loadDocumentation));
     }
 
     private void loadStartSnippets() {
@@ -97,12 +96,19 @@ public class JShellContent extends BorderPane {
         }
 
         Task<Void> task = getTask(input);
-        Sys.tm().executeSequentially(task);
+        context.tc().executeSequentially(task);
     }
 
     private void codeCompletion(CompletionBehavior<CodeArea> behavior) {
 
-        Sys.tm().executeSequentially(TaskUtils.createTask(() -> getCompletionItems(behavior.getArea()), behavior::showCompletionItems));
+        context.tc().executeSequentially(TaskUtils.createTask(() -> getCompletionItems(behavior.getArea()), behavior::showCompletionItems));
+    }
+
+    private String loadDocumentation(String docCode) {
+        Map<String,String> docBlockNames = context.rc().getStrings(JavadocUtils.getBlockTagNames());
+        String documentation = JShellUtils.getDocumentation(jshell, docCode, docBlockNames);
+
+        return documentation;
     }
 
     private Collection<CompletionItem> getCompletionItems(CodeArea inputArea) {
@@ -161,7 +167,6 @@ public class JShellContent extends BorderPane {
     }
 
     public void stop() {
-        consoleView.dispose();
-        jshell.close();
+        context.tc().executeSequentially(TaskUtils.createTask(() -> jshell.close(), () -> consoleView.dispose()));
     }
 }

@@ -1,4 +1,4 @@
-package dev.jfxde.apps.webbrowser;
+package dev.jfxde.jfxext.util;
 
 import org.w3c.dom.Node;
 
@@ -8,6 +8,16 @@ import netscape.javascript.JSObject;
 public final class JSUtils {
 
 	private JSUtils() {
+	}
+
+
+	public static String getLinkUrl(WebEngine engine, double x, double y) {
+	    JSObject jsobject = getElementFromPoint(engine, x, y);
+	    JSObject linkJsobject = JSUtils.getJSObject(jsobject, "a");
+
+	    String url = linkJsobject == null ? null : (String) jsobject.getMember("href");
+
+	    return url;
 	}
 
     public static JSObject getElementFromPoint(WebEngine engine, double x, double y) {

@@ -288,14 +288,14 @@ public final class AppManager extends Manager {
 
     public void stop(AppDescriptor appDescriptor) {
 
-        appDescriptor.getWindow().remove();
-        appDescriptor.getAppProviderDescriptor().remove(appDescriptor);
+        Sys.tm().execute(appDescriptor, TaskUtils.createTask(() -> appDescriptor.getApp().stop(), () -> {
+            appDescriptor.getWindow().remove();
+            appDescriptor.getAppProviderDescriptor().remove(appDescriptor);
 
-        appDescriptorMap.remove(appDescriptor.getApp());
-        appDescriptors.remove(appDescriptor);
-        Sys.tm().removeTasks(appDescriptor);
-
-        Sys.tm().execute(appDescriptor, TaskUtils.createTask(() -> appDescriptor.getApp().stop()));
+            appDescriptorMap.remove(appDescriptor.getApp());
+            appDescriptors.remove(appDescriptor);
+            Sys.tm().removeTasks(appDescriptor);
+        }));
     }
 
     public void activate(AppDescriptor appDescriptor) {

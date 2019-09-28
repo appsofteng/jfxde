@@ -19,9 +19,7 @@ public class SuggestionCompletionItem extends JShellCompletionItem {
         this.codeArea = codeArea;
         this.suggestion = suggestion;
         this.anchor = anchor;
-        this.docCode = isMethod()
-                ? code.substring(0, anchor[0]) + suggestion.continuation().substring(0, suggestion.continuation().lastIndexOf("(") + 1)
-                : suggestion.continuation();
+        this.docCode = code.substring(0, anchor[0]) + suggestion.continuation();
         setLabel();
     }
 
@@ -49,7 +47,8 @@ public class SuggestionCompletionItem extends JShellCompletionItem {
 
     @Override
     public void complete() {
-        codeArea.replaceText(anchor[0], codeArea.getCaretPosition(), suggestion.continuation());
+        String completion = suggestion.continuation() + (isMethod() && signature.endsWith("()") ? ")" : "");
+        codeArea.replaceText(anchor[0], codeArea.getCaretPosition(), completion);
     }
 
     @Override
