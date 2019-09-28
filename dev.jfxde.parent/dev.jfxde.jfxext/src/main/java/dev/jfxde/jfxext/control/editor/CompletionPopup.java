@@ -89,12 +89,13 @@ public class CompletionPopup extends Tooltip {
                 sequence(consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> webView.setFocusTraversable(true))));
 
         itemView.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
-            webView.getEngine().loadContent(n.getDocumentation());
-//            docPopup.hide();
-//            docPopup.setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-            double offset = Screen.getPrimary().getBounds().getWidth() - getAnchorX() - getPrefWidth() > getAnchorX() ? getPrefWidth() : -docPopup.getPrefWidth();
+            if (n != null) {
+                webView.getEngine().loadContent(n.getDocumentation());
+                double offset = Screen.getPrimary().getBounds().getWidth() - getAnchorX() - getPrefWidth() > getAnchorX() ? getPrefWidth()
+                        : -docPopup.getPrefWidth();
 
-            docPopup.show(this, getAnchorX() + offset, getAnchorY());
+                docPopup.show(this, getAnchorX() + offset, getAnchorY());
+            }
         });
     }
 
