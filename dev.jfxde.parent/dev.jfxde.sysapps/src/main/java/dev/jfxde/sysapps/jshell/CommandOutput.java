@@ -23,7 +23,7 @@ public class CommandOutput extends JShellOutput {
 
     private final List<Command> commands;
 
-    CommandOutput(AppContext context, JShell jshell, ConsoleModel consoleModel, ObservableList<TextStyleSpans> history, SnippetOutput snippetOutput) {
+    CommandOutput(AppContext context, JShell jshell, ConsoleModel consoleModel, ObservableList<String> history, SnippetOutput snippetOutput) {
         super(context, jshell, consoleModel, history);
 
         SnippetMatch snippetMatch = new SnippetMatch(jshell);

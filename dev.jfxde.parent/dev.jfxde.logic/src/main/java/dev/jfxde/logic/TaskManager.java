@@ -48,11 +48,6 @@ public final class TaskManager extends Manager {
         return taskDescriptors;
     }
 
-    public void executeSequentially(Runnable task) {
-
-        singleThreadExecutor.execute(task);
-    }
-
     public void execute(Task<?> task) {
 
         executorService.execute(() -> {
@@ -67,6 +62,11 @@ public final class TaskManager extends Manager {
 
     public void executeSequentially(Task<?> task) {
     	singleThreadExecutor.execute(task);
+    }
+
+    public void executeSequentially(Runnable task) {
+
+        singleThreadExecutor.execute(task);
     }
 
     public ScheduledFuture<?> scheduleAtFixedRate​(Runnable task, long initialDelay, long period, TimeUnit unit) {

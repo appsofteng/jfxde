@@ -1,6 +1,7 @@
 module dev.jfxde.sysapps {
     requires java.management;
     requires java.logging;
+    requires jdk.jshell;
     requires javafx.controls;
     requires javafx.graphics;
     requires javafx.base;
@@ -10,7 +11,6 @@ module dev.jfxde.sysapps {
     requires reactfx;
     requires wellbehavedfx;
     requires org.controlsfx.controls;
-    requires jdk.jshell;
 
     requires dev.jfxde.api;
     requires dev.jfxde.logic;

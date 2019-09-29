@@ -22,6 +22,7 @@ import dev.jfxde.jfxext.control.editor.DocRef;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.jfxext.util.JavadocUtils;
 import dev.jfxde.jfxext.util.TaskUtils;
+import dev.jfxde.logic.JsonUtils;
 import javafx.collections.ListChangeListener.Change;
 import javafx.concurrent.Task;
 import javafx.scene.layout.BorderPane;
@@ -30,6 +31,8 @@ import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
 
 public class JShellContent extends BorderPane {
+
+    private static final String HISTORY_FILE_NAME = "history.json";
 
     private static final Logger LOGGER = Logger.getLogger(JShellContent.class.getName());
 
@@ -41,7 +44,7 @@ public class JShellContent extends BorderPane {
 
     public JShellContent(AppContext context) {
         this.context = context;
-        consoleView = new SplitConsoleView();
+        consoleView = new SplitConsoleView(loadHistory());
         setCenter(consoleView);
         setBehavior();
         IdGenerator idGenerator = new IdGenerator();
@@ -56,6 +59,7 @@ public class JShellContent extends BorderPane {
         snippetOutput = new SnippetOutput(context, jshell, consoleView.getConsoleModel());
         commandOutput = new CommandOutput(context, jshell, consoleView.getConsoleModel(), consoleView.getHistory(), snippetOutput);
 
+        loadHistory();
         loadStartSnippets();
     }
 
@@ -73,7 +77,26 @@ public class JShellContent extends BorderPane {
             }
         });
 
+        consoleView.getHistory().addListener((Change<? extends String> c) -> {
+
+            while (c.next()) {
+
+                if (c.wasAdded()) {
+                    List<? extends String> history = new ArrayList<>(consoleView.getHistory());
+                    context.tc().executeSequentially(TaskUtils
+                            .createTask(() -> JsonUtils.toJson(history, context.fc().getAppDataDir().resolve(HISTORY_FILE_NAME))));
+                }
+            }
+        });
+
         consoleView.getEditor().add(new CompletionBehavior<>(this::codeCompletion, this::loadDocumentation));
+    }
+
+
+    private List<String> loadHistory() {
+        @SuppressWarnings("unchecked")
+        List<String> history = JsonUtils.fromJson(context.fc().getAppDataDir().resolve(HISTORY_FILE_NAME), List.class, List.of());
+        return history;
     }
 
     private void loadStartSnippets() {
@@ -106,7 +129,7 @@ public class JShellContent extends BorderPane {
     }
 
     private String loadDocumentation(DocRef docRef) {
-        Map<String,String> docBlockNames = context.rc().getStrings(JavadocUtils.getBlockTagNames());
+        Map<String, String> docBlockNames = context.rc().getStrings(JavadocUtils.getBlockTagNames());
         String documentation = JShellUtils.getDocumentation(jshell, docRef, docBlockNames);
 
         return documentation;
@@ -123,12 +146,13 @@ public class JShellContent extends BorderPane {
         Set<SuggestionCompletionItem> suggestionItems = jshell.sourceCodeAnalysis()
                 .completionSuggestions(code, cursor, anchor)
                 .stream()
-                .map(s -> new SuggestionCompletionItem(inputArea,code, s, anchor))
+                .map(s -> new SuggestionCompletionItem(inputArea, code, s, anchor))
                 .collect(Collectors.toSet());
 
         for (SuggestionCompletionItem item : suggestionItems) {
 
-            List<Documentation> docs = jshell.sourceCodeAnalysis().documentation(item.getDocRef().getDocCode(), item.getDocRef().getDocCode().length(), false);
+            List<Documentation> docs = jshell.sourceCodeAnalysis().documentation(item.getDocRef().getDocCode(),
+                    item.getDocRef().getDocCode().length(), false);
 
             if (docs.isEmpty()) {
                 items.add(item);
