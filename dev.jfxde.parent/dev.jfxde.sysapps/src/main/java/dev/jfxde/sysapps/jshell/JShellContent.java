@@ -81,7 +81,7 @@ public class JShellContent extends BorderPane {
 
             while (c.next()) {
 
-                if (c.wasAdded()) {
+                if (c.wasAdded() || c.wasRemoved()) {
                     List<? extends String> history = new ArrayList<>(consoleView.getHistory());
                     context.tc().executeSequentially(TaskUtils
                             .createTask(() -> JsonUtils.toJson(history, context.fc().getAppDataDir().resolve(HISTORY_FILE_NAME))));

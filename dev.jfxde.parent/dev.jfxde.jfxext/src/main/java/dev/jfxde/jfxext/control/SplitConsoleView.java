@@ -21,6 +21,7 @@ import javafx.scene.layout.BorderPane;
 
 public class SplitConsoleView extends BorderPane {
 
+    private static final int HISTORY_LIMIT = 100;
     private ConsoleModel consoleModel;
     private Editor<CodeArea> editor = new Editor<>(new CodeArea());
     private CodeArea inputArea = editor.getArea();
@@ -140,6 +141,10 @@ public class SplitConsoleView extends BorderPane {
 
         history.add(span.getText());
         historyIndex = history.size();
+
+        if (history.size() > HISTORY_LIMIT) {
+            history.remove(0);
+        }
 
         inputArea.clear();
     }
