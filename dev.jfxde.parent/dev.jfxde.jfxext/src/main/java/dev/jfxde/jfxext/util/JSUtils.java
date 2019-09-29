@@ -15,7 +15,7 @@ public final class JSUtils {
 	    JSObject jsobject = getElementFromPoint(engine, x, y);
 	    JSObject linkJsobject = JSUtils.getJSObject(jsobject, "a");
 
-	    String url = linkJsobject == null ? null : (String) jsobject.getMember("href");
+	    String url = linkJsobject == null ? null : (String) linkJsobject.getMember("href");
 
 	    return url;
 	}

@@ -18,6 +18,7 @@ import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.SplitConsoleView;
 import dev.jfxde.jfxext.control.editor.CompletionBehavior;
 import dev.jfxde.jfxext.control.editor.CompletionItem;
+import dev.jfxde.jfxext.control.editor.DocRef;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.jfxext.util.JavadocUtils;
 import dev.jfxde.jfxext.util.TaskUtils;
@@ -104,9 +105,9 @@ public class JShellContent extends BorderPane {
         context.tc().executeSequentially(TaskUtils.createTask(() -> getCompletionItems(behavior.getArea()), behavior::showCompletionItems));
     }
 
-    private String loadDocumentation(String docCode) {
+    private String loadDocumentation(DocRef docRef) {
         Map<String,String> docBlockNames = context.rc().getStrings(JavadocUtils.getBlockTagNames());
-        String documentation = JShellUtils.getDocumentation(jshell, docCode, docBlockNames);
+        String documentation = JShellUtils.getDocumentation(jshell, docRef, docBlockNames);
 
         return documentation;
     }
@@ -118,24 +119,23 @@ public class JShellContent extends BorderPane {
         int cursor = inputArea.getCaretPosition();
 
         int[] anchor = new int[1];
-        Map<String,String> docBlockNames = context.rc().getStrings(JavadocUtils.getBlockTagNames());
 
         Set<SuggestionCompletionItem> suggestionItems = jshell.sourceCodeAnalysis()
                 .completionSuggestions(code, cursor, anchor)
                 .stream()
-                .map(s -> new SuggestionCompletionItem(jshell, docBlockNames, inputArea,code, s, anchor))
+                .map(s -> new SuggestionCompletionItem(inputArea,code, s, anchor))
                 .collect(Collectors.toSet());
 
         for (SuggestionCompletionItem item : suggestionItems) {
 
-            List<Documentation> docs = jshell.sourceCodeAnalysis().documentation(item.getDocCode(), item.getDocCode().length(), false);
+            List<Documentation> docs = jshell.sourceCodeAnalysis().documentation(item.getDocRef().getDocCode(), item.getDocRef().getDocCode().length(), false);
 
             if (docs.isEmpty()) {
                 items.add(item);
             }
 
             for (Documentation doc : docs) {
-                items.add(new SuggestionCompletionItem(jshell, docBlockNames, inputArea, item.getSuggestion(), item.getAnchor(), item.getDocCode(),
+                items.add(new SuggestionCompletionItem(inputArea, item.getSuggestion(), item.getAnchor(), item.getDocRef().getDocCode(),
                         doc.signature()));
             }
         }
@@ -147,7 +147,7 @@ public class JShellContent extends BorderPane {
         if (!qualifiedNames.isResolvable()) {
             Set<CompletionItem> names = qualifiedNames.getNames()
                     .stream()
-                    .map(n -> new QualifiedNameCompletionItem(jshell, docBlockNames, consoleView.getConsoleModel().getInput(), n))
+                    .map(n -> new QualifiedNameCompletionItem(consoleView.getConsoleModel().getInput(), n))
                     .sorted()
                     .collect(Collectors.toSet());
 

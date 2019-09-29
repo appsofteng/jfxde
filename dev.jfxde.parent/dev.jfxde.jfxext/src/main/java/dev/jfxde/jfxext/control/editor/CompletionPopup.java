@@ -48,7 +48,7 @@ public class CompletionPopup extends Tooltip {
         }
     };
 
-    public CompletionPopup(Collection<? extends CompletionItem> items, Function<String, String> documentation) {
+    public CompletionPopup(Collection<? extends CompletionItem> items, Function<DocRef, String> documentation) {
         docPopup = new DocPopup(documentation);
         // does not work well because it blocks mouse press events outside the popup
         // setAutoHide(true);
@@ -80,7 +80,7 @@ public class CompletionPopup extends Tooltip {
 
         itemView.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
             if (n != null) {
-                docPopup.loadContent(n.getDocumentation());
+                docPopup.loadContent(n.getDocRef());
                 double offset = Screen.getPrimary().getBounds().getWidth() - getAnchorX() - getPrefWidth() > getAnchorX() ? getPrefWidth()
                         : -docPopup.getPrefWidth();
 

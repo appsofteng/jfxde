@@ -1,31 +1,29 @@
 package dev.jfxde.sysapps.jshell;
 
-import java.util.Map;
-
 import org.fxmisc.richtext.CodeArea;
 
-import jdk.jshell.JShell;
+import dev.jfxde.jfxext.control.editor.CompletionItem;
+import dev.jfxde.jfxext.control.editor.DocRef;
 import jdk.jshell.SourceCodeAnalysis.Suggestion;
 
-public class SuggestionCompletionItem extends JShellCompletionItem {
+public class SuggestionCompletionItem extends CompletionItem {
 
     private CodeArea codeArea;
     private final Suggestion suggestion;
     private final int[] anchor;
     private String label = "";
 
-    public SuggestionCompletionItem(JShell jshell, Map<String, String> bundle, CodeArea codeArea, String code, Suggestion suggestion, int[] anchor) {
-        super(jshell, bundle, "", "");
+    public SuggestionCompletionItem(CodeArea codeArea, String code, Suggestion suggestion, int[] anchor) {
+        super(new DocRef(code.substring(0, anchor[0]) + suggestion.continuation(), ""));
         this.codeArea = codeArea;
         this.suggestion = suggestion;
         this.anchor = anchor;
-        this.docCode = code.substring(0, anchor[0]) + suggestion.continuation();
         setLabel();
     }
 
-    public SuggestionCompletionItem(JShell jshell, Map<String, String> bundle, CodeArea codeArea, Suggestion suggestion, int[] anchor, String docCode,
+    public SuggestionCompletionItem(CodeArea codeArea, Suggestion suggestion, int[] anchor, String docCode,
             String signature) {
-        super(jshell, bundle, docCode, signature);
+        super(new DocRef(docCode, signature));
         this.codeArea = codeArea;
         this.suggestion = suggestion;
         this.anchor = anchor;
@@ -34,7 +32,7 @@ public class SuggestionCompletionItem extends JShellCompletionItem {
 
     private void setLabel() {
         label = isMethod() ? suggestion.continuation().substring(0, suggestion.continuation().lastIndexOf("(")) : suggestion.continuation();
-        label = signature.isEmpty() ? label : label + " - " + signature;
+        label = getDocRef().getSignature().isEmpty() ? label : label + " - " + getDocRef().getSignature();
     }
 
     public Suggestion getSuggestion() {
@@ -47,7 +45,7 @@ public class SuggestionCompletionItem extends JShellCompletionItem {
 
     @Override
     public void complete() {
-        String completion = suggestion.continuation() + (isMethod() && signature.endsWith("()") ? ")" : "");
+        String completion = suggestion.continuation() + (isMethod() && getDocRef().getSignature().endsWith("()") ? ")" : "");
         codeArea.replaceText(anchor[0], codeArea.getCaretPosition(), completion);
     }
 
@@ -55,12 +53,12 @@ public class SuggestionCompletionItem extends JShellCompletionItem {
     public boolean equals(Object obj) {
         return obj instanceof SuggestionCompletionItem
                 && ((SuggestionCompletionItem) obj).suggestion.continuation().equals(suggestion.continuation())
-                && ((SuggestionCompletionItem) obj).signature.equals(signature);
+                && ((SuggestionCompletionItem) obj).getDocRef().getSignature().equals(getDocRef().getSignature());
     }
 
     @Override
     public int hashCode() {
-        return (suggestion.continuation() + signature).hashCode();
+        return (suggestion.continuation() + getDocRef().getSignature()).hashCode();
     }
 
     @Override

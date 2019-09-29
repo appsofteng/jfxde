@@ -12,6 +12,11 @@ import org.fxmisc.wellbehaved.event.Nodes;
 import dev.jfxde.jfxext.util.FXResourceBundle;
 import dev.jfxde.jfxext.util.JSUtils;
 import dev.jfxde.jfxext.util.LayoutUtils;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -24,10 +29,12 @@ import javafx.scene.web.WebView;
 public class DocPopup extends Tooltip {
 
     private WebView webView = new WebView();
-    private Function<String, String> documentation;
+    private Function<DocRef, String> documentation;
     private ContextMenu contextMenu;
+    private ObservableList<DocRef> history = FXCollections.observableArrayList();
+    private IntegerProperty historyIndex = new SimpleIntegerProperty(-1);
 
-    public DocPopup(Function<String, String> documentation) {
+    public DocPopup(Function<DocRef, String> documentation) {
         this.documentation = documentation;
         setMinSize(10, 10);
         setPrefSize(CompletionPopup.DEFAULT_WIDTH, CompletionPopup.DEFAULT_HEIGHT);
@@ -49,14 +56,9 @@ public class DocPopup extends Tooltip {
 
             if (e.getButton() == MouseButton.PRIMARY) {
                 String url = JSUtils.getLinkUrl(webView.getEngine(), e.getX(), e.getY());
-
                 if (url != null) {
-                    String newDoc = documentation.apply(url.strip());
-                    if (!newDoc.isEmpty()) {
-                        webView.getEngine().getLoadWorker().cancel();
-                        webView.getEngine().load("");
-                        webView.getEngine().loadContent(newDoc);
-                    }
+                    history.remove(getHistoryIndex() + 1, history.size());
+                    loadContent(new DocRef(url));
                 }
             }
 
@@ -72,14 +74,70 @@ public class DocPopup extends Tooltip {
 
         MenuItem back = new MenuItem();
         back.textProperty().bind(FXResourceBundle.getDefaultBundle().getStringBinding("back"));
+        back.disableProperty().bind(historyIndex.lessThanOrEqualTo(0));
+        back.setOnAction(e -> back());
 
         MenuItem forward = new MenuItem();
         forward.textProperty().bind(FXResourceBundle.getDefaultBundle().getStringBinding("forward"));
+        forward.disableProperty().bind(Bindings.isEmpty(history).or(historyIndex.isEqualTo(Bindings.size(history).subtract(1))));
+        forward.setOnAction(e -> forward());
 
         contextMenu.getItems().addAll(back, forward);
     }
 
-    void loadContent(String doc) {
-        webView.getEngine().loadContent(doc);
+    void loadContent(DocRef docRef) {
+
+        String doc = documentation.apply(docRef);
+        if (!doc.isEmpty()) {
+            history.add(docRef);
+            moveHistory(1);
+            webView.getEngine().getLoadWorker().cancel();
+            webView.getEngine().load("");
+            webView.getEngine().loadContent(doc);
+        } else if (docRef.isUrl()) {
+            history.add(docRef);
+            moveHistory(1);
+        }
+    }
+
+    private void load(DocRef docRef) {
+        String doc = documentation.apply(docRef);
+        if (!doc.isEmpty()) {
+            webView.getEngine().getLoadWorker().cancel();
+            webView.getEngine().load("");
+            webView.getEngine().loadContent(doc);
+        }
+    }
+
+    private int getHistoryIndex() {
+        return historyIndex.get();
+    }
+
+    private void moveHistory(int value) {
+        historyIndex.set(historyIndex.get() + value);
+    }
+
+    private void back() {
+        if (getHistoryIndex() > 0) {
+            moveHistory(-1);
+            loadHistory();
+        }
+    }
+
+    private void forward() {
+        if (getHistoryIndex() + 1 < history.size()) {
+            moveHistory(1);
+            loadHistory();
+        }
+    }
+
+    private void loadHistory() {
+        DocRef docRef = history.get(getHistoryIndex());
+
+        if (docRef.isUrl()) {
+            webView.getEngine().load(docRef.getDocCode());
+        } else {
+            load(docRef);
+        }
     }
 }

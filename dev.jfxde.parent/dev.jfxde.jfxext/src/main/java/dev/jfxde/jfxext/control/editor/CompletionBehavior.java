@@ -15,9 +15,9 @@ public class CompletionBehavior<T extends GenericStyledArea<?,?,?>> extends Beha
 
     private CompletionPopup codeCompletion;
     private Consumer<CompletionBehavior<T>> complete;
-    private Function<String, String> documentation;
+    private Function<DocRef, String> documentation;
 
-    public CompletionBehavior(Consumer<CompletionBehavior<T>> complete, Function<String, String> documentation) {
+    public CompletionBehavior(Consumer<CompletionBehavior<T>> complete, Function<DocRef, String> documentation) {
         this.complete = complete;
         this.documentation = documentation;
     }

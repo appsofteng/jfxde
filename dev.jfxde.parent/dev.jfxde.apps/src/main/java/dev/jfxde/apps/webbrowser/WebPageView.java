@@ -94,7 +94,7 @@ public class WebPageView extends StackPane {
 			JSObject linkJsobject = JSUtils.getJSObject(jsobject, "a");
 
 			if (linkJsobject != null) {
-				String url = (String) jsobject.getMember("href");
+				String url = (String) linkJsobject.getMember("href");
 				Bounds bounds = webView.getBoundsInLocal();
 				Bounds screenBounds = webView.localToScreen(bounds);
 
