@@ -2,21 +2,24 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
+import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
+import picocli.CommandLine.Command;
 
-public class HistoryCommand extends Command {
+@Command(name = "/history")
+public class HistoryCommand extends BaseCommand {
 
-    public HistoryCommand(JShell jshell, ConsoleModel consoleModel, ObservableList<String> history) {
-        super("/history", jshell, consoleModel, history);
+    public HistoryCommand(AppContext context, JShell jshell, ConsoleModel consoleModel, ObservableList<String> history) {
+        super(context, jshell, consoleModel, history);
     }
 
     @Override
-    public void execute(String input) {
+    public void run() {
         String result = history.stream().collect(Collectors.joining("\n"));
 
-        consoleModel.getOutput().add(new TextStyleSpans(result + "\n\n", ConsoleModel.COMMENT_STYLE));
+        consoleModel.addNewLineOutput(new TextStyleSpans(result + "\n", ConsoleModel.COMMENT_STYLE));
     }
 }

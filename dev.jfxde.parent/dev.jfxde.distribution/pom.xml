@@ -15,6 +15,10 @@
 			<groupId>dev.jfxde</groupId>
 			<artifactId>dev.jfxde.ui</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>dev.jfxde</groupId>
+			<artifactId>dev.jfxde.sysapps</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -33,7 +37,8 @@
 							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
 								<descriptor>src/assembly/descriptor-os.xml</descriptor>
-- 								<descriptor>src/assembly/descriptor-os-image.xml</descriptor>
+								-
+								<descriptor>src/assembly/descriptor-os-image.xml</descriptor>
 							</descriptors>
 						</configuration>
 					</execution>

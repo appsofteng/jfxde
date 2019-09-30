@@ -25,6 +25,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ojfxVersion>13</ojfxVersion>
+		<picocliVersion>4.0.4</picocliVersion>
 		<javafx.platform>win</javafx.platform>
 		<scriptExtension>bat</scriptExtension>
 		<distFormat>zip</distFormat>
@@ -82,6 +83,11 @@
 				<groupId>com.github.javaparser</groupId>
 				<artifactId>javaparser-symbol-solver-core</artifactId>
 				<version>3.14.159265359</version>
+			</dependency>
+			<dependency>
+				<groupId>info.picocli</groupId>
+				<artifactId>picocli</artifactId>
+				<version>${picocliVersion}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.h2database</groupId>
@@ -181,6 +187,13 @@
 					<version>3.8.1</version>
 					<configuration>
 						<release>12</release>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>info.picocli</groupId>
+								<artifactId>picocli-codegen</artifactId>
+								<version>${picocliVersion}</version>
+							</path>
+						</annotationProcessorPaths>
 					</configuration>
 				</plugin>
 				<plugin>

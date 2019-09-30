@@ -2,21 +2,24 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
+import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
 import jdk.jshell.JShell;
+import picocli.CommandLine.Command;
 
-public class VarCommand extends Command {
+@Command(name = "/vars")
+public class VarCommand extends BaseCommand {
 
-    public VarCommand(JShell jshell, ConsoleModel consoleModel) {
-        super("/vars", jshell, consoleModel);
+    public VarCommand(AppContext context, JShell jshell, ConsoleModel consoleModel) {
+        super(context, jshell, consoleModel);
     }
 
     @Override
-    public void execute(String input) {
-        String vars = jshell.variables().map(s -> SnippetUtils.toString(s, jshell.varValue(s))).collect(Collectors.joining()) + "\n";
+    public void run() {
+        String vars = jshell.variables().map(s -> SnippetUtils.toString(s, jshell.varValue(s))).collect(Collectors.joining());
 
-        consoleModel.getOutput().add(new TextStyleSpans(vars));
+        consoleModel.addNewLineOutput(new TextStyleSpans(vars));
     }
 }

@@ -11,6 +11,7 @@ module dev.jfxde.sysapps {
     requires reactfx;
     requires wellbehavedfx;
     requires org.controlsfx.controls;
+    requires info.picocli;
 
     requires dev.jfxde.api;
     requires dev.jfxde.logic;
@@ -21,6 +22,7 @@ module dev.jfxde.sysapps {
             dev.jfxde.sysapps.console.ConsoleApp, dev.jfxde.sysapps.exceptionlog.ExceptionLogApp,
             dev.jfxde.sysapps.jvmmonitor.JvmMonitorApp, dev.jfxde.sysapps.jshell.JShellApp, dev.jfxde.sysapps.settings.SettingsApp;
 
+    opens dev.jfxde.sysapps.jshell.commands to info.picocli;
     opens dev.jfxde.sysapps.appmanager.bundles;
     opens dev.jfxde.sysapps.console.css;
     opens dev.jfxde.sysapps.jvmmonitor.bundles;

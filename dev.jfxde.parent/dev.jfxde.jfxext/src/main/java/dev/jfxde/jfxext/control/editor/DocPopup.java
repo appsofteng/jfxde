@@ -85,7 +85,11 @@ public class DocPopup extends Tooltip {
         contextMenu.getItems().addAll(back, forward);
     }
 
-    void loadContent(DocRef docRef) {
+    boolean loadContent(DocRef docRef) {
+
+        if (docRef.getDocCode().isEmpty()) {
+            return false;
+        }
 
         String doc = documentation.apply(docRef);
         if (!doc.isEmpty()) {
@@ -98,6 +102,8 @@ public class DocPopup extends Tooltip {
             history.add(docRef);
             moveHistory(1);
         }
+
+        return !doc.isBlank();
     }
 
     private void load(DocRef docRef) {

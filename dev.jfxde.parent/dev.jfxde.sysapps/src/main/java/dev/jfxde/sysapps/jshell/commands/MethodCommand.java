@@ -2,21 +2,24 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
+import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
 import jdk.jshell.JShell;
+import picocli.CommandLine.Command;
 
-public class MethodCommand extends Command {
+@Command(name = "/methods")
+public class MethodCommand extends BaseCommand {
 
-    public MethodCommand(JShell jshell, ConsoleModel consoleModel) {
-        super("/methods", jshell, consoleModel);
+    public MethodCommand(AppContext context, JShell jshell, ConsoleModel consoleModel) {
+        super(context, jshell, consoleModel);
     }
 
     @Override
-    public void execute(String input) {
-        String result = jshell.methods().map(SnippetUtils::toString).sorted().collect(Collectors.joining()) + "\n";
+    public void run() {
+        String result = jshell.methods().map(SnippetUtils::toString).sorted().collect(Collectors.joining());
 
-        consoleModel.getOutput().add(new TextStyleSpans(result));
+        consoleModel.addNewLineOutput(new TextStyleSpans(result));
     }
 }

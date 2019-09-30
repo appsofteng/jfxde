@@ -36,6 +36,10 @@ public final class JavadocUtils {
 
     public static String toHtml(String source, Map<String, String> blockNames) {
 
+        if (source == null || source.isBlank()) {
+            return "";
+        }
+
         JavadocComment comment = new JavadocComment(source);
         Javadoc javadoc = comment.parse();
 

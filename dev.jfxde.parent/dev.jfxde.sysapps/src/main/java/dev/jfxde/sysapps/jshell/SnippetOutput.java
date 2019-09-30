@@ -34,7 +34,11 @@ public class SnippetOutput extends JShellOutput {
 
         String source = info.source();
 
-        while (!source.isEmpty()) {
+        if (source == null) {
+            consoleModel.addNewLineOutput(new TextStyleSpans("incomplete", ConsoleModel.ERROR_STYLE));
+        }
+
+        while (source!= null && !source.isEmpty()) {
 
             List<SnippetEvent> snippetEvents = jshell.eval(source);
             snippetEvents.forEach(e -> consoleModel.addNewLineOutput(getOutput(e)));
@@ -48,8 +52,12 @@ public class SnippetOutput extends JShellOutput {
 
     public void output(List<Snippet> snippets) {
 
+        if (snippets.isEmpty()) {
+            consoleModel.addNewLineOutput(new TextStyleSpans(context.rc().getString("noSuchSnippet"), ConsoleModel.COMMENT_STYLE));
+        }
+
         for (Snippet snippet : snippets) {
-            consoleModel.getOutput().add(new TextStyleSpans(snippet.source() + "\n"));
+            consoleModel.addNewLineOutput(new TextStyleSpans(snippet.source()));
             List<SnippetEvent> snippetEvents = jshell.eval(snippet.source());
             snippetEvents.forEach(e -> consoleModel.addNewLineOutput(getOutput(e)));
         }

@@ -136,15 +136,21 @@ public class SplitConsoleView extends BorderPane {
     }
 
     private void enter() {
+
+        if (outputArea.getLength() > 0 && !outputArea.getText().endsWith("\n\n")) {
+            outputArea.appendText("\n");
+        }
+
         TextStyleSpans span = new TextStyleSpans(inputArea.getText(), inputArea.getStyleSpans(0, inputArea.getText().length()));
         getInput().addAll(span, new TextStyleSpans("\n"));
 
         history.add(span.getText());
-        historyIndex = history.size();
 
         if (history.size() > HISTORY_LIMIT) {
             history.remove(0);
         }
+
+        historyIndex = history.size();
 
         inputArea.clear();
     }

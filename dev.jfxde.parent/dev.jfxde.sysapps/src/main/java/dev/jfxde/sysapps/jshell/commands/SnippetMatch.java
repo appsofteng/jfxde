@@ -1,6 +1,7 @@
 package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,10 @@ public class SnippetMatch {
     }
 
     public List<Snippet> matches(String[] values) {
+        return matches(Arrays.asList(values));
+    }
+
+    public List<Snippet> matches(List<String> values) {
 
         List<Snippet> snippets = new ArrayList<>();
 

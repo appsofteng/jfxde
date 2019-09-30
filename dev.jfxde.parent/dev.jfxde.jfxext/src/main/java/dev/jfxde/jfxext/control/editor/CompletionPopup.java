@@ -80,11 +80,12 @@ public class CompletionPopup extends Tooltip {
 
         itemView.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
             if (n != null) {
-                docPopup.loadContent(n.getDocRef());
-                double offset = Screen.getPrimary().getBounds().getWidth() - getAnchorX() - getPrefWidth() > getAnchorX() ? getPrefWidth()
-                        : -docPopup.getPrefWidth();
+                if (docPopup.loadContent(n.getDocRef())) {
+                    double offset = Screen.getPrimary().getBounds().getWidth() - getAnchorX() - getPrefWidth() > getAnchorX() ? getPrefWidth()
+                            : -docPopup.getPrefWidth();
 
-                docPopup.show(this, getAnchorX() + offset, getAnchorY());
+                    docPopup.show(this, getAnchorX() + offset, getAnchorY());
+                }
             }
         });
     }

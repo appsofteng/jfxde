@@ -1,29 +1,34 @@
 package dev.jfxde.sysapps.jshell.commands;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
+import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
-public class DropCommand extends Command {
+@Command(name = "/drop")
+public class DropCommand extends BaseCommand {
 
     private SnippetMatch snippetMatch;
 
-    public DropCommand(JShell jshell, ConsoleModel consoleModel, SnippetMatch snippetMatch) {
-        super("/drop", jshell, consoleModel);
+    @Parameters(arity = "1..*")
+    private ArrayList<String> parameters;
+
+    public DropCommand(AppContext context, JShell jshell, ConsoleModel consoleModel, SnippetMatch snippetMatch) {
+        super(context, jshell, consoleModel);
         this.snippetMatch = snippetMatch;
     }
 
     @Override
-    public void execute(String input) {
+    public void run() {
 
-        String[] parts = input.split(" +");
-        parts = Arrays.copyOfRange(parts, 1, parts.length);
-        List<Snippet> snippets = snippetMatch.matches(parts);
+        List<Snippet> snippets = snippetMatch.matches(parameters);
 
         StringBuilder sb = new StringBuilder();
         snippets.forEach(s -> {
@@ -31,6 +36,10 @@ public class DropCommand extends Command {
                     jshell.drop(s);
                 });
 
-        consoleModel.getOutput().add(new TextStyleSpans(sb.toString() + "\n", ConsoleModel.COMMENT_STYLE));
+        if (sb.length() == 0) {
+            sb.append(context.rc().getString("noSuchSnippet") + "\n");
+        }
+
+        consoleModel.addNewLineOutput(new TextStyleSpans(sb.toString(), ConsoleModel.COMMENT_STYLE));
     }
 }

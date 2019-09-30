@@ -22,6 +22,7 @@ It depends on the following libraries and their dependencies:
 - ![RichTextFX](https://github.com/FXMisc/RichTextFX)
 - ![ControlsFX](https://github.com/controlsfx/controlsfx)
 - ![Java Parser](https://javaparser.org)
+- ![Picocli](https://picocli.info)
 
 ## App Example
 This is a simple example of a hello world app. It implements the App interface and declares the required permissions.

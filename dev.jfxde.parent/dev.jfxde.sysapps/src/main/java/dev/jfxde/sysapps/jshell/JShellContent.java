@@ -136,6 +136,15 @@ public class JShellContent extends BorderPane {
     }
 
     private Collection<CompletionItem> getCompletionItems(CodeArea inputArea) {
+
+        return inputArea.getText().isBlank() || commandOutput.isCommand(inputArea.getText()) ? getCommandCompletionItems(inputArea) : getCodeCompletionItems(inputArea);
+    }
+
+    private Collection<CompletionItem> getCommandCompletionItems(CodeArea inputArea) {
+        return List.of();
+    }
+
+    private Collection<CompletionItem> getCodeCompletionItems(CodeArea inputArea) {
         List<CompletionItem> items = new ArrayList<>();
 
         String code = inputArea.getText();
@@ -183,7 +192,7 @@ public class JShellContent extends BorderPane {
 
     private Task<Void> getTask(String input) {
 
-        JShellOutput output = input.startsWith("/") ? commandOutput : snippetOutput;
+        JShellOutput output = commandOutput.isCommand(input) ? commandOutput : snippetOutput;
 
         Task<Void> task = TaskUtils.createTask(() -> output.output(input));
 

@@ -2,22 +2,25 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
+import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
 import jdk.jshell.JShell;
+import picocli.CommandLine.Command;
 
-public class ListCommand extends Command {
+@Command(name = "/list")
+public class ListCommand extends BaseCommand {
 
-    public ListCommand(JShell jshell, ConsoleModel consoleModel) {
-        super("/list", jshell, consoleModel);
+    public ListCommand(AppContext context, JShell jshell, ConsoleModel consoleModel) {
+        super(context, jshell, consoleModel);
     }
 
     @Override
-    public void execute(String input) {
+    public void run() {
         String result = jshell.snippets().filter(s -> jshell.status(s).isActive()).map(s -> SnippetUtils.toString(s, jshell))
-                .collect(Collectors.joining()) + "\n";
+                .collect(Collectors.joining());
 
-        consoleModel.getOutput().add(new TextStyleSpans(result));
+        consoleModel.addNewLineOutput(new TextStyleSpans(result));
     }
 }

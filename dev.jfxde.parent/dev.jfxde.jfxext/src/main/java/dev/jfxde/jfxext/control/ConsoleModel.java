@@ -8,6 +8,7 @@ import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.collections.FXCollections;
@@ -85,15 +86,13 @@ public class ConsoleModel {
 
     public void addNewLineOutput(TextStyleSpans textStyleSpans) {
 
-        if (textStyleSpans.getText().isBlank()) {
-            return;
-        }
-
         if (!output.isEmpty() && !output.get(output.size() - 1).getText().endsWith("\n")) {
             output.add(new TextStyleSpans("\n"));
         }
 
-        output.add(textStyleSpans);
+        if (!textStyleSpans.getText().isBlank()) {
+            output.add(textStyleSpans);
+        }
 
         output.add(new TextStyleSpans("\n"));
     }
@@ -117,6 +116,7 @@ public class ConsoleModel {
             if (string.isEmpty()) {
                 return;
             }
+
             // Windows OS
             string = string.replace("\r", "");
 
