@@ -15,7 +15,7 @@ See a demo video:
 ## Dependencies
 It depends on the following libraries and their dependencies:
 
-- [OpenJDK 12](http://http://jdk.java.net)
+- [OpenJDK 12](http://jdk.java.net)
 - [OpenJFX 13](https://openjfx.io)
 - [Hibernate ORM](https://hibernate.org/orm/)
 - [H2 DB](https://www.h2database.com)
