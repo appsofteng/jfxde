@@ -3,10 +3,7 @@ package dev.jfxde.sysapps.jshell.commands;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.control.ConsoleModel;
-import dev.jfxde.sysapps.jshell.SnippetOutput;
-import jdk.jshell.JShell;
+import dev.jfxde.sysapps.jshell.CommandOutput;
 import jdk.jshell.Snippet;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -16,16 +13,11 @@ public class RerunCommand extends BaseCommand {
 
     static final String RERUN_NAME = "/id(s)";
 
-    private final SnippetOutput snippetOutput;
-    private SnippetMatch snippetMatch;
-
     @Parameters
     private ArrayList<String> parameters;
 
-    public RerunCommand(AppContext context, JShell jshell, ConsoleModel consoleModel, SnippetOutput snippetOutput, SnippetMatch snippetMatch) {
-        super(context, jshell, consoleModel);
-        this.snippetOutput = snippetOutput;
-        this.snippetMatch = snippetMatch;
+    public RerunCommand(CommandOutput commandOutput) {
+        super(commandOutput);
     }
 
 

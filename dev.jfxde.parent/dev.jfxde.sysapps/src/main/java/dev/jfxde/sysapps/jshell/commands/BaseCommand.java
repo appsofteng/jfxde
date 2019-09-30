@@ -2,7 +2,9 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
-import javafx.collections.FXCollections;
+import dev.jfxde.sysapps.jshell.CommandOutput;
+import dev.jfxde.sysapps.jshell.JShellContent;
+import dev.jfxde.sysapps.jshell.SnippetOutput;
 import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 
@@ -12,19 +14,17 @@ public abstract class BaseCommand  implements Runnable {
     protected JShell jshell;
     protected ConsoleModel consoleModel;
     protected ObservableList<String> history;
+    protected SnippetMatch snippetMatch;
+    protected SnippetOutput snippetOutput;
+    protected JShellContent jshellContent;
 
-
-    public BaseCommand() {
-    }
-
-    public BaseCommand(AppContext context, JShell jshell, ConsoleModel consoleModel) {
-        this(context, jshell, consoleModel, FXCollections.emptyObservableList());
-    }
-
-    public BaseCommand(AppContext context, JShell jshell, ConsoleModel consoleModel, ObservableList<String> history) {
-        this.context = context;
-        this.jshell = jshell;
-        this.consoleModel = consoleModel;
-        this.history = history;
+    public BaseCommand(CommandOutput commandOutput) {
+        this.context = commandOutput.context;
+        this.jshell = commandOutput.jshell;
+        this.consoleModel = commandOutput.consoleModel;
+        this.history = commandOutput.history;
+        this.snippetMatch = commandOutput.snippetMatch;
+        this.snippetOutput = commandOutput.snippetOutput;
+        this.jshellContent = commandOutput.jshellContent;
     }
 }

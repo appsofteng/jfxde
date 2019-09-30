@@ -2,26 +2,26 @@ package dev.jfxde.sysapps.jshell;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 
 public abstract class JShellOutput {
 
-    protected AppContext context;
-    protected JShell jshell;
-    protected ConsoleModel consoleModel;
-    protected ObservableList<String> history;
+    public JShellContent jshellContent;
+    public AppContext context;
+    public JShell jshell;
+    public ConsoleModel consoleModel;
+    public ObservableList<String> history;
+    public SnippetOutput snippetOutput;
 
-    JShellOutput(AppContext context, JShell jshell, ConsoleModel consoleModel) {
-        this(context, jshell, consoleModel, FXCollections.emptyObservableList());
-    }
 
-    JShellOutput(AppContext context, JShell jshell, ConsoleModel consoleModel, ObservableList<String> history) {
-        this.context = context;
-        this.jshell = jshell;
-        this.consoleModel = consoleModel;
-        this.history = history;
+    JShellOutput(JShellContent jshellContent) {
+       this.jshellContent = jshellContent;
+       this.context = jshellContent.context;
+       this.jshell = jshellContent.jshell;
+       this.consoleModel = jshellContent.consoleView.getConsoleModel();
+       this.history = jshellContent.consoleView.getHistory();
+       this.snippetOutput = jshellContent.snippetOutput;
     }
 
     abstract void output(String input);

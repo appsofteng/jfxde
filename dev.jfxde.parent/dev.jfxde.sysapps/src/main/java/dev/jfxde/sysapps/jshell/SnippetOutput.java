@@ -8,11 +8,9 @@ import java.util.stream.LongStream;
 
 import org.reactfx.util.Tuple2;
 
-import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import jdk.jshell.EvalException;
-import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Kind;
 import jdk.jshell.Snippet.Status;
@@ -22,8 +20,8 @@ import jdk.jshell.VarSnippet;
 
 public class SnippetOutput extends JShellOutput {
 
-    SnippetOutput(AppContext context, JShell jshell, ConsoleModel consoleModel) {
-        super(context, jshell, consoleModel);
+    SnippetOutput(JShellContent jshellContent) {
+        super(jshellContent);
     }
 
     @Override

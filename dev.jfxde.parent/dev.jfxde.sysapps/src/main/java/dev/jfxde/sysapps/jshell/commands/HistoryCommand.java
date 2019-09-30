@@ -2,18 +2,16 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
-import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
-import javafx.collections.ObservableList;
-import jdk.jshell.JShell;
+import dev.jfxde.sysapps.jshell.CommandOutput;
 import picocli.CommandLine.Command;
 
 @Command(name = "/history")
 public class HistoryCommand extends BaseCommand {
 
-    public HistoryCommand(AppContext context, JShell jshell, ConsoleModel consoleModel, ObservableList<String> history) {
-        super(context, jshell, consoleModel, history);
+    public HistoryCommand(CommandOutput commandOutput) {
+        super(commandOutput);
     }
 
     @Override

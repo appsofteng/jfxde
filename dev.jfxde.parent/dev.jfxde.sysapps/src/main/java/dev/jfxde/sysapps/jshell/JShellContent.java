@@ -36,11 +36,11 @@ public class JShellContent extends BorderPane {
 
     private static final Logger LOGGER = Logger.getLogger(JShellContent.class.getName());
 
-    private AppContext context;
-    private SplitConsoleView consoleView;
-    private JShell jshell;
-    private SnippetOutput snippetOutput;
-    private CommandOutput commandOutput;
+    AppContext context;
+    SplitConsoleView consoleView;
+    JShell jshell;
+    SnippetOutput snippetOutput;
+    CommandOutput commandOutput;
 
     public JShellContent(AppContext context) {
         this.context = context;
@@ -56,14 +56,15 @@ public class JShellContent extends BorderPane {
         jshell.sourceCodeAnalysis();
         idGenerator.setJshell(jshell);
 
-        snippetOutput = new SnippetOutput(context, jshell, consoleView.getConsoleModel());
-        commandOutput = new CommandOutput(context, jshell, consoleView.getConsoleModel(), consoleView.getHistory(), snippetOutput);
+        snippetOutput = new SnippetOutput(this);
+        commandOutput = new CommandOutput(this);
 
         loadHistory();
         loadStartSnippets();
     }
 
     private void setBehavior() {
+
         consoleView.getConsoleModel().getInputToOutput().addListener((Change<? extends TextStyleSpans> c) -> {
 
             while (c.next()) {
@@ -91,7 +92,6 @@ public class JShellContent extends BorderPane {
 
         consoleView.getEditor().add(new CompletionBehavior<>(this::codeCompletion, this::loadDocumentation));
     }
-
 
     private List<String> loadHistory() {
         @SuppressWarnings("unchecked")
@@ -137,7 +137,8 @@ public class JShellContent extends BorderPane {
 
     private Collection<CompletionItem> getCompletionItems(CodeArea inputArea) {
 
-        return inputArea.getText().isBlank() || commandOutput.isCommand(inputArea.getText()) ? getCommandCompletionItems(inputArea) : getCodeCompletionItems(inputArea);
+        return inputArea.getText().isBlank() || commandOutput.isCommand(inputArea.getText()) ? getCommandCompletionItems(inputArea)
+                : getCodeCompletionItems(inputArea);
     }
 
     private Collection<CompletionItem> getCommandCompletionItems(CodeArea inputArea) {
