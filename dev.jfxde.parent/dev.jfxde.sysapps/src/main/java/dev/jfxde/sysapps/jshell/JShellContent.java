@@ -41,6 +41,7 @@ public class JShellContent extends BorderPane {
     JShell jshell;
     SnippetOutput snippetOutput;
     CommandOutput commandOutput;
+    public int startSnippetMaxIndex;
 
     public JShellContent(AppContext context) {
         this.context = context;
@@ -61,6 +62,7 @@ public class JShellContent extends BorderPane {
 
         loadHistory();
         loadStartSnippets();
+        startSnippetMaxIndex = idGenerator.getMaxId();
     }
 
     private void setBehavior() {

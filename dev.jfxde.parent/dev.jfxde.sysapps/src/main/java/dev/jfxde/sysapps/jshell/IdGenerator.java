@@ -15,6 +15,10 @@ public class IdGenerator implements BiFunction<Snippet, Integer, String> {
         this.jshell = jshell;
     }
 
+    public int getMaxId() {
+        return maxId;
+    }
+
     @Override
     public String apply(Snippet snippet, Integer id) {
         String newId = id.toString();

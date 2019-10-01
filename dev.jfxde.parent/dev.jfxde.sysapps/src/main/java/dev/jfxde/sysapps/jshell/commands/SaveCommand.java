@@ -1,8 +1,10 @@
 package dev.jfxde.sysapps.jshell.commands;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
+import dev.jfxde.jfxext.util.TaskUtils;
 import dev.jfxde.sysapps.jshell.CommandOutput;
 import javafx.application.Platform;
 import javafx.stage.FileChooser;
@@ -25,10 +27,20 @@ public class SaveCommand extends BaseCommand {
         Platform.runLater(() -> {
             FileChooser fileChooser = new FileChooser();
             File file = fileChooser.showSaveDialog(jshellContent.getScene().getWindow());
+
+            if (file != null) {
+                context.tc().executeSequentially(TaskUtils.createTask(() -> {
+                    try (var f = Files.newBufferedWriter(file.toPath())) {
+                        jshell.snippets()
+                        .filter(s -> jshell.status(s).isActive())
+                        .filter(s -> Integer.parseInt(s.id()) > jshellContent.startSnippetMaxIndex)
+                        .forEach(s -> {try { f.append(s.source()); f.newLine();} catch (Exception e) { throw new RuntimeException(e);}});
+                    } catch (Exception e) {
+                    }
+                }));
+
+            }
+
         });
-
-
-//        try (var f = Files.newBufferedWriter(Paths, options))
-//       jshell.snippets().forEach(s -> );
     }
 }
