@@ -3,7 +3,11 @@ package dev.jfxde.logic.data;
 import dev.jfxde.api.App;
 import dev.jfxde.api.AppContext;
 import dev.jfxde.api.AppScope;
+import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
@@ -14,7 +18,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
     private final App app;
     private Window window;
     private StringProperty title = new SimpleStringProperty();
-    private Node content;
+    private ObjectProperty<Node> content = new SimpleObjectProperty<Node>();
 
 	public AppDescriptor(AppProviderDescriptor appProviderDescriptor, App app) {
 		this.appProviderDescriptor = appProviderDescriptor;
@@ -22,7 +26,9 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
 	}
 
 	public void start(AppContext context) throws Exception {
-		content = app.start(context);
+		Node content = app.start(context);
+
+		Platform.runLater(() -> this.content.set(content));
 	}
 
     public AppProviderDescriptor getAppProviderDescriptor() {
@@ -53,7 +59,7 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
 		return title.get() == null ? appProviderDescriptor.getName() : title.get();
 	}
 
-	public Node getContent() {
+	public ReadOnlyObjectProperty<Node> contentProperty() {
 		return content;
 	}
 

@@ -102,6 +102,10 @@ public class InternalWindow extends Pane {
         focusOwner = node;
     }
 
+    void removeContent(Node node) {
+        contentPane.getChildren().remove(node);
+    }
+
     @Override
     public boolean isResizable() {
         return window.isRestored();

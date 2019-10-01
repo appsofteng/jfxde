@@ -23,7 +23,6 @@ import dev.jfxde.logic.conext.AppContextImpl;
 import dev.jfxde.logic.data.AppDescriptor;
 import dev.jfxde.logic.data.AppProviderDescriptor;
 import dev.jfxde.logic.data.Window;
-import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -248,18 +247,14 @@ public final class AppManager extends Manager {
         if (!appDescriptors.contains(appDescriptor)) {
 
             AppContext context = new AppContextImpl(appDescriptor, request);
+            appDescriptorMap.put(appDescriptor.getApp(), appDescriptor);
+            appDescriptors.add(appDescriptor);
+            Sys.dm().getActiveDesktop().addWindow(new Window(appDescriptor));
 
             Task<Void> task = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
                     appDescriptor.start(context);
-
-                    Platform.runLater(() -> {
-                        appDescriptorMap.put(appDescriptor.getApp(), appDescriptor);
-                        appDescriptors.add(appDescriptor);
-                        Sys.dm().getActiveDesktop().addWindow(new Window(appDescriptor));
-                    });
-
                     return null;
                 }
 
