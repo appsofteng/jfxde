@@ -71,7 +71,7 @@ public class JvmMonitorContent extends TabPane {
 		TableView<PropertyDescriptor> table = new TableView<>();
 		tab.setContent(table);
 
-		table.setItems(Sys.sm().getSystemProperties());
+		table.setItems(Sys.pm().getSystemProperties());
 
 		TableColumn<PropertyDescriptor, String> keyColumn = new TableColumn<>();
 		keyColumn.textProperty().bind(context.rc().getStringBinding("key"));

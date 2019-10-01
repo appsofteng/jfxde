@@ -1,8 +1,9 @@
-package dev.jfxde.sysapps.settings;
+package dev.jfxde.sysapps.preferences;
 
-import dev.jfxde.logic.SettingManager;
+import dev.jfxde.logic.PreferencesManager;
+import dev.jfxde.logic.ResourceManager;
 import dev.jfxde.logic.Sys;
-import dev.jfxde.logic.data.PropertyDescriptor;
+import dev.jfxde.logic.data.Preference;
 import dev.jfxde.ui.DesktopEnvironment;
 import javafx.scene.Node;
 import javafx.scene.control.ChoiceBox;
@@ -10,7 +11,7 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.control.TreeTableCell;
 import javafx.scene.paint.Color;
 
-public class SettingTableCell extends TreeTableCell<PropertyDescriptor, String> {
+public class PreferencesTableCell extends TreeTableCell<Preference, String> {
 
     private ChoiceBox<String> localeChoiceBox;
     private ColorPicker themeColorPicker;
@@ -66,10 +67,10 @@ public class SettingTableCell extends TreeTableCell<PropertyDescriptor, String> 
 
         setStyle("");
 
-        PropertyDescriptor propertyDescriptor = getTreeTableRow().getItem();
-        if (propertyDescriptor != null) {
+        Preference preference = getTreeTableRow().getItem();
+        if (preference != null) {
 
-            if (propertyDescriptor.getKey().equals(SettingManager.SYSTEM_THEME_COLOR)) {
+            if (preference.getPath().equals(PreferencesManager.USER_THEME_COLOR)) {
 
                 setStyle("-fx-background-color: " + getItem() + ";");
                 setText(null);
@@ -79,20 +80,22 @@ public class SettingTableCell extends TreeTableCell<PropertyDescriptor, String> 
 
     private Node getNode() {
 
-        PropertyDescriptor propertyDescriptor = getTreeTableRow().getItem();
+        Preference propertyDescriptor = getTreeTableRow().getItem();
         if (propertyDescriptor == null) {
             return null;
         }
 
         Node node = null;
 
-        if (propertyDescriptor.getKey().equals(SettingManager.SYSTEM_LOCALE)) {
+        if (propertyDescriptor.getPath().equals(PreferencesManager.USER_LOCALE)) {
             if (localeChoiceBox == null) {
                 localeChoiceBox = new ChoiceBox<String>(Sys.am().getLocales());
                 localeChoiceBox.setMaxWidth(Double.MAX_VALUE);
                 localeChoiceBox.showingProperty().addListener(o -> {
                     if (!localeChoiceBox.isShowing()) {
-                        commitEdit(localeChoiceBox.getSelectionModel().getSelectedItem());
+                        String locale = localeChoiceBox.getSelectionModel().getSelectedItem();
+                        commitEdit(locale);
+                        Sys.pm().setLocale(locale);
                     }
                 });
             }
@@ -100,7 +103,7 @@ public class SettingTableCell extends TreeTableCell<PropertyDescriptor, String> 
             localeChoiceBox.getSelectionModel().select(getItem());
 
             node = localeChoiceBox;
-        } else if (propertyDescriptor.getKey().equals(SettingManager.SYSTEM_THEME_COLOR)) {
+        } else if (propertyDescriptor.getPath().equals(PreferencesManager.USER_THEME_COLOR)) {
 
             if (themeColorPicker == null) {
                 themeColorPicker = new ColorPicker();
@@ -112,7 +115,7 @@ public class SettingTableCell extends TreeTableCell<PropertyDescriptor, String> 
 
             }
 
-            themeColorPicker.setValue(Color.web(Sys.sm().getThemeColor()));
+            themeColorPicker.setValue(Color.web(Sys.pm().getThemeColor()));
 
             node = themeColorPicker;
         }

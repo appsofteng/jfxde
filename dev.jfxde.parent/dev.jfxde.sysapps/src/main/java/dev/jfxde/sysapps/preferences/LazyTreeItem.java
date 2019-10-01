@@ -1,4 +1,4 @@
-package dev.jfxde.sysapps.settings;
+package dev.jfxde.sysapps.preferences;
 
 import java.util.List;
 import java.util.function.Function;

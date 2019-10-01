@@ -20,7 +20,7 @@ module dev.jfxde.sysapps {
 
     provides dev.jfxde.api.App with dev.jfxde.sysapps.appmanager.AppManagerApp,
             dev.jfxde.sysapps.console.ConsoleApp, dev.jfxde.sysapps.exceptionlog.ExceptionLogApp,
-            dev.jfxde.sysapps.jvmmonitor.JvmMonitorApp, dev.jfxde.sysapps.jshell.JShellApp, dev.jfxde.sysapps.settings.SettingsApp;
+            dev.jfxde.sysapps.jvmmonitor.JvmMonitorApp, dev.jfxde.sysapps.jshell.JShellApp, dev.jfxde.sysapps.preferences.PreferencesApp;
 
     opens dev.jfxde.sysapps.jshell.commands to info.picocli;
     opens dev.jfxde.sysapps.appmanager.bundles;

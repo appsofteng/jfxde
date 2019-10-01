@@ -19,7 +19,7 @@ public final class Sys {
     private final FileManager fileManager = new FileManager();
     private final DataManager dataManager = new DataManager();
     private final TaskManager taskManager = new TaskManager();
-    private final SettingManager settingManager = new SettingManager();
+    private final PreferencesManager preferencesManager = new PreferencesManager();
     private final ConsoleManager consoleManager = new ConsoleManager();
     private List<Manager> startSequence;
 
@@ -57,8 +57,8 @@ public final class Sys {
         return INSTANCE.taskManager;
     }
 
-    public static SettingManager sm() {
-        return INSTANCE.settingManager;
+    public static PreferencesManager pm() {
+        return INSTANCE.preferencesManager;
     }
 
     public static ConsoleManager cm() {
@@ -71,7 +71,7 @@ public final class Sys {
         setSecurityPolicy();
         resourceManager = new ResourceManager(resourceCaller);
 
-        startSequence = List.of(exceptionManager, fileManager, consoleManager, settingManager, resourceManager, dataManager, taskManager, appManager);
+        startSequence = List.of(exceptionManager, fileManager, consoleManager, preferencesManager, resourceManager, dataManager, taskManager, appManager);
 
         double progressStep = 1.0 / startSequence.size();
         double accum = 0;

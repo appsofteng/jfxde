@@ -29,7 +29,7 @@ public class DesktopEnvironment extends Region {
 
     public DesktopEnvironment() {
         getChildren().addAll(desktopStack, menuBar, controlBar);
-        setThemeColor(Sys.sm().getThemeColor());
+        setThemeColor(Sys.pm().getThemeColor());
         getStyleClass().add("jd-desktop-environment");
         setDesktopHandlers();
         setActiveDesktop();

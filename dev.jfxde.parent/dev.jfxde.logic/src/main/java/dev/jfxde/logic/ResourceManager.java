@@ -99,7 +99,7 @@ public final class ResourceManager extends Manager implements ResourceController
         FXResourceBundle parentBundle = null;
 
         if (parent != null) {
-            parentBundle = parent.getBundle​();
+            parentBundle = parent.getBundle();
         }
 
         FXResourceBundle resourceBundle = parentBundle;

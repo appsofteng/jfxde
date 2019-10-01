@@ -91,7 +91,7 @@
 			<filtered>true</filtered>
 		</file>
 		<file>
-			<source>src/main/conf/settings.properties</source>
+			<source>src/main/conf/preferences.properties</source>
 			<outputDirectory>conf</outputDirectory>
 			<filtered>true</filtered>
 		</file>

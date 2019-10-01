@@ -1,6 +1,7 @@
 module dev.jfxde.jfxext {
 
     requires java.logging;
+    requires transitive java.prefs;
 
     requires javafx.base;
     requires transitive javafx.controls;
@@ -19,6 +20,8 @@ module dev.jfxde.jfxext {
     exports dev.jfxde.jfxext.control.editor to dev.jfxde.sysapps;
     exports dev.jfxde.jfxext.richtextfx to dev.jfxde.sysapps, dev.jfxde.logic;
     exports dev.jfxde.jfxext.util to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
+    exports dev.jfxde.jfxext.util.prefs to dev.jfxde.logic;
 
+    opens dev.jfxde.jfxext.util.prefs to java.prefs;
     opens dev.jfxde.jfxext.control to javafx.graphics;
 }
