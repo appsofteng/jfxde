@@ -197,7 +197,7 @@ public class JShellContent extends BorderPane {
 
         JShellOutput output = commandOutput.isCommand(input) ? commandOutput : snippetOutput;
 
-        Task<Void> task = TaskUtils.createTask(() -> output.output(input));
+        Task<Void> task = TaskUtils.createTask(() -> output.process(input));
 
         return task;
     }

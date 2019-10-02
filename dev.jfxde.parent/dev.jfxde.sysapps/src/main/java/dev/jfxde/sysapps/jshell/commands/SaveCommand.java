@@ -2,20 +2,15 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.ArrayList;
 
 import dev.jfxde.jfxext.util.TaskUtils;
 import dev.jfxde.sysapps.jshell.CommandOutput;
 import javafx.application.Platform;
 import javafx.stage.FileChooser;
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Parameters;
 
 @Command(name = "/save")
 public class SaveCommand extends BaseCommand {
-
-    @Parameters
-    private ArrayList<String> parameters;
 
     public SaveCommand(CommandOutput commandOutput) {
         super(commandOutput);
@@ -35,7 +30,6 @@ public class SaveCommand extends BaseCommand {
                         .filter(s -> jshell.status(s).isActive())
                         .filter(s -> Integer.parseInt(s.id()) > jshellContent.startSnippetMaxIndex)
                         .forEach(s -> {try { f.append(s.source()); f.newLine();} catch (Exception e) { throw new RuntimeException(e);}});
-                    } catch (Exception e) {
                     }
                 }));
 

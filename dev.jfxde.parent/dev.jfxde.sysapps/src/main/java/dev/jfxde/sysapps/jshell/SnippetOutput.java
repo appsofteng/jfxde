@@ -3,10 +3,6 @@ package dev.jfxde.sysapps.jshell;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
-
-import org.reactfx.util.Tuple2;
 
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
@@ -16,6 +12,8 @@ import jdk.jshell.Snippet.Kind;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
 import jdk.jshell.SourceCodeAnalysis;
+import jdk.jshell.SourceCodeAnalysis.Completeness;
+import jdk.jshell.SourceCodeAnalysis.CompletionInfo;
 import jdk.jshell.VarSnippet;
 
 public class SnippetOutput extends JShellOutput {
@@ -25,24 +23,33 @@ public class SnippetOutput extends JShellOutput {
     }
 
     @Override
-    public void output(String input) {
+    public void process(String input) {
 
         SourceCodeAnalysis sourceAnalysis = jshell.sourceCodeAnalysis();
-        SourceCodeAnalysis.CompletionInfo info = sourceAnalysis.analyzeCompletion(input);
 
-        String source = info.source();
+        String[] lines = input.split("\n");
+        StringBuffer sb = new StringBuffer();
 
-        if (source == null) {
-            consoleModel.addNewLineOutput(new TextStyleSpans("incomplete", ConsoleModel.ERROR_STYLE));
-        }
+        for (String line : lines) {
+            sb.append(line).append("\n");
+            CompletionInfo info = sourceAnalysis.analyzeCompletion(sb.toString());
 
-        while (source!= null && !source.isEmpty()) {
+            if (info.completeness() == Completeness.CONSIDERED_INCOMPLETE ||
+                    info.completeness() == Completeness.DEFINITELY_INCOMPLETE) {
+                continue;
+            }  else if (info.completeness() == Completeness.EMPTY) {
+                sb.delete(0, sb.length());
+                continue;
+            } else if (info.completeness() == Completeness.UNKNOWN) {
+                consoleModel.addNewLineOutput(new TextStyleSpans("unknown", ConsoleModel.ERROR_STYLE));
+                sb.delete(0, sb.length());
+                continue;
+            }
 
+            String source = info.source();
+            sb.delete(0, sb.length()).append(info.remaining());
             List<SnippetEvent> snippetEvents = jshell.eval(source);
             snippetEvents.forEach(e -> consoleModel.addNewLineOutput(getOutput(e)));
-
-            info = sourceAnalysis.analyzeCompletion(info.remaining());
-            source = info.source();
         }
 
         consoleModel.getOutput().add(new TextStyleSpans("\n"));
@@ -109,18 +116,9 @@ public class SnippetOutput extends JShellOutput {
             }
             sb.append(d.getMessage(null)).append("\n");
 
-            Tuple2<String, Integer> line = SnippetUtils.getLine(event.snippet().source(), (int) d.getStartPosition(), (int) d.getEndPosition());
-            sb.append(line._1).append("\n");
+            String errorLine = SnippetUtils.getErrorLine(event.snippet().source(), (int) d.getStartPosition(), (int) d.getEndPosition());
 
-            String underscore = LongStream
-                    .range(0,
-                            d.getEndPosition() - line._2)
-                    .mapToObj(p -> p >= 0 && p < d.getStartPosition() - line._2 ? " "
-                            : p > d.getStartPosition() - line._2 && p < d.getEndPosition() - 1 - line._2 ? "-"
-                                    : "^")
-                    .collect(Collectors.joining());
-
-            sb.append(underscore).append("\n");
+            sb.append(errorLine).append("\n");
         });
 
         return sb.toString();

@@ -24,6 +24,6 @@ public abstract class JShellOutput {
        this.snippetOutput = jshellContent.snippetOutput;
     }
 
-    abstract void output(String input);
+    abstract void process(String input);
 
 }

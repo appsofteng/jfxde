@@ -2,9 +2,6 @@ package dev.jfxde.sysapps.jshell;
 
 import java.util.stream.Collectors;
 
-import org.reactfx.util.Tuple2;
-import org.reactfx.util.Tuples;
-
 import jdk.jshell.ExpressionSnippet;
 import jdk.jshell.ImportSnippet;
 import jdk.jshell.JShell;
@@ -44,15 +41,29 @@ public final class SnippetUtils {
         return subkind;
     }
 
-    public static Tuple2<String, Integer> getLine(String text, int start, int end) {
-        int lineStart = text.lastIndexOf("\n", start) + 1;
-        int lineEnd = text.indexOf("\n", end);
+    public static String getErrorLine(String text, int errorStart, int errorEnd) {
+
+        int lineStart = text.lastIndexOf("\n", errorStart) + 1;
+        int lineEnd = text.indexOf("\n", errorEnd);
         lineEnd = lineEnd == -1 ? text.length() : lineEnd;
-        String line = text.substring(lineStart, lineEnd);
+        lineStart = lineStart > lineEnd ? text.lastIndexOf("\n", errorStart - 1) + 1 : lineStart;
 
-        Tuple2<String, Integer> result = Tuples.t(line, lineStart);
 
-        return result;
+        StringBuffer sb = new StringBuffer();
+        sb.append(text.substring(lineStart, lineEnd)).append("\n");
+
+        for (int i = lineStart; i <= errorEnd; i++) {
+
+            if (i < errorStart) {
+                sb.append(" ");
+            } else if (i == errorStart || i == errorEnd - 1) {
+                sb.append("^");
+            } else if (i > errorStart && i < errorEnd - 1) {
+                sb.append("-");
+            }
+        }
+
+        return sb.toString();
     }
 
     public static String toString(Snippet snippet, JShell jshell) {
