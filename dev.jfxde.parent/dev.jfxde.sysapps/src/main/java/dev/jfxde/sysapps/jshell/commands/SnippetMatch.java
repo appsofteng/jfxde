@@ -30,7 +30,6 @@ public class SnippetMatch {
             snippetsById.put(e.snippet().id(), e.snippet());
             List<Snippet> snippets = snippetsByName.computeIfAbsent(name, k -> new ArrayList<>());
             snippets.add(e.snippet());
-
         });
     }
 

@@ -86,6 +86,10 @@ public class ConsoleModel {
 
     public void addNewLineOutput(TextStyleSpans textStyleSpans) {
 
+        if (textStyleSpans.getText().isEmpty()) {
+            return;
+        }
+
         if (!output.isEmpty() && !output.get(output.size() - 1).getText().endsWith("\n")) {
             output.add(new TextStyleSpans("\n"));
         }

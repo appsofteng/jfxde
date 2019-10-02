@@ -8,6 +8,7 @@ import jdk.jshell.JShell;
 import jdk.jshell.MethodSnippet;
 import jdk.jshell.PersistentSnippet;
 import jdk.jshell.Snippet;
+import jdk.jshell.Snippet.Status;
 import jdk.jshell.StatementSnippet;
 import jdk.jshell.TypeDeclSnippet;
 import jdk.jshell.VarSnippet;
@@ -70,7 +71,7 @@ public final class SnippetUtils {
 
         String value = "";
 
-        if (snippet instanceof VarSnippet) {
+        if (snippet instanceof VarSnippet && jshell.status(snippet) == Status.VALID) {
             value = jshell.varValue((VarSnippet)snippet);
         }
 

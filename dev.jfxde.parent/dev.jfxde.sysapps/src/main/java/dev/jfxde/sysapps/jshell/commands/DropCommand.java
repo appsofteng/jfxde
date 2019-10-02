@@ -8,6 +8,7 @@ import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.sysapps.jshell.CommandOutput;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
 import jdk.jshell.Snippet;
+import jdk.jshell.Snippet.Status;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
@@ -28,8 +29,12 @@ public class DropCommand extends BaseCommand {
 
         StringBuilder sb = new StringBuilder();
         snippets.forEach(s -> {
-            sb.append("dropped" + SnippetUtils.toString(s, jshell));
-            jshell.drop(s);
+            if (jshell.status(s) == Status.VALID) {
+                sb.append("dropped" + SnippetUtils.toString(s, jshell));
+                jshell.drop(s);
+            } else {
+                sb.append("not valid" + SnippetUtils.toString(s, jshell));
+            }
         });
 
         if (sb.length() == 0) {

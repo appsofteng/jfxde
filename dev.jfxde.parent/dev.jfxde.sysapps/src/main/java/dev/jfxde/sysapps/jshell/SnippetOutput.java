@@ -37,11 +37,11 @@ public class SnippetOutput extends JShellOutput {
             if (info.completeness() == Completeness.CONSIDERED_INCOMPLETE ||
                     info.completeness() == Completeness.DEFINITELY_INCOMPLETE) {
                 continue;
-            }  else if (info.completeness() == Completeness.EMPTY) {
+            } else if (info.completeness() == Completeness.EMPTY) {
                 sb.delete(0, sb.length());
                 continue;
             } else if (info.completeness() == Completeness.UNKNOWN) {
-                consoleModel.addNewLineOutput(new TextStyleSpans("unknown", ConsoleModel.ERROR_STYLE));
+                consoleModel.addNewLineOutput(new TextStyleSpans("unknown  " + sb.toString().strip(), ConsoleModel.ERROR_STYLE));
                 sb.delete(0, sb.length());
                 continue;
             }
@@ -62,7 +62,7 @@ public class SnippetOutput extends JShellOutput {
         }
 
         for (Snippet snippet : snippets) {
-            consoleModel.addNewLineOutput(new TextStyleSpans(snippet.source()));
+            consoleModel.addNewLineOutput(new TextStyleSpans(snippet.source().strip()));
             List<SnippetEvent> snippetEvents = jshell.eval(snippet.source());
             snippetEvents.forEach(e -> consoleModel.addNewLineOutput(getOutput(e)));
         }
@@ -145,12 +145,16 @@ public class SnippetOutput extends JShellOutput {
         }
 
         String value = event.value();
+        Snippet snippet = event.snippet();
 
-        if (value == null && event.causeSnippet() != null && event.causeSnippet() instanceof VarSnippet) {
-            value = jshell.varValue((VarSnippet) event.causeSnippet());
+        if (event.causeSnippet() != null) {
+            snippet = event.causeSnippet();
+            if (snippet instanceof VarSnippet) {
+                value = jshell.varValue((VarSnippet) event.causeSnippet());
+            }
         }
 
-        msg += SnippetUtils.toString(event.snippet(), value);
+        msg += SnippetUtils.toString(snippet, value);
 
         return msg;
     }

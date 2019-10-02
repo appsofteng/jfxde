@@ -4,7 +4,6 @@ import java.util.function.BiFunction;
 
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
-import jdk.jshell.Snippet.Status;
 
 public class IdGenerator implements BiFunction<Snippet, Integer, String> {
 
@@ -26,11 +25,7 @@ public class IdGenerator implements BiFunction<Snippet, Integer, String> {
         if (id > maxId) {
             maxId = id;
         } else {
-            Snippet existingSnippet = JShellUtils.getSnippet(jshell, id);
-
-            if (existingSnippet != null && jshell.status(existingSnippet) == Status.DROPPED) {
-                newId = String.valueOf(++maxId);
-            }
+            newId = String.valueOf(++maxId);
         }
 
         return newId;
