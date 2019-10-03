@@ -26,12 +26,13 @@ public class OpenCommand extends BaseCommand {
         Platform.runLater(() -> {
             FileChooser fileChooser = new FileChooser();
             File file = fileChooser.showOpenDialog(jshellContent.getScene().getWindow());
-
-            try {
-                String spippets = Files.readString(file.toPath());
-                snippetOutput.process(spippets);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            if (file != null) {
+                try {
+                    String spippets = Files.readString(file.toPath());
+                    snippetOutput.process(spippets);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
     }
