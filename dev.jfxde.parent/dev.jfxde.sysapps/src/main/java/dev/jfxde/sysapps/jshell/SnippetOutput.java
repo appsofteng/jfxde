@@ -41,7 +41,7 @@ public class SnippetOutput extends JShellOutput {
                 sb.delete(0, sb.length());
                 continue;
             } else if (info.completeness() == Completeness.UNKNOWN) {
-                consoleModel.addNewLineOutput(new TextStyleSpans("unknown  " + sb.toString().strip(), ConsoleModel.ERROR_STYLE));
+                consoleModel.addNewLineOutput(new TextStyleSpans(context.rc().getString("unknown") + "  " + sb.toString().strip(), ConsoleModel.ERROR_STYLE));
                 sb.delete(0, sb.length());
                 continue;
             }
@@ -102,7 +102,7 @@ public class SnippetOutput extends JShellOutput {
             msg = msg.replace(event.exception().getClass().getName(), e.getExceptionClassName());
         }
 
-        msg = "Exception " + msg.replace("\r", "");
+        msg = context.rc().getString("exception") + " " + msg.replace("\r", "");
 
         return msg;
     }
@@ -112,7 +112,7 @@ public class SnippetOutput extends JShellOutput {
 
         jshell.diagnostics(event.snippet()).forEach(d -> {
             if (d.isError()) {
-                sb.append("Error:\n");
+                sb.append(context.rc().getString("error") + ":\n");
             }
             sb.append(d.getMessage(null)).append("\n");
 
@@ -135,12 +135,12 @@ public class SnippetOutput extends JShellOutput {
         if (event.snippet().kind() == Kind.EXPRESSION) {
             msg = "";
         } else if (event.previousStatus() == Status.NONEXISTENT) {
-            msg = "created";
+            msg = context.rc().getString("created");
         } else if (event.status() == Status.OVERWRITTEN) {
             if (event.causeSnippet().subKind() == event.snippet().subKind()) {
-                msg = "modified";
+                msg = context.rc().getString("modified");
             } else {
-                msg = "replaced";
+                msg = context.rc().getString("replaced");
             }
         }
 

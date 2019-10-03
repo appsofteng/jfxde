@@ -58,7 +58,7 @@ public class DocPopup extends Tooltip {
                 String url = JSUtils.getLinkUrl(webView.getEngine(), e.getX(), e.getY());
                 if (url != null) {
                     history.remove(getHistoryIndex() + 1, history.size());
-                    loadContent(new DocRef(url));
+                    loadContent(new DocRef(url, documentation));
                 }
             }
 
@@ -91,7 +91,7 @@ public class DocPopup extends Tooltip {
             return false;
         }
 
-        String doc = documentation.apply(docRef);
+        String doc = docRef.getDocumentation();
         if (!doc.isEmpty()) {
             history.add(docRef);
             moveHistory(1);
@@ -107,7 +107,7 @@ public class DocPopup extends Tooltip {
     }
 
     private void load(DocRef docRef) {
-        String doc = documentation.apply(docRef);
+        String doc = docRef.getDocumentation();
         if (!doc.isEmpty()) {
             webView.getEngine().getLoadWorker().cancel();
             webView.getEngine().load("");

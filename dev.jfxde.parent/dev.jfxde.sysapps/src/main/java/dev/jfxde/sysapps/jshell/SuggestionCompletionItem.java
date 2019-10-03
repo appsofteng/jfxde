@@ -1,5 +1,7 @@
 package dev.jfxde.sysapps.jshell;
 
+import java.util.function.Function;
+
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jfxde.jfxext.control.editor.CompletionItem;
@@ -22,8 +24,8 @@ public class SuggestionCompletionItem extends CompletionItem {
     }
 
     public SuggestionCompletionItem(CodeArea codeArea, Suggestion suggestion, int[] anchor, String docCode,
-            String signature) {
-        super(new DocRef(docCode, signature));
+            String signature, Function<DocRef, String> documentation) {
+        super(new DocRef(docCode, signature, documentation));
         this.codeArea = codeArea;
         this.suggestion = suggestion;
         this.anchor = anchor;

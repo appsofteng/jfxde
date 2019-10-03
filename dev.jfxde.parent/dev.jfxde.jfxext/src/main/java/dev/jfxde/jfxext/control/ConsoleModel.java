@@ -8,7 +8,6 @@ import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.collections.FXCollections;
@@ -82,6 +81,10 @@ public class ConsoleModel {
 
     public PrintStream getErr() {
         return err;
+    }
+
+    public PrintStream getOut(String style) {
+        return new PrintStream(new ConsoleOutputStream(style), true);
     }
 
     public void addNewLineOutput(TextStyleSpans textStyleSpans) {

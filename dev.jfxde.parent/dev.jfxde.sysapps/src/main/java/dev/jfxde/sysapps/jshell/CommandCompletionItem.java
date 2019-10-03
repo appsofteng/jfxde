@@ -1,5 +1,7 @@
 package dev.jfxde.sysapps.jshell;
 
+import java.util.function.Function;
+
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jfxde.jfxext.control.editor.CompletionItem;
@@ -7,17 +9,17 @@ import dev.jfxde.jfxext.control.editor.DocRef;
 
 public class CommandCompletionItem extends CompletionItem {
 
+    private CodeArea codeArea;
     private int anchor;
     private String continuation;
     private String name;
-    private CodeArea codeArea;
 
-    public CommandCompletionItem(CodeArea codeArea, int anchor, String continuation, String name) {
-        super(new DocRef(""));
+    public CommandCompletionItem(CodeArea codeArea, int anchor, String continuation, String name, Function<DocRef, String> documentation) {
+        super(new DocRef(name, documentation));
+        this.codeArea = codeArea;
         this.anchor = anchor;
         this.continuation = continuation;
         this.name = name;
-        this.codeArea = codeArea;
     }
 
     @Override

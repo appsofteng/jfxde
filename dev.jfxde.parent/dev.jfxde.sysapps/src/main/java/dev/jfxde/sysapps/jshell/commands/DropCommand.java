@@ -15,7 +15,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "/drop")
 public class DropCommand extends BaseCommand {
 
-    @Parameters(arity = "1..*")
+    @Parameters(arity = "1..*", paramLabel = "{name|id|startID-endID}[ {name|id|startID-endID}...]")
     private ArrayList<String> parameters;
 
     public DropCommand(CommandOutput commandOutput) {
@@ -30,10 +30,10 @@ public class DropCommand extends BaseCommand {
         StringBuilder sb = new StringBuilder();
         snippets.forEach(s -> {
             if (jshell.status(s) == Status.VALID) {
-                sb.append("dropped" + SnippetUtils.toString(s, jshell));
+                sb.append(context.rc().getString("dropped") + SnippetUtils.toString(s, jshell));
                 jshell.drop(s);
             } else {
-                sb.append("not valid" + SnippetUtils.toString(s, jshell));
+                sb.append(context.rc().getString("notValid") + SnippetUtils.toString(s, jshell));
             }
         });
 

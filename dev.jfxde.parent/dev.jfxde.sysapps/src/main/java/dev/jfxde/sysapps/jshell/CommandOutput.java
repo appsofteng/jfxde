@@ -1,7 +1,13 @@
 package dev.jfxde.sysapps.jshell;
 
 import java.io.PrintWriter;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
+import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.sysapps.jshell.commands.BaseCommand;
 import dev.jfxde.sysapps.jshell.commands.Commands;
 import dev.jfxde.sysapps.jshell.commands.RerunCommand;
@@ -14,18 +20,35 @@ public class CommandOutput extends JShellOutput {
     public SnippetMatch snippetMatch;
     CommandFactory commandFactory = new CommandFactory();
     private CommandLine commandLine;
+    private PrintWriter out = new PrintWriter(consoleModel.getOut(ConsoleModel.COMMENT_STYLE), true);
+    private Map<String, String> subcommandHelps;
 
     CommandOutput(JShellContent jshellContent) {
         super(jshellContent);
 
         this.snippetMatch = new SnippetMatch(jshell);
         this.commandLine = new CommandLine(new Commands(), commandFactory)
-                .setOut(new PrintWriter(consoleModel.getOut(), true))
-                .setErr(new PrintWriter(consoleModel.getOut(), true));
+                .setOut(out)
+                .setErr(new PrintWriter(consoleModel.getErr(), true))
+                .setResourceBundle(ResourceBundle.getBundle("dev.jfxde.sysapps.jshell.bundles.strings"));
+
+        // load and cache in parallel
+        subcommandHelps = commandLine.getSubcommands().entrySet().parallelStream()
+                .collect(Collectors.toMap(e -> e.getKey(),
+                        e -> AccessController.doPrivileged((PrivilegedAction<String>) () -> "<pre>" + e.getValue().getUsageMessage() + "</pre>")));
+
     }
 
     public CommandLine getCommandLine() {
         return commandLine;
+    }
+
+    public Map<String, String> getSubcommandHelps() {
+        return subcommandHelps;
+    }
+
+    public PrintWriter getOut() {
+        return out;
     }
 
     @Override

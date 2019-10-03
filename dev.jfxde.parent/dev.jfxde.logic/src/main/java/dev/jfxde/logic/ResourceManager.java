@@ -5,7 +5,6 @@ import static javafx.scene.layout.Region.USE_PREF_SIZE;
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;

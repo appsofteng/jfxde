@@ -1,5 +1,7 @@
 package dev.jfxde.sysapps.jshell;
 
+import java.util.function.Function;
+
 import dev.jfxde.jfxext.control.editor.CompletionItem;
 import dev.jfxde.jfxext.control.editor.DocRef;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
@@ -9,8 +11,8 @@ public class QualifiedNameCompletionItem extends CompletionItem {
 
     private final ObservableList<TextStyleSpans> input;
 
-    public QualifiedNameCompletionItem(ObservableList<TextStyleSpans> input, String signature) {
-        super(new DocRef(signature, signature));
+    public QualifiedNameCompletionItem(ObservableList<TextStyleSpans> input, String signature, Function<DocRef, String> documentation) {
+        super(new DocRef(signature, signature, documentation));
         this.input = input;
     }
 

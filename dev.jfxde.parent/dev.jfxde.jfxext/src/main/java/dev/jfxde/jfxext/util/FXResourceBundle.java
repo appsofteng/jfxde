@@ -91,7 +91,7 @@ public class FXResourceBundle {
             if (parent != null) {
                 value = parent.getObject(key);
             } else {
-                LOGGER.log(Level.WARNING, e.getMessage(), e);
+                LOGGER.log(Level.INFO, e.getMessage(), e);
             }
         }
 
@@ -100,13 +100,7 @@ public class FXResourceBundle {
 
     public String getString​(String key, Object... args) {
 
-        String value = getObject(key);
-
-        if (value == null) {
-            value = key;
-        }
-
-        return MessageFormat.format(value, args);
+        return getStringOrDefault(key, key, args);
     }
 
     public StringBinding getStringBinding(String key, Object... args) {
@@ -119,14 +113,13 @@ public class FXResourceBundle {
     }
 
     public String getStringOrDefault(String key, String defaultValue, Object... args) {
-        String value = defaultValue;
-        try {
-            value = getString​(key, args);
-        } catch (MissingResourceException e) {
+        String value = getObject(key);
 
+        if (value == null) {
+            value = defaultValue;
         }
 
-        return value;
+        return MessageFormat.format(value, args);
     }
 
     public String getStringtMaxWidth(String key, String arg, int maxWidth) {

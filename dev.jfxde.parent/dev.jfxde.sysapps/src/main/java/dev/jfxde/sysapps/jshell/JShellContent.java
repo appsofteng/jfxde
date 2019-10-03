@@ -30,6 +30,7 @@ import jdk.jshell.JShell;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
 import picocli.AutoComplete;
+import picocli.CommandLine;
 
 public class JShellContent extends BorderPane {
 
@@ -165,9 +166,23 @@ public class JShellContent extends BorderPane {
         int anchor = AutoComplete.complete(commandOutput.getCommandLine().getCommandSpec(), args, argIndex, positionInArg, cursor, candidates);
         String arg = args[argIndex];
 
-        List<CompletionItem> items = candidates.stream().map(s -> new CommandCompletionItem(inputArea, anchor, s.toString(), arg.substring(0, anchor) + s)).collect(Collectors.toList());
+        List<CompletionItem> items = new ArrayList<>();
+
+        for (CharSequence candidate : candidates) {
+
+            String name = arg.substring(0, anchor) + candidate;
+
+            items.add(new CommandCompletionItem(inputArea, anchor, candidate.toString(), name, this::getCommandHelp));
+        }
 
         return items;
+    }
+
+    private String getCommandHelp(DocRef docRef) {
+
+        String help = commandOutput.getSubcommandHelps().getOrDefault(docRef.getDocCode(), "");
+
+        return help;
     }
 
     private Collection<CompletionItem> getCodeCompletionItems(CodeArea inputArea) {
@@ -195,7 +210,7 @@ public class JShellContent extends BorderPane {
 
             for (Documentation doc : docs) {
                 items.add(new SuggestionCompletionItem(inputArea, item.getSuggestion(), item.getAnchor(), item.getDocRef().getDocCode(),
-                        doc.signature()));
+                        doc.signature(), this::loadDocumentation));
             }
         }
 
@@ -206,7 +221,7 @@ public class JShellContent extends BorderPane {
         if (!qualifiedNames.isResolvable()) {
             Set<CompletionItem> names = qualifiedNames.getNames()
                     .stream()
-                    .map(n -> new QualifiedNameCompletionItem(consoleView.getConsoleModel().getInput(), n))
+                    .map(n -> new QualifiedNameCompletionItem(consoleView.getConsoleModel().getInput(), n, this::loadDocumentation))
                     .sorted()
                     .collect(Collectors.toSet());
 
