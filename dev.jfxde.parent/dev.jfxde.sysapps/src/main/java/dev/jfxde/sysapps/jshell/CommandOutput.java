@@ -24,6 +24,10 @@ public class CommandOutput extends JShellOutput {
                 .setErr(new PrintWriter(consoleModel.getOut(), true));
     }
 
+    public CommandLine getCommandLine() {
+        return commandLine;
+    }
+
     @Override
     void process(String input) {
 

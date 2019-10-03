@@ -11,7 +11,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = RerunCommand.RERUN_NAME)
 public class RerunCommand extends BaseCommand {
 
-    static final String RERUN_NAME = "/id(s)";
+    static final String RERUN_NAME = "/rerun";
 
     @Parameters
     private ArrayList<String> parameters;

@@ -29,6 +29,7 @@ import javafx.scene.layout.BorderPane;
 import jdk.jshell.JShell;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
+import picocli.AutoComplete;
 
 public class JShellContent extends BorderPane {
 
@@ -144,7 +145,29 @@ public class JShellContent extends BorderPane {
     }
 
     private Collection<CompletionItem> getCommandCompletionItems(CodeArea inputArea) {
-        return List.of();
+        String[] args = inputArea.getText().split(" +");
+        int cursor = inputArea.getCaretPosition();
+        int argIndex = 0;
+        int positionInArg = 0;
+
+        int length = 0;
+        for (int i = 0; i < args.length; i++) {
+            length += args[i].length();
+
+            if (length >= cursor) {
+                argIndex = i;
+                positionInArg = cursor - (length - args[i].length());
+                break;
+            }
+        }
+
+        List<CharSequence> candidates = new ArrayList<>();
+        int anchor = AutoComplete.complete(commandOutput.getCommandLine().getCommandSpec(), args, argIndex, positionInArg, cursor, candidates);
+        String arg = args[argIndex];
+
+        List<CompletionItem> items = candidates.stream().map(s -> new CommandCompletionItem(inputArea, anchor, s.toString(), arg.substring(0, anchor) + s)).collect(Collectors.toList());
+
+        return items;
     }
 
     private Collection<CompletionItem> getCodeCompletionItems(CodeArea inputArea) {
