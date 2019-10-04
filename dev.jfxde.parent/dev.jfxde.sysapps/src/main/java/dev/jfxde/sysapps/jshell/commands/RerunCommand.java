@@ -13,7 +13,7 @@ public class RerunCommand extends BaseCommand {
 
     static final String RERUN_NAME = "/rerun";
 
-    @Parameters
+    @Parameters(arity = "1..*", paramLabel = "{name|id|startID-endID}[ {name|id|startID-endID}...]")
     private ArrayList<String> parameters;
 
     public RerunCommand(CommandOutput commandOutput) {

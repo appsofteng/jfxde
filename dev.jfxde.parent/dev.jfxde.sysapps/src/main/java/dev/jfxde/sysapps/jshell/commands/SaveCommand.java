@@ -28,7 +28,6 @@ public class SaveCommand extends BaseCommand {
                     try (var f = Files.newBufferedWriter(file.toPath())) {
                         jshell.snippets()
                         .filter(s -> jshell.status(s).isActive())
-                        .filter(s -> Integer.parseInt(s.id()) > jshellContent.startSnippetMaxIndex)
                         .forEach(s -> {try { f.append(s.source()); f.newLine();} catch (Exception e) { throw new RuntimeException(e);}});
                     }
                 }));

@@ -85,6 +85,8 @@ public class CompletionPopup extends Tooltip {
                             : -docPopup.getPrefWidth();
 
                     docPopup.show(this, getAnchorX() + offset, getAnchorY());
+                } else {
+                    docPopup.hide();
                 }
             }
         });

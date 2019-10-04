@@ -1,15 +1,12 @@
 package dev.jfxde.sysapps.jshell;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.fxmisc.richtext.CodeArea;
@@ -30,13 +27,10 @@ import jdk.jshell.JShell;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
 import picocli.AutoComplete;
-import picocli.CommandLine;
 
 public class JShellContent extends BorderPane {
 
     private static final String HISTORY_FILE_NAME = "history.json";
-
-    private static final Logger LOGGER = Logger.getLogger(JShellContent.class.getName());
 
     AppContext context;
     SplitConsoleView consoleView;
@@ -50,21 +44,10 @@ public class JShellContent extends BorderPane {
         consoleView = new SplitConsoleView(loadHistory());
         setCenter(consoleView);
         setBehavior();
-        IdGenerator idGenerator = new IdGenerator();
-        jshell = JShell.builder().idGenerator(idGenerator)
-                .in(consoleView.getConsoleModel().getIn())
-                .out(consoleView.getConsoleModel().getOut())
-                .err(consoleView.getConsoleModel().getErr())
-                .build();
-        jshell.sourceCodeAnalysis();
-        idGenerator.setJshell(jshell);
+        buildJShell();
 
         snippetOutput = new SnippetOutput(this);
         commandOutput = new CommandOutput(this);
-
-        loadHistory();
-        loadStartSnippets();
-        startSnippetMaxIndex = idGenerator.getMaxId();
     }
 
     private void setBehavior() {
@@ -103,15 +86,22 @@ public class JShellContent extends BorderPane {
         return history;
     }
 
-    private void loadStartSnippets() {
-
+    private void buildJShell() {
+        IdGenerator idGenerator = new IdGenerator();
+        jshell = JShell.builder().idGenerator(idGenerator)
+                .in(consoleView.getConsoleModel().getIn())
+                .out(consoleView.getConsoleModel().getOut())
+                .err(consoleView.getConsoleModel().getErr())
+                .build();
+        jshell.sourceCodeAnalysis();
+        idGenerator.setJshell(jshell);
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("start-snippets.txt")));
-            reader.lines().forEach(s -> jshell.eval(s));
-        } catch (Exception e) {
-
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
+            JShellUtils.loadSnippets(jshell, getClass().getResourceAsStream("start-snippets.txt"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
+        startSnippetMaxIndex = idGenerator.getMaxId();
     }
 
     private void enter(String input) {
@@ -146,8 +136,9 @@ public class JShellContent extends BorderPane {
     }
 
     private Collection<CompletionItem> getCommandCompletionItems(CodeArea inputArea) {
-        String[] args = inputArea.getText().split(" +");
-        int cursor = inputArea.getCaretPosition();
+        String[] args = inputArea.getText().strip().split(" +");
+        int caretPosition = inputArea.getCaretPosition();
+        int argsPosition = (int) inputArea.getText().substring(0, caretPosition).chars().filter(i -> i != 32).count();
         int argIndex = 0;
         int positionInArg = 0;
 
@@ -155,32 +146,47 @@ public class JShellContent extends BorderPane {
         for (int i = 0; i < args.length; i++) {
             length += args[i].length();
 
-            if (length >= cursor) {
+            if (length >= argsPosition) {
                 argIndex = i;
-                positionInArg = cursor - (length - args[i].length());
+                positionInArg = argsPosition - (length - args[i].length());
                 break;
             }
         }
 
         List<CharSequence> candidates = new ArrayList<>();
-        int anchor = AutoComplete.complete(commandOutput.getCommandLine().getCommandSpec(), args, argIndex, positionInArg, cursor, candidates);
+        int anchor = AutoComplete.complete(commandOutput.getCommandLine().getCommandSpec(), args, argIndex, positionInArg, caretPosition, candidates);
+
+        if (candidates.size() == 1 && candidates.get(0).length() == 0 && args.length > 0) {
+            args = new String[] { args[0], "" };
+            argIndex = 1;
+            positionInArg = 0;
+            anchor = AutoComplete.complete(commandOutput.getCommandLine().getCommandSpec(), args, argIndex, positionInArg, caretPosition, candidates);
+        }
+
         String arg = args[argIndex];
 
         List<CompletionItem> items = new ArrayList<>();
 
         for (CharSequence candidate : candidates) {
 
-            String name = arg.substring(0, anchor) + candidate;
+            if (candidate.length() == 0) {
+                continue;
+            }
 
-            items.add(new CommandCompletionItem(inputArea, anchor, candidate.toString(), name, this::getCommandHelp));
+            String name = arg.substring(0, positionInArg) + candidate;
+            String docCode = args.length <= 1 ? name : (args[0] + "." + name);
+
+            items.add(new CommandCompletionItem(inputArea, anchor, candidate.toString(), name, docCode, this::getCommandHelp));
         }
 
+        System.out.println("getCommandCompletionItems " + items);
         return items;
     }
 
     private String getCommandHelp(DocRef docRef) {
 
-        String help = commandOutput.getSubcommandHelps().getOrDefault(docRef.getDocCode(), "");
+        String help = commandOutput.getSubcommandHelps().getOrDefault(docRef.getDocCode(),
+                context.rc().getStringOrDefault(docRef.getDocCode(), context.rc().getStringOrDefault(docRef.getSignature(), "")));
 
         return help;
     }

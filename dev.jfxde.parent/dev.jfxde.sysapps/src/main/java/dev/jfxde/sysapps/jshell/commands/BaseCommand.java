@@ -7,7 +7,9 @@ import dev.jfxde.sysapps.jshell.JShellContent;
 import dev.jfxde.sysapps.jshell.SnippetOutput;
 import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
 
 public abstract class BaseCommand  implements Runnable {
 
@@ -20,8 +22,11 @@ public abstract class BaseCommand  implements Runnable {
     protected SnippetOutput snippetOutput;
     protected JShellContent jshellContent;
 
-    @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "help")
-    private boolean usageHelpRequested;
+    @Option(names = {"-h", "--help"}, usageHelp = true, descriptionKey = "-h")
+    protected boolean help;
+
+    @Spec
+    protected CommandSpec commandSpec;
 
     public BaseCommand(CommandOutput commandOutput) {
         this.commandOutput = commandOutput;

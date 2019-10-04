@@ -1,5 +1,9 @@
 package dev.jfxde.sysapps.jshell;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +22,13 @@ public final class JShellUtils {
         Snippet snippet = jshell.snippets().filter(s -> s.id().equals(id.toString())).findFirst().orElse(null);
 
         return snippet;
+    }
+
+    public static void loadSnippets(JShell jshell, InputStream in) throws IOException {
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+            reader.lines().forEach(s -> jshell.eval(s));
+        }
     }
 
     public static String getDocumentation(JShell jshell, DocRef docRef, Map<String, String> bundle) {

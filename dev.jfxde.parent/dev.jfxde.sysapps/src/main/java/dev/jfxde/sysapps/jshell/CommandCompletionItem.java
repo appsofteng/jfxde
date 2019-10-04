@@ -14,8 +14,8 @@ public class CommandCompletionItem extends CompletionItem {
     private String continuation;
     private String name;
 
-    public CommandCompletionItem(CodeArea codeArea, int anchor, String continuation, String name, Function<DocRef, String> documentation) {
-        super(new DocRef(name, documentation));
+    public CommandCompletionItem(CodeArea codeArea, int anchor, String continuation, String name, String docCode, Function<DocRef, String> documentation) {
+        super(new DocRef(docCode, name, documentation));
         this.codeArea = codeArea;
         this.anchor = anchor;
         this.continuation = continuation;
