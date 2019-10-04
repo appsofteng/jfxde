@@ -73,12 +73,12 @@ public class DocPopup extends Tooltip {
         contextMenu.setAutoHide(true);
 
         MenuItem back = new MenuItem();
-        back.textProperty().bind(FXResourceBundle.getDefaultBundle().getStringBinding("back"));
+        back.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("back"));
         back.disableProperty().bind(historyIndex.lessThanOrEqualTo(0));
         back.setOnAction(e -> back());
 
         MenuItem forward = new MenuItem();
-        forward.textProperty().bind(FXResourceBundle.getDefaultBundle().getStringBinding("forward"));
+        forward.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("forward"));
         forward.disableProperty().bind(Bindings.isEmpty(history).or(historyIndex.isEqualTo(Bindings.size(history).subtract(1))));
         forward.setOnAction(e -> forward());
 

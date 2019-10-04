@@ -33,7 +33,7 @@ public class ContextMenuBuilder {
     public ContextMenuBuilder copy() {
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+C"));
-        item.textProperty().bind(FXResourceBundle.getDefaultBundle().getStringBinding("copy"));
+        item.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("copy"));
         item.setOnAction(e -> area.copy());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> area.getSelection().getLength() == 0, area.selectionProperty()));
 
@@ -45,7 +45,7 @@ public class ContextMenuBuilder {
     public ContextMenuBuilder cut() {
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+X"));
-        item.textProperty().bind(FXResourceBundle.getDefaultBundle().getStringBinding("cut"));
+        item.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("cut"));
         item.setOnAction(e -> area.cut());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> area.getSelection().getLength() == 0, area.selectionProperty()));
 
@@ -58,7 +58,7 @@ public class ContextMenuBuilder {
 
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+V"));
-        item.textProperty().bind(FXResourceBundle.getDefaultBundle().getStringBinding("paste"));
+        item.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("paste"));
         item.setOnAction(e -> area.paste());
 
         area.getContextMenu().setOnShowing(e -> {
@@ -72,7 +72,7 @@ public class ContextMenuBuilder {
     public ContextMenuBuilder selectAll() {
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+A"));
-        item.textProperty().bind(FXResourceBundle.getDefaultBundle().getStringBinding("selectAll"));
+        item.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("selectAll"));
         item.setOnAction(e -> area.selectAll());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> area.getSelectedText().length() == area.getText().length(),
                 area.selectedTextProperty()));
@@ -83,7 +83,7 @@ public class ContextMenuBuilder {
 
     public ContextMenuBuilder clear() {
         MenuItem item = new MenuItem();
-        item.textProperty().bind(FXResourceBundle.getDefaultBundle().getStringBinding("clear"));
+        item.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("clear"));
         item.setOnAction(e -> area.clear());
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> area.getLength() == 0, area.lengthProperty()));
 
@@ -94,7 +94,7 @@ public class ContextMenuBuilder {
 
     public ContextMenuBuilder clear(EventHandler<ActionEvent> handler) {
         MenuItem item = new MenuItem();
-        item.textProperty().bind(FXResourceBundle.getDefaultBundle().getStringBinding("clear"));
+        item.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("clear"));
         item.setOnAction(handler);
         item.disableProperty().bind(Bindings.createBooleanBinding(() -> area.getLength() == 0, area.lengthProperty()));
 

@@ -1,6 +1,7 @@
 package dev.jfxde.api;
 
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import javafx.beans.binding.StringBinding;
@@ -15,4 +16,5 @@ public interface ResourceController {
 	String getStringMaxWidth(String key, String arg, int maxWidth);
 	String getCss(String name);
 	Map<String,String> getStrings(Set<String> keys);
+	ResourceBundle getStringBundle();
 }

@@ -4,7 +4,6 @@ import java.io.PrintWriter;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import dev.jfxde.jfxext.control.ConsoleModel;
@@ -30,7 +29,7 @@ public class CommandOutput extends JShellOutput {
         this.commandLine = new CommandLine(new Commands(), commandFactory)
                 .setOut(out)
                 .setErr(new PrintWriter(consoleModel.getErr(), true))
-                .setResourceBundle(ResourceBundle.getBundle("dev.jfxde.sysapps.jshell.bundles.strings"));
+                .setResourceBundle(context.rc().getStringBundle());
 
         // load and cache in parallel
         subcommandHelps = commandLine.getSubcommands().entrySet().parallelStream()

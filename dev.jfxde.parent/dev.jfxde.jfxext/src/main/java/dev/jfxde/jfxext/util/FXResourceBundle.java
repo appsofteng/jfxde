@@ -46,7 +46,7 @@ public class FXResourceBundle {
         locale.set(Locale.forLanguageTag(value));
     }
 
-    public static FXResourceBundle getDefaultBundle() {
+    public static FXResourceBundle getBundle() {
         return getBundle​(DEFAULT_BASE_NAME, null, null);
     }
 
@@ -66,7 +66,7 @@ public class FXResourceBundle {
         return bundle;
     }
 
-    private ResourceBundle getBundle() {
+    public ResourceBundle getResourceBundle() {
 
         ResourceBundle bundle = AccessController.doPrivileged((PrivilegedAction<ResourceBundle>) () -> {
             if (module == null) {
@@ -85,7 +85,7 @@ public class FXResourceBundle {
 
         try {
 
-            value = getBundle().getObject(key);
+            value = getResourceBundle().getObject(key);
 
         } catch (MissingResourceException e) {
             if (parent != null) {

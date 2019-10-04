@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -112,22 +113,32 @@ public final class ResourceManager extends Manager implements ResourceController
         return resourceBundle;
     }
 
+    @Override
+    public ResourceBundle getStringBundle() {
+        return getBundle().getResourceBundle();
+    }
+
+    @Override
     public String getString(String key, Object... args) {
         return getBundle().getString​(key, args);
     }
 
+    @Override
     public String getStringOrDefault(String key, String defaultValue, Object... args) {
         return getBundle().getStringOrDefault(key, defaultValue, args);
     }
 
+    @Override
     public String getStringMaxWidth(String key, String arg, int maxWidth) {
         return getBundle().getStringtMaxWidth(key, arg, maxWidth);
     }
 
+    @Override
     public StringBinding getStringBinding(String key, Object... args) {
         return getBundle().getStringBinding(key, args);
     }
 
+    @Override
     public StringBinding getStringBinding(ReadOnlyObjectProperty<?> key, Object... args) {
         return getBundle().getStringBinding(key, args);
     }
@@ -137,6 +148,7 @@ public final class ResourceManager extends Manager implements ResourceController
         return keys.stream().collect(Collectors.toMap(k -> k, k -> getString(k)));
     }
 
+    @Override
     public String getCss(String name) {
         String url = caller.getResource(CSS_DIR_NAME + "/" + name + ".css").toExternalForm();
         return url;
