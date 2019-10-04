@@ -3,7 +3,7 @@ package dev.jfxde.sysapps.jshell.commands;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.jfxde.sysapps.jshell.CommandOutput;
+import dev.jfxde.sysapps.jshell.CommandProcessor;
 import jdk.jshell.Snippet;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -16,8 +16,8 @@ public class RerunCommand extends BaseCommand {
     @Parameters(arity = "1..*", paramLabel = "{name|id|startID-endID}[ {name|id|startID-endID}...]")
     private ArrayList<String> parameters;
 
-    public RerunCommand(CommandOutput commandOutput) {
-        super(commandOutput);
+    public RerunCommand(CommandProcessor commandProcessor) {
+        super(commandProcessor);
     }
 
 
@@ -37,8 +37,8 @@ public class RerunCommand extends BaseCommand {
     @Override
     public void run() {
 
-        List<Snippet> snippets = snippetMatch.matches(parameters);
+        List<Snippet> snippets = commandProcessor.matches(parameters);
 
-        snippetOutput.output(snippets);
+        commandProcessor.getSession().getSnippetProcessor().output(snippets);
     }
 }

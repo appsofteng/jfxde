@@ -3,39 +3,70 @@ package dev.jfxde.sysapps.jshell;
 import java.io.PrintWriter;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.sysapps.jshell.commands.BaseCommand;
 import dev.jfxde.sysapps.jshell.commands.Commands;
 import dev.jfxde.sysapps.jshell.commands.RerunCommand;
-import dev.jfxde.sysapps.jshell.commands.SnippetMatch;
+import jdk.jshell.Snippet;
 import picocli.CommandLine;
 import picocli.CommandLine.IFactory;
 
-public class CommandOutput extends JShellOutput {
+public class CommandProcessor extends Processor {
 
-    public SnippetMatch snippetMatch;
-    CommandFactory commandFactory = new CommandFactory();
+    private CommandFactory commandFactory = new CommandFactory();
     private CommandLine commandLine;
-    private PrintWriter out = new PrintWriter(consoleModel.getOut(ConsoleModel.COMMENT_STYLE), true);
+    private PrintWriter out;
     private Map<String, String> subcommandHelps;
 
-    CommandOutput(JShellContent jshellContent) {
-        super(jshellContent);
+    CommandProcessor(Session session) {
+        super(session);
 
-        this.snippetMatch = new SnippetMatch(jshell);
+        this.out = new PrintWriter(session.getConsoleModel().getOut(ConsoleModel.COMMENT_STYLE), true);
         this.commandLine = new CommandLine(new Commands(), commandFactory)
                 .setOut(out)
-                .setErr(new PrintWriter(consoleModel.getErr(), true))
-                .setResourceBundle(context.rc().getStringBundle());
+                .setErr(new PrintWriter(session.getConsoleModel().getErr(), true))
+                .setResourceBundle(session.getContext().rc().getStringBundle());
 
         // load and cache in parallel
         subcommandHelps = commandLine.getSubcommands().entrySet().parallelStream()
                 .collect(Collectors.toMap(e -> e.getKey(),
                         e -> AccessController.doPrivileged((PrivilegedAction<String>) () -> "<pre>" + e.getValue().getUsageMessage() + "</pre>")));
 
+    }
+
+    public List<Snippet> matches(String[] values) {
+        return matches(Arrays.asList(values));
+    }
+
+    public List<Snippet> matches(List<String> values) {
+
+        List<Snippet> snippets = new ArrayList<>();
+
+        for (String value : values) {
+            if (value.matches("\\d+")) {
+                Snippet s = session.getSnippetsById().get(value);
+                if (s != null) {
+                    snippets.add(s);
+                }
+            } else if (value.matches("\\d+-\\d+")) {
+                String[] parts = value.split("-");
+                snippets.addAll(IntStream.rangeClosed(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]))
+                        .mapToObj(i -> session.getSnippetsById().get(String.valueOf(i)))
+                        .filter(s -> s != null)
+                        .collect(Collectors.toList()));
+            } else {
+                snippets.addAll(session.getSnippetsByName().getOrDefault(value, List.of()));
+            }
+        }
+
+        return snippets;
     }
 
     public CommandLine getCommandLine() {
@@ -63,7 +94,7 @@ public class CommandOutput extends JShellOutput {
         commandLine.execute(args);
     }
 
-    boolean isCommand(String input) {
+    static boolean isCommand(String input) {
         return input.matches("/[\\w!?\\-]*( .*)*");
     }
 
@@ -75,7 +106,7 @@ public class CommandOutput extends JShellOutput {
             K obj = null;
 
             if (BaseCommand.class.isAssignableFrom(cls)) {
-                obj = cls.getConstructor(CommandOutput.class).newInstance(CommandOutput.this);
+                obj = cls.getConstructor(CommandProcessor.class).newInstance(CommandProcessor.this);
             } else {
                 obj = cls.getConstructor().newInstance();
             }

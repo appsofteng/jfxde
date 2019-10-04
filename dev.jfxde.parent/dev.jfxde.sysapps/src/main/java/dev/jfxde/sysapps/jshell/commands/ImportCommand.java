@@ -2,23 +2,22 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
-import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
-import dev.jfxde.sysapps.jshell.CommandOutput;
+import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
 import picocli.CommandLine.Command;
 
 @Command(name = "/imports")
 public class ImportCommand extends BaseCommand {
 
-    public ImportCommand(CommandOutput commandOutput) {
-        super(commandOutput);
+    public ImportCommand(CommandProcessor commandProcessor) {
+        super(commandProcessor);
 
     }
 
     @Override
     public void run() {
-        String imports = jshell.imports().map(SnippetUtils::toString).sorted().collect(Collectors.joining());
+        String imports = commandProcessor.getSession().getJshell().imports().map(SnippetUtils::toString).sorted().collect(Collectors.joining());
 
-        consoleModel.addNewLineOutput(new TextStyleSpans(imports));
+        commandProcessor.getSession().getFeedback().normaln(imports);
     }
 }

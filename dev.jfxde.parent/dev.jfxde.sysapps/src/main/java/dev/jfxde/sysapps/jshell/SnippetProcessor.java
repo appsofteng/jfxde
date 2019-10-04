@@ -16,16 +16,16 @@ import jdk.jshell.SourceCodeAnalysis.Completeness;
 import jdk.jshell.SourceCodeAnalysis.CompletionInfo;
 import jdk.jshell.VarSnippet;
 
-public class SnippetOutput extends JShellOutput {
+public class SnippetProcessor extends Processor {
 
-    SnippetOutput(JShellContent jshellContent) {
-        super(jshellContent);
+    SnippetProcessor(Session session) {
+        super(session);
     }
 
     @Override
     public void process(String input) {
 
-        SourceCodeAnalysis sourceAnalysis = jshell.sourceCodeAnalysis();
+        SourceCodeAnalysis sourceAnalysis = session.getJshell().sourceCodeAnalysis();
 
         String[] lines = input.split("\n");
         StringBuffer sb = new StringBuffer();
@@ -41,33 +41,33 @@ public class SnippetOutput extends JShellOutput {
                 sb.delete(0, sb.length());
                 continue;
             } else if (info.completeness() == Completeness.UNKNOWN) {
-                consoleModel.addNewLineOutput(new TextStyleSpans(context.rc().getString("unknown") + "  " + sb.toString().strip(), ConsoleModel.ERROR_STYLE));
+                session.getFeedback().normaln(session.getContext().rc().getString("unknown") + "  " + sb.toString().strip(), ConsoleModel.ERROR_STYLE);
                 sb.delete(0, sb.length());
                 continue;
             }
 
             String source = info.source();
             sb.delete(0, sb.length()).append(info.remaining());
-            List<SnippetEvent> snippetEvents = jshell.eval(source);
-            snippetEvents.forEach(e -> consoleModel.addNewLineOutput(getOutput(e)));
+            List<SnippetEvent> snippetEvents = session.getJshell().eval(source);
+            snippetEvents.forEach(e -> session.getFeedback().normal(getOutput(e)));
         }
 
-        consoleModel.getOutput().add(new TextStyleSpans("\n"));
+        session.getFeedback().normal("\n");
     }
 
     public void output(List<Snippet> snippets) {
 
         if (snippets.isEmpty()) {
-            consoleModel.addNewLineOutput(new TextStyleSpans(context.rc().getString("noSuchSnippet"), ConsoleModel.COMMENT_STYLE));
+            session.getFeedback().normaln(session.getContext().rc().getString("noSuchSnippet"), ConsoleModel.COMMENT_STYLE);
         }
 
         for (Snippet snippet : snippets) {
-            consoleModel.addNewLineOutput(new TextStyleSpans(snippet.source().strip()));
-            List<SnippetEvent> snippetEvents = jshell.eval(snippet.source());
-            snippetEvents.forEach(e -> consoleModel.addNewLineOutput(getOutput(e)));
+            session.getFeedback().normaln(snippet.source().strip());
+            List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
+            snippetEvents.forEach(e -> session.getFeedback().normal(getOutput(e)));
         }
 
-        consoleModel.getOutput().add(new TextStyleSpans("\n"));
+        session.getFeedback().normal("\n");
     }
 
     private TextStyleSpans getOutput(SnippetEvent event) {
@@ -85,7 +85,7 @@ public class SnippetOutput extends JShellOutput {
             message = getSuccessMessage(event);
         }
 
-        message = message.strip();
+        message = message.strip() + "\n";
 
         TextStyleSpans o = new TextStyleSpans(message, type);
 
@@ -102,7 +102,7 @@ public class SnippetOutput extends JShellOutput {
             msg = msg.replace(event.exception().getClass().getName(), e.getExceptionClassName());
         }
 
-        msg = context.rc().getString("exception") + " " + msg.replace("\r", "");
+        msg = session.getContext().rc().getString("exception") + " " + msg.replace("\r", "");
 
         return msg;
     }
@@ -110,9 +110,9 @@ public class SnippetOutput extends JShellOutput {
     private String getRejectedMessage(SnippetEvent event) {
         StringBuilder sb = new StringBuilder();
 
-        jshell.diagnostics(event.snippet()).forEach(d -> {
+        session.getJshell().diagnostics(event.snippet()).forEach(d -> {
             if (d.isError()) {
-                sb.append(context.rc().getString("error") + ":\n");
+                sb.append(session.getContext().rc().getString("error") + ":\n");
             }
             sb.append(d.getMessage(null)).append("\n");
 
@@ -135,12 +135,12 @@ public class SnippetOutput extends JShellOutput {
         if (event.snippet().kind() == Kind.EXPRESSION) {
             msg = "";
         } else if (event.previousStatus() == Status.NONEXISTENT) {
-            msg = context.rc().getString("created");
+            msg = session.getContext().rc().getString("created");
         } else if (event.status() == Status.OVERWRITTEN) {
             if (event.causeSnippet().subKind() == event.snippet().subKind()) {
-                msg = context.rc().getString("modified");
+                msg = session.getContext().rc().getString("modified");
             } else {
-                msg = context.rc().getString("replaced");
+                msg = session.getContext().rc().getString("replaced");
             }
         }
 
@@ -150,7 +150,7 @@ public class SnippetOutput extends JShellOutput {
         if (event.causeSnippet() != null) {
             snippet = event.causeSnippet();
             if (snippet instanceof VarSnippet) {
-                value = jshell.varValue((VarSnippet) event.causeSnippet());
+                value = session.getJshell().varValue((VarSnippet) event.causeSnippet());
             }
         }
 

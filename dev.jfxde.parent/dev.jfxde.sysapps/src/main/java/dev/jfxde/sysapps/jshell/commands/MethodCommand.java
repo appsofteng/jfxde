@@ -2,8 +2,7 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
-import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
-import dev.jfxde.sysapps.jshell.CommandOutput;
+import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
 import jdk.jshell.Snippet.Kind;
 import picocli.CommandLine.Command;
@@ -12,8 +11,8 @@ import picocli.CommandLine.Option;
 @Command(name = "/methods")
 public class MethodCommand extends BaseCommand {
 
-    public MethodCommand(CommandOutput commandOutput) {
-        super(commandOutput);
+    public MethodCommand(CommandProcessor commandProcessor) {
+        super(commandProcessor);
     }
 
     @Option(names = "-all", descriptionKey = "/method.-all")
@@ -26,31 +25,31 @@ public class MethodCommand extends BaseCommand {
     public void run() {
 
         if (all && start) {
-            commandOutput.getCommandLine().getErr().println(context.rc().getString("onlyOneOptionAllowed") + "\n");
+            commandProcessor.getCommandLine().getErr().println(commandProcessor.getSession().getContext().rc().getString("onlyOneOptionAllowed") + "\n");
             return;
         }
 
         String result = "";
         if (all) {
-            result = jshell.snippets()
+            result = commandProcessor.getSession().getJshell().snippets()
                     .filter(s -> s.kind() == Kind.METHOD)
-                    .map(s -> SnippetUtils.toString(s, jshell))
+                    .map(s -> SnippetUtils.toString(s, commandProcessor.getSession().getJshell()))
                     .collect(Collectors.joining());
         } else if (start) {
-            result = jshell.snippets()
+            result = commandProcessor.getSession().getJshell().snippets()
                     .filter(s -> s.kind() == Kind.METHOD)
-                    .filter(s -> Integer.parseInt(s.id()) <= jshellContent.startSnippetMaxIndex)
-                    .map(s -> SnippetUtils.toString(s, jshell))
+                    .filter(s -> Integer.parseInt(s.id()) <= commandProcessor.getSession().getStartSnippetMaxIndex())
+                    .map(s -> SnippetUtils.toString(s, commandProcessor.getSession().getJshell()))
                     .collect(Collectors.joining());
         } else {
 
-            result = jshell.snippets()
-                    .filter(s -> jshell.status(s).isActive())
+            result = commandProcessor.getSession().getJshell().snippets()
+                    .filter(s -> commandProcessor.getSession().getJshell().status(s).isActive())
                     .filter(s -> s.kind() == Kind.METHOD)
-                    .map(s -> SnippetUtils.toString(s, jshell))
+                    .map(s -> SnippetUtils.toString(s, commandProcessor.getSession().getJshell()))
                     .collect(Collectors.joining());
         }
 
-        consoleModel.addNewLineOutput(new TextStyleSpans(result));
+        commandProcessor.getSession().getFeedback().normaln(result);
     }
 }

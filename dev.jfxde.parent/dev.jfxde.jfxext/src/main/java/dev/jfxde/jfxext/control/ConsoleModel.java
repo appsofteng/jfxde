@@ -100,8 +100,6 @@ public class ConsoleModel {
         if (!textStyleSpans.getText().isBlank()) {
             output.add(textStyleSpans);
         }
-
-        output.add(new TextStyleSpans("\n"));
     }
 
     private synchronized void addOutput(TextStyleSpans textStyleSpans) {

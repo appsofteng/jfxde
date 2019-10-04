@@ -12,6 +12,7 @@ public class IdGenerator implements BiFunction<Snippet, Integer, String> {
 
     public void setJshell(JShell jshell) {
         this.jshell = jshell;
+        maxId = 0;
     }
 
     public int getMaxId() {

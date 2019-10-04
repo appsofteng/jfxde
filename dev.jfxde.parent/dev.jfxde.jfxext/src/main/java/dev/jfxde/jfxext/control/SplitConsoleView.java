@@ -137,6 +137,11 @@ public class SplitConsoleView extends BorderPane {
 
     private void enter() {
 
+        // Null char may come from clipboard.
+        if (inputArea.getText().contains("\0")) {
+            inputArea.replaceText(inputArea.getText().replace("\0", ""));
+        }
+
         if (outputArea.getLength() > 0 && !outputArea.getText().endsWith("\n\n")) {
             outputArea.appendText("\n");
         }

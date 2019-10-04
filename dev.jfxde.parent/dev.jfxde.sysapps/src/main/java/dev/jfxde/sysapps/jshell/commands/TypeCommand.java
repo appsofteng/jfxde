@@ -2,22 +2,21 @@ package dev.jfxde.sysapps.jshell.commands;
 
 import java.util.stream.Collectors;
 
-import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
-import dev.jfxde.sysapps.jshell.CommandOutput;
+import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
 import picocli.CommandLine.Command;
 
 @Command(name = "/types")
 public class TypeCommand extends BaseCommand {
 
-    public TypeCommand(CommandOutput commandOutput) {
-        super(commandOutput);
+    public TypeCommand(CommandProcessor commandProcessor) {
+        super(commandProcessor);
     }
 
     @Override
     public void run() {
-        String result = jshell.types().map(SnippetUtils::toString).sorted().collect(Collectors.joining());
+        String result = commandProcessor.getSession().getJshell().types().map(SnippetUtils::toString).sorted().collect(Collectors.joining());
 
-        consoleModel.addNewLineOutput(new TextStyleSpans(result));
+        commandProcessor.getSession().getFeedback().normaln(result);
     }
 }

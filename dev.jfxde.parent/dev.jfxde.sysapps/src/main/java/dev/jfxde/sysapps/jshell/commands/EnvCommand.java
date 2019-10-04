@@ -3,16 +3,16 @@ package dev.jfxde.sysapps.jshell.commands;
 import dev.jfxde.sysapps.jshell.CommandProcessor;
 import picocli.CommandLine.Command;
 
-@Command(name = "/help")
-public class HelpCommand extends BaseCommand {
+@Command(name = "/env")
+public class EnvCommand extends BaseCommand {
 
-    public HelpCommand(CommandProcessor commandProcessor) {
+    public EnvCommand(CommandProcessor commandProcessor) {
         super(commandProcessor);
     }
 
     @Override
     public void run() {
 
-       commandProcessor.getCommandLine().usage(commandProcessor.getOut());
+
     }
 }
