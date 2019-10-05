@@ -16,6 +16,7 @@ import dev.jfxde.jfxext.util.JavadocUtils;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
 import picocli.AutoComplete;
+import picocli.CommandLine;
 
 public class Completion {
 
@@ -79,9 +80,14 @@ public class Completion {
     }
 
     private String getCommandHelp(DocRef docRef) {
+        String help = "";
+        CommandLine subcommand = session.getCommandProcessor().getCommandLine().getSubcommands().get(docRef.getDocCode());
 
-        String help = session.getCommandProcessor().getSubcommandHelps().getOrDefault(docRef.getDocCode(),
-                session.getContext().rc().getStringOrDefault(docRef.getDocCode(), session.getContext().rc().getStringOrDefault(docRef.getSignature(), "")));
+        if (subcommand != null) {
+           help = "<pre>" + subcommand.getUsageMessage() + "</pre>";
+        } else {
+            help = session.getContext().rc().getStringOrDefault(docRef.getDocCode(), session.getContext().rc().getStringOrDefault(docRef.getSignature(), ""));
+        }
 
         return help;
     }

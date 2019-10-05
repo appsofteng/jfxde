@@ -1,6 +1,8 @@
-package dev.jfxde.logic.conext;
+package dev.jfxde.logic.context;
 
+import dev.jfxde.api.TRunnable;
 import dev.jfxde.api.TaskController;
+import dev.jfxde.jfxext.util.TaskUtils;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.AppDescriptor;
 import javafx.concurrent.Task;
@@ -25,5 +27,12 @@ public class TaskControllerImpl implements TaskController {
     public <T> Task<T> executeSequentially(Task<T> task) {
         taskQueue.add(task);
         return task;
+    }
+
+    @Override
+    public Task<Void> executeSequentially(TRunnable task) {
+        Task<Void> t = TaskUtils.createTask(() -> task.run());
+        taskQueue.add(t);
+        return t;
     }
 }

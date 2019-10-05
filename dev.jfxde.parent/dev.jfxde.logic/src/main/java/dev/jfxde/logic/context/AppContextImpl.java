@@ -1,4 +1,4 @@
-package dev.jfxde.logic.conext;
+package dev.jfxde.logic.context;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.api.AppController;

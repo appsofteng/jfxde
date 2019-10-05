@@ -20,7 +20,6 @@ public class RerunCommand extends BaseCommand {
         super(commandProcessor);
     }
 
-
     public static String[] setIfMatches(String[] args) {
         String[] newArgs = args;
 
@@ -39,6 +38,6 @@ public class RerunCommand extends BaseCommand {
 
         List<Snippet> snippets = commandProcessor.matches(parameters);
 
-        commandProcessor.getSession().getSnippetProcessor().output(snippets);
+        commandProcessor.getSession().getSnippetProcessor().process(snippets);
     }
 }

@@ -1,4 +1,4 @@
-package dev.jfxde.logic.conext;
+package dev.jfxde.logic.context;
 
 import java.util.ArrayDeque;
 import java.util.Queue;

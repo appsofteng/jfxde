@@ -1,4 +1,4 @@
-package dev.jfxde.logic.conext;
+package dev.jfxde.logic.context;
 
 import java.io.IOException;
 import java.nio.file.Files;

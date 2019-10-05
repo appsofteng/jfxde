@@ -187,4 +187,32 @@ public class Session {
             }
         }
     }
+
+    public void process(String input) {
+
+        if (input.isBlank()) {
+            return;
+        }
+
+        String[] lines = input.split("\n");
+        StringBuilder sb = new StringBuilder();
+
+        for (String line : lines) {
+
+            if (CommandProcessor.isCommand(line)) {
+                if (sb.length() > 0) {
+                    String snippets = sb.toString();
+                    context.tc().executeSequentially(() -> snippetProcessor.process(snippets));
+                    sb.delete(0, sb.length());
+                }
+                context.tc().executeSequentially(() -> commandProcessor.process(line));
+            } else {
+                sb.append(line).append("\n");
+            }
+        }
+
+        if (sb.length() > 0) {
+            context.tc().executeSequentially(() -> snippetProcessor.process(sb.toString()));
+        }
+    }
 }

@@ -55,7 +55,7 @@ public class SnippetProcessor extends Processor {
         session.getFeedback().normal("\n");
     }
 
-    public void output(List<Snippet> snippets) {
+    public void process(List<Snippet> snippets) {
 
         if (snippets.isEmpty()) {
             session.getFeedback().normaln(session.getContext().rc().getString("noSuchSnippet"), ConsoleModel.COMMENT_STYLE);

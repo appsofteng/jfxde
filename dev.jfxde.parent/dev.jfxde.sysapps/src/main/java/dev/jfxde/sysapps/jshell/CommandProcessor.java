@@ -1,43 +1,72 @@
 package dev.jfxde.sysapps.jshell;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import dev.jfxde.jfxext.control.ConsoleModel;
-import dev.jfxde.sysapps.jshell.commands.BaseCommand;
 import dev.jfxde.sysapps.jshell.commands.Commands;
+import dev.jfxde.sysapps.jshell.commands.DropCommand;
+import dev.jfxde.sysapps.jshell.commands.EnvCommand;
+import dev.jfxde.sysapps.jshell.commands.HelpCommand;
+import dev.jfxde.sysapps.jshell.commands.HistoryCommand;
+import dev.jfxde.sysapps.jshell.commands.ImportCommand;
+import dev.jfxde.sysapps.jshell.commands.ListCommand;
+import dev.jfxde.sysapps.jshell.commands.MethodCommand;
+import dev.jfxde.sysapps.jshell.commands.OpenCommand;
+import dev.jfxde.sysapps.jshell.commands.ReloadCommand;
 import dev.jfxde.sysapps.jshell.commands.RerunCommand;
+import dev.jfxde.sysapps.jshell.commands.ResetCommand;
+import dev.jfxde.sysapps.jshell.commands.SaveCommand;
+import dev.jfxde.sysapps.jshell.commands.SetCommand;
+import dev.jfxde.sysapps.jshell.commands.TypeCommand;
+import dev.jfxde.sysapps.jshell.commands.VarCommand;
 import jdk.jshell.Snippet;
 import picocli.CommandLine;
-import picocli.CommandLine.IFactory;
 
 public class CommandProcessor extends Processor {
 
-    private CommandFactory commandFactory = new CommandFactory();
     private CommandLine commandLine;
     private PrintWriter out;
-    private Map<String, String> subcommandHelps;
 
     CommandProcessor(Session session) {
         super(session);
 
         this.out = new PrintWriter(session.getConsoleModel().getOut(ConsoleModel.COMMENT_STYLE), true);
-        this.commandLine = new CommandLine(new Commands(), commandFactory)
+        this.commandLine = new CachingCommandLine(new Commands())
+                .addSubcommand(new CachingCommandLine(new DropCommand(this)))
+                .addSubcommand(new CachingCommandLine(new EnvCommand(this)))
+                .addSubcommand(new CachingCommandLine(new HelpCommand(this)))
+                .addSubcommand(new CachingCommandLine(new HistoryCommand(this)))
+                .addSubcommand(new CachingCommandLine(new ImportCommand(this)))
+                .addSubcommand(new CachingCommandLine(new ListCommand(this)))
+                .addSubcommand(new CachingCommandLine(new MethodCommand(this)))
+                .addSubcommand(new CachingCommandLine(new OpenCommand(this)))
+                .addSubcommand(new CachingCommandLine(new ReloadCommand(this)))
+                .addSubcommand(new CachingCommandLine(new RerunCommand(this)))
+                .addSubcommand(new CachingCommandLine(new ResetCommand(this)))
+                .addSubcommand(new CachingCommandLine(new SaveCommand(this)))
+                .addSubcommand(new CachingCommandLine(new SetCommand(this)))
+                .addSubcommand(new CachingCommandLine(new TypeCommand(this)))
+                .addSubcommand(new CachingCommandLine(new VarCommand(this)))
                 .setOut(out)
                 .setErr(new PrintWriter(session.getConsoleModel().getErr(), true))
                 .setResourceBundle(session.getContext().rc().getStringBundle());
 
+        Map<String, CommandLine> commands = new HashMap<>(commandLine.getSubcommands());
+
         // load and cache in parallel
-        subcommandHelps = commandLine.getSubcommands().entrySet().parallelStream()
+        commands.entrySet().parallelStream()
                 .collect(Collectors.toMap(e -> e.getKey(),
-                        e -> AccessController.doPrivileged((PrivilegedAction<String>) () -> "<pre>" + e.getValue().getUsageMessage() + "</pre>")));
+                        e -> AccessController.doPrivileged((PrivilegedAction<String>) () -> e.getValue().getUsageMessage())));
 
     }
 
@@ -73,10 +102,6 @@ public class CommandProcessor extends Processor {
         return commandLine;
     }
 
-    public Map<String, String> getSubcommandHelps() {
-        return subcommandHelps;
-    }
-
     public PrintWriter getOut() {
         return out;
     }
@@ -98,21 +123,42 @@ public class CommandProcessor extends Processor {
         return input.matches("/[\\w!?\\-]*( .*)*");
     }
 
-    private class CommandFactory implements IFactory {
+    private static class CachingCommandLine extends CommandLine {
 
-        @Override
-        public <K> K create(Class<K> cls) throws Exception {
+        private String cache;
 
-            K obj = null;
-
-            if (BaseCommand.class.isAssignableFrom(cls)) {
-                obj = cls.getConstructor(CommandProcessor.class).newInstance(CommandProcessor.this);
-            } else {
-                obj = cls.getConstructor().newInstance();
-            }
-
-            return obj;
+        public CachingCommandLine(Object command) {
+            super(command);
         }
 
+        @Override
+        public String getUsageMessage() {
+            return usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), getColorScheme())).toString();
+        }
+
+        @Override
+        public void usage(PrintStream out, Help.ColorScheme colorScheme) {
+            out.print(usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)));
+            out.flush();
+        }
+
+        @Override
+        public void usage(PrintWriter writer, Help.ColorScheme colorScheme) {
+            writer.print(usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)));
+            writer.flush();
+        }
+
+        private String usage(StringBuilder sb, Help help) {
+            if (cache == null) {
+                for (String key : getHelpSectionKeys()) {
+                    IHelpSectionRenderer renderer = getHelpSectionMap().get(key);
+                    if (renderer != null) {
+                        sb.append(renderer.render(help));
+                    }
+                }
+                cache = sb.toString();
+            }
+            return cache;
+        }
     }
 }

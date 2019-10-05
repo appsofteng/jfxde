@@ -12,7 +12,6 @@ import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.jfxext.util.TaskUtils;
 import dev.jfxde.logic.JsonUtils;
 import javafx.collections.ListChangeListener.Change;
-import javafx.concurrent.Task;
 import javafx.scene.layout.BorderPane;
 
 public class JShellContent extends BorderPane {
@@ -42,7 +41,7 @@ public class JShellContent extends BorderPane {
                 if (c.wasAdded()) {
                     List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
                     for (TextStyleSpans span : added) {
-                        enter(span.getText());
+                        session.process(span.getText());
                     }
                 }
             }
@@ -67,17 +66,6 @@ public class JShellContent extends BorderPane {
         @SuppressWarnings("unchecked")
         List<String> history = JsonUtils.fromJson(context.fc().getAppDataDir().resolve(HISTORY_FILE_NAME), List.class, List.of());
         return history;
-    }
-
-    private void enter(String input) {
-
-        if (input.isBlank()) {
-            return;
-        }
-
-        Processor output = CommandProcessor.isCommand(input) ? session.getCommandProcessor() : session.getSnippetProcessor();
-        Task<Void> task = TaskUtils.createTask(() -> output.process(input));
-        context.tc().executeSequentially(task);
     }
 
     private void codeCompletion(CompletionBehavior<CodeArea> behavior) {
