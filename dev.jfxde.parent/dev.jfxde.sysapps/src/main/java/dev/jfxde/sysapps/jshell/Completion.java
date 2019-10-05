@@ -51,13 +51,15 @@ public class Completion {
         }
 
         List<CharSequence> candidates = new ArrayList<>();
-        int anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args, argIndex, positionInArg, caretPosition, candidates);
+        int anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args, argIndex, positionInArg,
+                caretPosition, candidates);
 
         if (candidates.size() == 1 && candidates.get(0).length() == 0 && args.length > 0) {
             args = new String[] { args[0], "" };
             argIndex = 1;
             positionInArg = 0;
-            anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args, argIndex, positionInArg, caretPosition, candidates);
+            anchor = AutoComplete.complete(session.getCommandProcessor().getCommandLine().getCommandSpec(), args, argIndex, positionInArg,
+                    caretPosition, candidates);
         }
 
         String arg = args[argIndex];
@@ -84,9 +86,10 @@ public class Completion {
         CommandLine subcommand = session.getCommandProcessor().getCommandLine().getSubcommands().get(docRef.getDocCode());
 
         if (subcommand != null) {
-           help = "<pre>" + subcommand.getUsageMessage() + "</pre>";
+            help = "<pre>" + subcommand.getUsageMessage() + "</pre>";
         } else {
-            help = session.getContext().rc().getStringOrDefault(docRef.getDocCode(), session.getContext().rc().getStringOrDefault(docRef.getSignature(), ""));
+            help = session.getContext().rc().getStringOrDefault(docRef.getDocCode(),
+                    session.getContext().rc().getStringOrDefault(docRef.getSignature(), ""));
         }
 
         return help;
@@ -113,11 +116,11 @@ public class Completion {
 
             if (docs.isEmpty()) {
                 items.add(item);
-            }
-
-            for (Documentation doc : docs) {
-                items.add(new SuggestionCompletionItem(inputArea, item.getSuggestion(), item.getAnchor(), item.getDocRef().getDocCode(),
-                        doc.signature(), this::loadDocumentation));
+            } else {
+                items.addAll(docs.stream()
+                        .map(d -> new SuggestionCompletionItem(inputArea, item.getSuggestion(), item.getAnchor(), item.getDocRef().getDocCode(),
+                                d.signature(), this::loadDocumentation))
+                        .collect(Collectors.toSet()));
             }
         }
 

@@ -79,7 +79,9 @@ public class CompletionPopup extends Tooltip {
                         consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 2), e -> selected())));
 
         itemView.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
+
             if (n != null) {
+
                 if (docPopup.loadContent(n.getDocRef())) {
                     double offset = Screen.getPrimary().getBounds().getWidth() - getAnchorX() - getPrefWidth() > getAnchorX() ? getPrefWidth()
                             : -docPopup.getPrefWidth();
@@ -90,10 +92,6 @@ public class CompletionPopup extends Tooltip {
                 }
             }
         });
-    }
-
-    private void select(int i) {
-        itemView.getSelectionModel().select(i);
     }
 
     private void selectPrevious() {
@@ -164,6 +162,6 @@ public class CompletionPopup extends Tooltip {
 
         super.show(ownerNode, anchorX, anchorY);
 
-        select(0);
+        itemView.getSelectionModel().clearAndSelect(0);
     }
 }

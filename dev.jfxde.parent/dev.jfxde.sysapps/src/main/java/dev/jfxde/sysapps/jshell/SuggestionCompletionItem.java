@@ -16,7 +16,7 @@ public class SuggestionCompletionItem extends CompletionItem {
     private String label = "";
 
     public SuggestionCompletionItem(CodeArea codeArea, String code, Suggestion suggestion, int[] anchor) {
-        super(new DocRef(code.substring(0, anchor[0]) + suggestion.continuation(), ""));
+        super(new DocRef(getDocCode(code, suggestion, anchor), ""));
         this.codeArea = codeArea;
         this.suggestion = suggestion;
         this.anchor = anchor;
@@ -30,6 +30,18 @@ public class SuggestionCompletionItem extends CompletionItem {
         this.suggestion = suggestion;
         this.anchor = anchor;
         setLabel();
+    }
+
+    private static String getDocCode(String code, Suggestion suggestion, int[] anchor) {
+        int i = suggestion.continuation().lastIndexOf("(");
+        String docCode = null;
+        if (i > 0) {
+           docCode = code.substring(0, anchor[0]) + suggestion.continuation().substring(0, i + 1);
+        } else {
+            docCode = code.substring(0, anchor[0]) + suggestion.continuation();
+        }
+
+        return docCode;
     }
 
     private void setLabel() {
@@ -47,7 +59,12 @@ public class SuggestionCompletionItem extends CompletionItem {
 
     @Override
     public void complete() {
-        String completion = suggestion.continuation() + (isMethod() && getDocRef().getSignature().endsWith("()") ? ")" : "");
+        String completion = suggestion.continuation();
+
+        if (isMethod() && getDocRef().getSignature().endsWith("()") && completion.endsWith("(")) {
+            completion += ")";
+        }
+
         codeArea.replaceText(anchor[0], codeArea.getCaretPosition(), completion);
     }
 

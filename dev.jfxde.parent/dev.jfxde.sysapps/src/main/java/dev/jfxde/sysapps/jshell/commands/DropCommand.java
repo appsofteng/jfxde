@@ -24,15 +24,17 @@ public class DropCommand extends BaseCommand {
     @Override
     public void run() {
 
-        List<Snippet> snippets = commandProcessor.matches(parameters);
+        drop(commandProcessor.matches(parameters));
+    }
 
+    public void drop(List<Snippet> snippets) {
         StringBuilder sb = new StringBuilder();
         snippets.forEach(s -> {
             if (commandProcessor.getSession().getJshell().status(s) == Status.VALID) {
-                sb.append(commandProcessor.getSession().getContext().rc().getString("dropped") + SnippetUtils.toString(s, commandProcessor.getSession().getJshell()));
+                sb.append(commandProcessor.getSession().getContext().rc().getString("dropped") + SnippetUtils.toString(s));
                 commandProcessor.getSession().getJshell().drop(s);
             } else {
-                sb.append(commandProcessor.getSession().getContext().rc().getString("notValid") + SnippetUtils.toString(s, commandProcessor.getSession().getJshell()));
+                sb.append(commandProcessor.getSession().getContext().rc().getString("notValid") + SnippetUtils.toString(s));
             }
         });
 
@@ -40,6 +42,6 @@ public class DropCommand extends BaseCommand {
             sb.append(commandProcessor.getSession().getContext().rc().getString("noSuchSnippet") + "\n");
         }
 
-        commandProcessor.getSession().getFeedback().normaln(sb.toString(), ConsoleModel.COMMENT_STYLE);
+        commandProcessor.getSession().getFeedback().normal(sb.toString(), ConsoleModel.COMMENT_STYLE);
     }
 }

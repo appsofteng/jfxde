@@ -12,6 +12,7 @@ module dev.jfxde.sysapps {
     requires wellbehavedfx;
     requires org.controlsfx.controls;
     requires info.picocli;
+    requires org.jooq.jool;
 
     requires dev.jfxde.api;
     requires dev.jfxde.logic;

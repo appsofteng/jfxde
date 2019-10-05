@@ -27,7 +27,7 @@ public class JShellContent extends BorderPane {
         this.context = context;
         consoleView = new SplitConsoleView(loadHistory());
         setCenter(consoleView);
-        session = new Session(context, this, consoleView.getConsoleModel(), consoleView.getHistory());
+        session = new Session(context, this, consoleView.getConsoleModel());
         completion = new Completion(session);
         setBehavior();
     }

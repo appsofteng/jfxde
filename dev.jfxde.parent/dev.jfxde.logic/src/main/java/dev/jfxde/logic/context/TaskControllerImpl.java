@@ -24,6 +24,13 @@ public class TaskControllerImpl implements TaskController {
     }
 
     @Override
+    public Task<Void> execute(TRunnable task) {
+        Task<Void> t = TaskUtils.createTask(() -> task.run());
+        Sys.tm().execute(appDescriptor, t);
+        return t;
+    }
+
+    @Override
     public <T> Task<T> executeSequentially(Task<T> task) {
         taskQueue.add(task);
         return task;

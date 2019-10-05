@@ -78,6 +78,10 @@ public final class SnippetUtils {
         return toString(snippet, value);
     }
 
+    public static String toString(Snippet snippet) {
+        return toString(snippet, "");
+    }
+
     public static String toString(Snippet snippet, String value) {
 
         String output = String.format("%4s : ", snippet.id());
@@ -102,7 +106,6 @@ public final class SnippetUtils {
     public static String toString(ImportSnippet snippet) {
 
         return "import " + (snippet.isStatic() ? "static " : "") + snippet.fullname() + "\n";
-
     }
 
     public static String toString(MethodSnippet snippet) {
@@ -117,12 +120,14 @@ public final class SnippetUtils {
 
     public static String toString(VarSnippet snippet, String value) {
 
-        return snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
+        return snippet.source().strip() + "\n";
+        //return snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
     }
 
     public static String toString(ExpressionSnippet snippet, String value) {
 
-        return snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
+        return snippet.source().strip() + "\n";
+      //  return snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
     }
 
     public static String toString(StatementSnippet snippet) {

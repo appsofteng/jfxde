@@ -8,14 +8,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.jooq.lambda.tuple.Tuple2;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.sysapps.jshell.Feedback.Mode;
-import javafx.collections.ObservableList;
 import javafx.stage.Window;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
+import jdk.jshell.Snippet.Status;
+import jdk.jshell.SnippetEvent;
 
 public class Session {
 
@@ -26,7 +30,7 @@ public class Session {
     private JShellContent content;
     private JShell jshell;
     private ConsoleModel consoleModel;
-    private ObservableList<String> history;
+    private List<String> history = new ArrayList<>();
     private IdGenerator idGenerator;
     private CommandProcessor commandProcessor;
     private SnippetProcessor snippetProcessor;
@@ -34,11 +38,10 @@ public class Session {
     private Map<String, Snippet> snippetsById = new HashMap<>();
     private Map<String, List<Snippet>> snippetsByName = new HashMap<>();
 
-    public Session(AppContext context, JShellContent content, ConsoleModel consoleModel, ObservableList<String> history) {
+    public Session(AppContext context, JShellContent content, ConsoleModel consoleModel) {
         this.context = context;
         this.content = content;
         this.consoleModel = consoleModel;
-        this.history = history;
 
         feedback = new Feedback(consoleModel);
         env = loadEnv();
@@ -67,7 +70,7 @@ public class Session {
         return consoleModel;
     }
 
-    public ObservableList<String> getHistory() {
+    public List<String> getHistory() {
         return history;
     }
 
@@ -127,6 +130,7 @@ public class Session {
         snippetsByName.clear();
         feedback.setMode(Mode.SILENT);
         buildJShell();
+        setListener();
         if (settings.isLoadDefault()) {
             loadDefault();
         }
@@ -138,6 +142,22 @@ public class Session {
         loadFiles();
         startSnippetMaxIndex = idGenerator.getMaxId();
         feedback.setMode(Mode.NORMAL);
+    }
+
+    public void reload() {
+
+        List<Tuple2<Snippet,Status>> snippets = jshell.snippets()
+                .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
+                .map(s -> new Tuple2<>(s, jshell.status(s)))
+                .collect(Collectors.toList());
+        reset();
+
+        snippets.forEach(s -> {
+            var newSnippets = snippetProcessor.getSnippetEvents(s.v1().source()).stream().map(SnippetEvent::snippet).collect(Collectors.toList());
+            if (s.v2() == Status.DROPPED) {
+                commandProcessor.drop(newSnippets);
+            }
+        });
     }
 
     private void buildJShell() {
@@ -152,7 +172,6 @@ public class Session {
                 .err(consoleModel.getErr())
                 .compilerOptions(env.getOptions())
                 .build();
-        jshell.sourceCodeAnalysis();
         idGenerator.setJshell(jshell);
     }
 
@@ -193,6 +212,8 @@ public class Session {
         if (input.isBlank()) {
             return;
         }
+
+        history.add(input);
 
         String[] lines = input.split("\n");
         StringBuilder sb = new StringBuilder();

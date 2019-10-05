@@ -2,6 +2,7 @@ package dev.jfxde.sysapps.jshell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import dev.jfxde.jfxext.control.ConsoleModel;
@@ -24,11 +25,17 @@ public class SnippetProcessor extends Processor {
 
     @Override
     public void process(String input) {
+        getSnippetEvents(input);
+    }
+
+    public List<SnippetEvent> getSnippetEvents(String input) {
 
         SourceCodeAnalysis sourceAnalysis = session.getJshell().sourceCodeAnalysis();
 
         String[] lines = input.split("\n");
         StringBuffer sb = new StringBuffer();
+
+        List<SnippetEvent> allSnippetEvents = new ArrayList<>();
 
         for (String line : lines) {
             sb.append(line).append("\n");
@@ -49,10 +56,11 @@ public class SnippetProcessor extends Processor {
             String source = info.source();
             sb.delete(0, sb.length()).append(info.remaining());
             List<SnippetEvent> snippetEvents = session.getJshell().eval(source);
+            allSnippetEvents.addAll(snippetEvents);
             snippetEvents.forEach(e -> session.getFeedback().normal(getOutput(e)));
         }
 
-        session.getFeedback().normal("\n");
+        return allSnippetEvents;
     }
 
     public void process(List<Snippet> snippets) {
@@ -66,8 +74,6 @@ public class SnippetProcessor extends Processor {
             List<SnippetEvent> snippetEvents = session.getJshell().eval(snippet.source());
             snippetEvents.forEach(e -> session.getFeedback().normal(getOutput(e)));
         }
-
-        session.getFeedback().normal("\n");
     }
 
     private TextStyleSpans getOutput(SnippetEvent event) {

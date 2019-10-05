@@ -19,7 +19,7 @@ public class DocRef {
     }
 
     public DocRef(String docCode, String signature) {
-        this(docCode, docCode, dr -> "");
+        this(docCode, signature, dr -> "");
     }
 
     public DocRef(String docCode, String signature, Function<DocRef, String> documentation) {

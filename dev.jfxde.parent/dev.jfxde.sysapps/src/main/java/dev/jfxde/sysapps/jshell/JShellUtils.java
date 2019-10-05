@@ -32,9 +32,11 @@ public final class JShellUtils {
     }
 
     public static String getDocumentation(JShell jshell, DocRef docRef, Map<String, String> bundle) {
+
         List<Documentation> docs = jshell.sourceCodeAnalysis().documentation(docRef.getDocCode(), docRef.getDocCode().length(), true);
 
         Documentation documentation = docs.stream().filter(d -> matches(d.signature(), docRef)).findFirst().orElse(null);
+
         String result = documentation == null ? ""
                 : "<strong><code>" + documentation.signature() + "</code></strong><br><br>" + JavadocUtils.toHtml(documentation.javadoc(), bundle);
 

@@ -1,5 +1,6 @@
 package dev.jfxde.sysapps.jshell.commands;
 
+import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.sysapps.jshell.CommandProcessor;
 import picocli.CommandLine.Command;
 
@@ -13,6 +14,7 @@ public class ReloadCommand extends BaseCommand {
     @Override
     public void run() {
 
-
+        commandProcessor.getSession().getFeedback().normaln(commandProcessor.getSession().getContext().rc().getString("reloadingState"), ConsoleModel.COMMENT_STYLE);
+        commandProcessor.getSession().reload();
     }
 }

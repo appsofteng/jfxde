@@ -9,10 +9,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import dev.jfxde.jfxext.control.ConsoleModel;
+import dev.jfxde.jfxext.util.TaskUtils;
 import dev.jfxde.sysapps.jshell.commands.Commands;
 import dev.jfxde.sysapps.jshell.commands.DropCommand;
 import dev.jfxde.sysapps.jshell.commands.EnvCommand;
@@ -29,6 +31,7 @@ import dev.jfxde.sysapps.jshell.commands.SaveCommand;
 import dev.jfxde.sysapps.jshell.commands.SetCommand;
 import dev.jfxde.sysapps.jshell.commands.TypeCommand;
 import dev.jfxde.sysapps.jshell.commands.VarCommand;
+import javafx.concurrent.Task;
 import jdk.jshell.Snippet;
 import picocli.CommandLine;
 
@@ -36,13 +39,19 @@ public class CommandProcessor extends Processor {
 
     private CommandLine commandLine;
     private PrintWriter out;
+    private DropCommand dropCommand;
+    private Task<CommandLine> task;
 
     CommandProcessor(Session session) {
         super(session);
 
+        task = session.getContext().tc().execute(TaskUtils.createTask(this::createCommands));
+    }
+
+    private CommandLine createCommands() {
         this.out = new PrintWriter(session.getConsoleModel().getOut(ConsoleModel.COMMENT_STYLE), true);
-        this.commandLine = new CachingCommandLine(new Commands())
-                .addSubcommand(new CachingCommandLine(new DropCommand(this)))
+        CommandLine commandLine = new CachingCommandLine(new Commands())
+                .addSubcommand(new CachingCommandLine(dropCommand = new DropCommand(this)))
                 .addSubcommand(new CachingCommandLine(new EnvCommand(this)))
                 .addSubcommand(new CachingCommandLine(new HelpCommand(this)))
                 .addSubcommand(new CachingCommandLine(new HistoryCommand(this)))
@@ -62,12 +71,16 @@ public class CommandProcessor extends Processor {
                 .setResourceBundle(session.getContext().rc().getStringBundle());
 
         Map<String, CommandLine> commands = new HashMap<>(commandLine.getSubcommands());
-
+        commands.put("", commandLine);
         // load and cache in parallel
         commands.entrySet().parallelStream()
                 .collect(Collectors.toMap(e -> e.getKey(),
                         e -> AccessController.doPrivileged((PrivilegedAction<String>) () -> e.getValue().getUsageMessage())));
+        return commandLine;
+    }
 
+    public void drop(List<Snippet> snippets) {
+        dropCommand.drop(snippets);
     }
 
     public List<Snippet> matches(String[] values) {
@@ -99,6 +112,15 @@ public class CommandProcessor extends Processor {
     }
 
     public CommandLine getCommandLine() {
+
+        if (commandLine == null) {
+            try {
+                commandLine = task.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         return commandLine;
     }
 
@@ -116,7 +138,7 @@ public class CommandProcessor extends Processor {
             args = RerunCommand.setIfMatches(args);
         }
 
-        commandLine.execute(args);
+        getCommandLine().execute(args);
     }
 
     static boolean isCommand(String input) {
