@@ -65,7 +65,16 @@ public class EnvBox extends VBox {
 
     private void setBehavior() {
 
-
+        envCombo.getEditor().focusedProperty().addListener((v,o,n) -> {
+            if (!n) {
+                if (envCombo.getEditor().getText() == null || envCombo.getEditor().getText().isBlank()) {
+                    envCombo.getEditor().setText(env.getName());
+                } else {
+                    env.setName(envCombo.getEditor().getText());
+                    FXCollections.sort(envs);
+                }
+            }
+        });
     }
 
     public Env getEnv() {

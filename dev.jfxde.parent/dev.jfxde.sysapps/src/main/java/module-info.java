@@ -24,6 +24,7 @@ module dev.jfxde.sysapps {
             dev.jfxde.sysapps.console.ConsoleApp, dev.jfxde.sysapps.exceptionlog.ExceptionLogApp,
             dev.jfxde.sysapps.jvmmonitor.JvmMonitorApp, dev.jfxde.sysapps.jshell.JShellApp, dev.jfxde.sysapps.preferences.PreferencesApp;
 
+    opens dev.jfxde.sysapps.jshell to gson;
     opens dev.jfxde.sysapps.jshell.commands to info.picocli;
     opens dev.jfxde.sysapps.appmanager.bundles;
     opens dev.jfxde.sysapps.console.css;

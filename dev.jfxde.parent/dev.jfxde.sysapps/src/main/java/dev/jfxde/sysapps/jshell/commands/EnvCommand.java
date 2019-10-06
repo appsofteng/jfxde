@@ -47,7 +47,6 @@ public class EnvCommand extends BaseCommand {
             dialog.showAndWait().filter(response -> response == okButtonType)
                     .ifPresent(b -> saveEnvs(envBox.getEnv(), envBox.getEnvs()));
         });
-
     }
 
     private ObservableList<Env> getEnvs() {
@@ -64,6 +63,6 @@ public class EnvCommand extends BaseCommand {
     private void saveEnvs(Env env, ObservableList<Env> envs) {
         commandProcessor.getSession().setEnv(env);
         envs.remove(env);
-        JsonUtils.toJson(env, commandProcessor.getSession().getContext().fc().getAppDataDir().resolve(ENVS_FILE_NAME));
+        JsonUtils.toJson(envs, commandProcessor.getSession().getContext().fc().getAppDataDir().resolve(ENVS_FILE_NAME));
     }
 }
