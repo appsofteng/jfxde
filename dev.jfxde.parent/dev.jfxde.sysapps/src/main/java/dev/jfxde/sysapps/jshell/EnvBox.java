@@ -21,6 +21,10 @@ public class EnvBox extends VBox {
     private Env env;
 
     private ComboBox<Env> envCombo;
+    private ListView<String> classpathView;
+    private ListView<String> modulepathView;
+    private ListSelectionView<String> addModuleView;
+    private ListView<ExportItem> exportView;
 
     public EnvBox(AppContext context, ObservableList<Env> envs) {
         this.context = context;
@@ -28,6 +32,7 @@ public class EnvBox extends VBox {
         this.env = envs.get(0);
         FXCollections.sort(envs);
         setGraphics();
+        setEnv();
         setBehavior();
     }
 
@@ -42,22 +47,21 @@ public class EnvBox extends VBox {
         HBox.setMargin(addEnv, new Insets(0, 5, 0, 5));
 
         Label classpath = new Label(context.rc().getString("classpath"));
-        ListView<String> classpathView = new ListView<String>(env.getClassPath());
+        classpathView = new ListView<>();
         classpathView.setPrefHeight(100);
 
         Label modulepath = new Label(context.rc().getString("modulepath"));
-        ListView<String> modulepathView = new ListView<String>(env.getModulePath());
+        modulepathView = new ListView<>();
         modulepathView.setPrefHeight(100);
 
-        ListSelectionView<String> addModuleView = new ListSelectionView<String>();
+        addModuleView = new ListSelectionView<>();
         addModuleView.setSourceHeader(new Label(context.rc().getString("availableModules")));
         addModuleView.setTargetHeader(new Label(context.rc().getString("selectedModules")));
         addModuleView.setSourceItems(sourceModules);
-        addModuleView.setTargetItems(env.getAddModules());
         addModuleView.setPrefHeight(100);
 
         Label addExports = new Label(context.rc().getString("exports"));
-        ListView<ExportItem> exportView = new ListView<>(env.getAddExports());
+        exportView = new ListView<>();
         exportView.setPrefHeight(100);
 
         getChildren().addAll(envBox, classpath, classpathView, modulepath, modulepathView, addModuleView, addExports, exportView);
@@ -75,6 +79,13 @@ public class EnvBox extends VBox {
                 }
             }
         });
+    }
+
+    private void setEnv() {
+        classpathView.setItems(FXCollections.observableList(env.getClassPath()));
+        modulepathView.setItems(FXCollections.observableList(env.getModulePath()));
+        addModuleView.setTargetItems(FXCollections.observableList(env.getAddModules()));
+        exportView.setItems(FXCollections.observableList(env.getAddExports()));
     }
 
     public Env getEnv() {

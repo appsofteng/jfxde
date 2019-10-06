@@ -5,16 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
 public class Env implements Comparable<Env> {
 
     private String name;
-    private ObservableList<String> classPath = FXCollections.observableArrayList();
-    private ObservableList<String> modulePath = FXCollections.observableArrayList();
-    private ObservableList<String> addModules = FXCollections.observableArrayList();
-    private ObservableList<ExportItem> addExports = FXCollections.observableArrayList();
+    private List<String> classPath = new ArrayList<>();
+    private List<String> modulePath = new ArrayList<>();
+    private List<String> addModules = new ArrayList<>();
+    private List<ExportItem> addExports = new ArrayList<>();
 
     public Env() {
     }
@@ -31,19 +28,19 @@ public class Env implements Comparable<Env> {
         this.name = name;
     }
 
-    public ObservableList<String> getClassPath() {
+    public List<String> getClassPath() {
         return classPath;
     }
 
-    public ObservableList<String> getModulePath() {
+    public List<String> getModulePath() {
         return modulePath;
     }
 
-    public ObservableList<String> getAddModules() {
+    public List<String> getAddModules() {
         return addModules;
     }
 
-    public ObservableList<ExportItem> getAddExports() {
+    public List<ExportItem> getAddExports() {
         return addExports;
     }
 
