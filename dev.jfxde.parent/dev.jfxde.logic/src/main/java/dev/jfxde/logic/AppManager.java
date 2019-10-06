@@ -18,7 +18,7 @@ import dev.jfxde.api.AppManifest;
 import dev.jfxde.api.AppRequest;
 import dev.jfxde.api.Resource;
 import dev.jfxde.data.entity.AppProviderEntity;
-import dev.jfxde.jfxext.util.TaskUtils;
+import dev.jfxde.jfxext.util.CTask;
 import dev.jfxde.logic.context.AppContextImpl;
 import dev.jfxde.logic.data.AppDescriptor;
 import dev.jfxde.logic.data.AppProviderDescriptor;
@@ -283,14 +283,17 @@ public final class AppManager extends Manager {
 
     public void stop(AppDescriptor appDescriptor) {
 
-        Sys.tm().execute(appDescriptor, TaskUtils.createTask(() -> appDescriptor.getApp().stop(), () -> {
-            appDescriptor.getWindow().remove();
-            appDescriptor.getAppProviderDescriptor().remove(appDescriptor);
+        CTask<Void> task = CTask.create(() -> appDescriptor.getApp().stop())
+                .onFinished(t -> {
+                    appDescriptor.getWindow().remove();
+                    appDescriptor.getAppProviderDescriptor().remove(appDescriptor);
 
-            appDescriptorMap.remove(appDescriptor.getApp());
-            appDescriptors.remove(appDescriptor);
-            Sys.tm().removeTasks(appDescriptor);
-        }));
+                    appDescriptorMap.remove(appDescriptor.getApp());
+                    appDescriptors.remove(appDescriptor);
+                    Sys.tm().removeTasks(appDescriptor);
+                });
+
+        Sys.tm().execute(task);
     }
 
     public void activate(AppDescriptor appDescriptor) {
@@ -311,15 +314,15 @@ public final class AppManager extends Manager {
     // Request, resource, action
     public AppProviderDescriptor getAppProviderDescriptor(Resource resource) {
 
-		List<AppProviderDescriptor> descriptors = appProviderDescriptors.stream()
-		        .filter(d -> d.match(resource) > 0)
-		        .sorted(Comparator.comparing(AppProviderDescriptor::getMatch).reversed())
-		        .collect(Collectors.toList());
+        List<AppProviderDescriptor> descriptors = appProviderDescriptors.stream()
+                .filter(d -> d.match(resource) > 0)
+                .sorted(Comparator.comparing(AppProviderDescriptor::getMatch).reversed())
+                .collect(Collectors.toList());
 
-		AppProviderDescriptor descriptor = descriptors.isEmpty() ? null : descriptors.get(0);
+        AppProviderDescriptor descriptor = descriptors.isEmpty() ? null : descriptors.get(0);
 
-		return descriptor;
-	}
+        return descriptor;
+    }
 
     public void sortApp() {
         FXCollections.sort(appProviderDescriptors);

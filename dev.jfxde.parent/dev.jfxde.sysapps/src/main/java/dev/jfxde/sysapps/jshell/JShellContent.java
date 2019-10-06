@@ -1,6 +1,7 @@
 package dev.jfxde.sysapps.jshell;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.fxmisc.richtext.CodeArea;
@@ -8,8 +9,9 @@ import org.fxmisc.richtext.CodeArea;
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.SplitConsoleView;
 import dev.jfxde.jfxext.control.editor.CompletionBehavior;
+import dev.jfxde.jfxext.control.editor.CompletionItem;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
-import dev.jfxde.jfxext.util.TaskUtils;
+import dev.jfxde.jfxext.util.CTask;
 import dev.jfxde.logic.JsonUtils;
 import javafx.collections.ListChangeListener.Change;
 import javafx.scene.layout.BorderPane;
@@ -53,8 +55,8 @@ public class JShellContent extends BorderPane {
 
                 if (c.wasAdded() || c.wasRemoved()) {
                     List<? extends String> history = new ArrayList<>(consoleView.getHistory());
-                    context.tc().executeSequentially(TaskUtils
-                            .createTask(() -> JsonUtils.toJson(history, context.fc().getAppDataDir().resolve(HISTORY_FILE_NAME))));
+                    context.tc().executeSequentially(CTask
+                            .create(() -> JsonUtils.toJson(history, context.fc().getAppDataDir().resolve(HISTORY_FILE_NAME))));
                 }
             }
         });
@@ -70,10 +72,16 @@ public class JShellContent extends BorderPane {
 
     private void codeCompletion(CompletionBehavior<CodeArea> behavior) {
 
-        context.tc().executeSequentially(TaskUtils.createTask(() -> completion.getCompletionItems(behavior.getArea()), behavior::showCompletionItems));
+        CTask<Collection<CompletionItem>> task = CTask.create(() -> completion.getCompletionItems(behavior.getArea()))
+                .onSucceeded(behavior::showCompletionItems);
+
+        context.tc().executeSequentially(task);
     }
 
     public void stop() {
-        context.tc().executeSequentially(TaskUtils.createTask(() -> session.getJshell().close(), () -> consoleView.dispose()));
+        var task = CTask.create(() -> session.getJshell().close())
+                .onFinished(t -> consoleView.dispose());
+
+        context.tc().executeSequentially(task);
     }
 }

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import dev.jfxde.jfxext.control.ConsoleModel;
-import dev.jfxde.jfxext.util.TaskUtils;
+import dev.jfxde.jfxext.util.CTask;
 import dev.jfxde.sysapps.jshell.commands.Commands;
 import dev.jfxde.sysapps.jshell.commands.DropCommand;
 import dev.jfxde.sysapps.jshell.commands.EnvCommand;
@@ -45,7 +45,7 @@ public class CommandProcessor extends Processor {
     CommandProcessor(Session session) {
         super(session);
 
-        task = session.getContext().tc().execute(TaskUtils.createTask(this::createCommands));
+        task = session.getContext().tc().execute(CTask.create(this::createCommands));
     }
 
     private CommandLine createCommands() {

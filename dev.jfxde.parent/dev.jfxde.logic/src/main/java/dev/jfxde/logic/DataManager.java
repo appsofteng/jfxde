@@ -15,7 +15,7 @@ import dev.jfxde.data.dao.ShortcutDao;
 import dev.jfxde.data.entity.AppProviderEntity;
 import dev.jfxde.data.entity.DesktopEntity;
 import dev.jfxde.data.entity.ShortcutEntity;
-import dev.jfxde.jfxext.util.TaskUtils;
+import dev.jfxde.jfxext.util.CTask;
 import dev.jfxde.logic.data.AppProviderDescriptor;
 import dev.jfxde.logic.data.DataConvertor;
 import dev.jfxde.logic.data.Desktop;
@@ -102,10 +102,13 @@ public final class DataManager extends Manager {
 
 		if (!desktop.isFetched()) {
 
-			Sys.tm().executeSequentially(TaskUtils.createTask(() -> desktopDao.getDesktop(desktop.getId()), (v) -> {
-				dataConvertor.convertShortcuts(v, desktop);
-				desktop.setFetched(true);
-			}));
+		    CTask<DesktopEntity> task = CTask.create(() -> desktopDao.getDesktop(desktop.getId()))
+		            .onSucceeded(v -> {
+		                dataConvertor.convertShortcuts(v, desktop);
+		                desktop.setFetched(true);
+		            });
+
+			Sys.tm().executeSequentially(task);
 		}
 
 		activeDesktop.set(desktop);
