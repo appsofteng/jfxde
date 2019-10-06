@@ -41,8 +41,10 @@ public class SnippetProcessor extends Processor {
             sb.append(line).append("\n");
             CompletionInfo info = sourceAnalysis.analyzeCompletion(sb.toString());
 
-            if (info.completeness() == Completeness.CONSIDERED_INCOMPLETE ||
-                    info.completeness() == Completeness.DEFINITELY_INCOMPLETE) {
+            if (info.completeness() == Completeness.CONSIDERED_INCOMPLETE) {
+                continue;
+            } else if (info.completeness() == Completeness.DEFINITELY_INCOMPLETE) {
+                session.getFeedback().normaln(session.getContext().rc().getString("definitelyIncomplete") + "  " + sb.toString().strip(), ConsoleModel.ERROR_STYLE);
                 continue;
             } else if (info.completeness() == Completeness.EMPTY) {
                 sb.delete(0, sb.length());
