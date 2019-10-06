@@ -28,6 +28,8 @@
 		<picocliVersion>4.0.4</picocliVersion>
 		<javafx.platform>win</javafx.platform>
 		<scriptExtension>bat</scriptExtension>
+		<pathSeparator>;</pathSeparator>
+		<osHomeDir>"%HOME%"</osHomeDir>
 		<distFormat>zip</distFormat>
 		<sourceJdkModules>${java.home}</sourceJdkModules>
 		<sysName>jfxde</sysName>
@@ -265,6 +267,8 @@
 				<javafx.platform>linux</javafx.platform>
 				<sourceJdkModules>${env.JAVA_HOME_LINUX}</sourceJdkModules>
 				<scriptExtension>sh</scriptExtension>
+				<pathSeparator>:</pathSeparator>
+				<osHomeDir>~</osHomeDir>
 				<distFormat>tgz</distFormat>
 			</properties>
 		</profile>
@@ -288,6 +292,8 @@
 			<!-- </activation> -->
 			<properties>
 				<javafx.platform>win</javafx.platform>
+				<pathSeparator>;</pathSeparator>
+				<osHomeDir>"%HOME%"</osHomeDir>
 			</properties>
 		</profile>
 		<profile>

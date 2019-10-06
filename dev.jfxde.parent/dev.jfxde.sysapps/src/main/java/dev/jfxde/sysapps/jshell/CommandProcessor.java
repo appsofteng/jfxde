@@ -40,12 +40,13 @@ public class CommandProcessor extends Processor {
     private CommandLine commandLine;
     private PrintWriter out;
     private DropCommand dropCommand;
-    private Task<CommandLine> task;
+    private Task<CommandLine> clTask;
 
     CommandProcessor(Session session) {
         super(session);
 
-        task = session.getContext().tc().execute(CTask.create(this::createCommands));
+        clTask = session.getContext().tc().executeSequentially(CTask.create(this::createCommands));
+        session.getContext().tc().executeSequentially(this::loadDoc);
     }
 
     private CommandLine createCommands() {
@@ -70,13 +71,16 @@ public class CommandProcessor extends Processor {
                 .setErr(new PrintWriter(session.getConsoleModel().getErr(), true))
                 .setResourceBundle(session.getContext().rc().getStringBundle());
 
-        Map<String, CommandLine> commands = new HashMap<>(commandLine.getSubcommands());
-        commands.put("", commandLine);
+        return commandLine;
+    }
+
+    private void loadDoc() {
+        Map<String, CommandLine> commands = new HashMap<>(getCommandLine().getSubcommands());
+        commands.put("", getCommandLine());
         // load and cache in parallel
         commands.entrySet().parallelStream()
                 .collect(Collectors.toMap(e -> e.getKey(),
                         e -> AccessController.doPrivileged((PrivilegedAction<String>) () -> e.getValue().getUsageMessage())));
-        return commandLine;
     }
 
     public void drop(List<Snippet> snippets) {
@@ -115,7 +119,7 @@ public class CommandProcessor extends Processor {
 
         if (commandLine == null) {
             try {
-                commandLine = task.get();
+                commandLine = clTask.get();
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
@@ -155,22 +159,25 @@ public class CommandProcessor extends Processor {
 
         @Override
         public String getUsageMessage() {
-            return usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), getColorScheme())).toString();
+            return usage(new StringBuilder(), getColorScheme());
         }
 
         @Override
         public void usage(PrintStream out, Help.ColorScheme colorScheme) {
-            out.print(usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)));
+            out.print(usage(new StringBuilder(), colorScheme));
             out.flush();
         }
 
         @Override
         public void usage(PrintWriter writer, Help.ColorScheme colorScheme) {
-            writer.print(usage(new StringBuilder(), getHelpFactory().create(getCommandSpec(), colorScheme)));
+            writer.print(usage(new StringBuilder(), colorScheme));
             writer.flush();
         }
 
-        private String usage(StringBuilder sb, Help help) {
+        private synchronized String usage(StringBuilder sb, Help.ColorScheme colorScheme) {
+
+            Help help = getHelpFactory().create(getCommandSpec(), colorScheme);
+
             if (cache == null) {
                 for (String key : getHelpSectionKeys()) {
                     IHelpSectionRenderer renderer = getHelpSectionMap().get(key);

@@ -14,6 +14,7 @@ import org.jooq.lambda.tuple.Tuple2;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
+import dev.jfxde.logic.JsonUtils;
 import dev.jfxde.sysapps.jshell.Feedback.Mode;
 import javafx.stage.Window;
 import jdk.jshell.JShell;
@@ -22,6 +23,8 @@ import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
 
 public class Session {
+
+    private static final String ENV_FILE_NAME = "env.json";
 
     private Env env;
     private Settings settings;
@@ -44,7 +47,7 @@ public class Session {
         this.consoleModel = consoleModel;
 
         feedback = new Feedback(consoleModel);
-        env = loadEnv();
+        loadEnv();
         settings = loadSettings();
         idGenerator = new IdGenerator();
         reset();
@@ -102,8 +105,18 @@ public class Session {
         return snippetsByName;
     }
 
-    private Env loadEnv() {
-        return new Env();
+    private void loadEnv() {
+        env = JsonUtils.fromJson(context.fc().getAppDataDir().resolve(ENV_FILE_NAME), Env.class, new Env("default"));
+    }
+
+    public Env getEnv() {
+        return env;
+    }
+
+    public void setEnv(Env env) {
+        this.env = env;
+        JsonUtils.toJson(env, context.fc().getAppDataDir().resolve(ENV_FILE_NAME));
+        reload();
     }
 
     private Settings loadSettings() {
@@ -146,7 +159,7 @@ public class Session {
 
     public void reload() {
 
-        List<Tuple2<Snippet,Status>> snippets = jshell.snippets()
+        List<Tuple2<Snippet, Status>> snippets = jshell.snippets()
                 .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
                 .map(s -> new Tuple2<>(s, jshell.status(s)))
                 .collect(Collectors.toList());

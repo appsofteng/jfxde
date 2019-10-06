@@ -95,5 +95,9 @@
 			<outputDirectory>conf</outputDirectory>
 			<filtered>true</filtered>
 		</file>
+		<file>
+			<source>src/main/scripts/options</source>
+			<filtered>true</filtered>
+		</file>
 	</files>
 </component>

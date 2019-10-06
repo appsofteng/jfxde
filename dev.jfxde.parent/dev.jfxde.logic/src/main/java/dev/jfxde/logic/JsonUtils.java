@@ -1,6 +1,7 @@
 package dev.jfxde.logic;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -23,6 +24,22 @@ public abstract class JsonUtils {
     }
 
     public static <T> T fromJson(Path file, Class<T> type, T defaultObj) {
+        T obj = defaultObj;
+
+        if (Files.exists(file)) {
+            Gson gson = new Gson();
+
+            try (var f = Files.newBufferedReader(file)) {
+                obj = gson.fromJson(f, type);
+            } catch (JsonIOException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return obj;
+    }
+
+    public static <T> T fromJson(Path file, Type type, T defaultObj) {
         T obj = defaultObj;
 
         if (Files.exists(file)) {
