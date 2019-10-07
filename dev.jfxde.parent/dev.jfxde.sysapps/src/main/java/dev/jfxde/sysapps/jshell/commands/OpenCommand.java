@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.sysapps.jshell.CommandProcessor;
 import javafx.application.Platform;
 import javafx.stage.FileChooser;
@@ -33,10 +32,6 @@ public class OpenCommand extends BaseCommand {
 
         if (printing) {
             commandProcessor.getSession().loadPrinting();
-        }
-
-        if (defaultImports || printing) {
-            commandProcessor.getSession().getFeedback().normaln(commandProcessor.getSession().getContext().rc().getString("loaded"), ConsoleModel.COMMENT_STYLE);
         }
 
         if (!defaultImports && !printing) {

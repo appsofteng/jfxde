@@ -11,6 +11,7 @@ public class Env implements Comparable<Env> {
     private List<String> classPath = new ArrayList<>();
     private List<String> modulePath = new ArrayList<>();
     private List<String> addModules = new ArrayList<>();
+    private List<String> moduleLocations = new ArrayList<>();
     private List<ExportItem> addExports = new ArrayList<>();
 
     public Env() {
@@ -40,6 +41,10 @@ public class Env implements Comparable<Env> {
         return addModules;
     }
 
+    public List<String> getModuleLocations() {
+        return moduleLocations;
+    }
+
     public List<ExportItem> getAddExports() {
         return addExports;
     }
@@ -48,20 +53,26 @@ public class Env implements Comparable<Env> {
 
         List<String> options = new ArrayList<>();
 
-        if (classPath != null) {
-            options.add("--class-path " + classPath.stream().collect(Collectors.joining(File.pathSeparator)));
+        if (!classPath.isEmpty()) {
+            options.add("--class-path");
+            options.add(classPath.stream().collect(Collectors.joining(File.pathSeparator)));
         }
 
-        if (modulePath != null) {
-            options.add("--module-path " + modulePath.stream().collect(Collectors.joining(File.pathSeparator)));
+        if (!modulePath.isEmpty()) {
+            options.add("--module-path");
+            options.add(modulePath.stream().collect(Collectors.joining(File.pathSeparator)));
         }
 
-        if (addModules != null) {
-            options.add("--add-modules " + addModules.stream().collect(Collectors.joining(",")));
+        if (!addModules.isEmpty()) {
+            options.add("--add-modules");
+            options.add(addModules.stream().collect(Collectors.joining(",")));
         }
 
-        if (addExports != null) {
-            options.addAll(addExports.stream().map(s -> "--add-exports " + s).collect(Collectors.toList()));
+        if (!addExports.isEmpty()) {
+            addExports.forEach(e -> {
+                options.add("--add-exports");
+                options.add(e.toString());
+            });
         }
 
         return options.toArray(new String[] {});

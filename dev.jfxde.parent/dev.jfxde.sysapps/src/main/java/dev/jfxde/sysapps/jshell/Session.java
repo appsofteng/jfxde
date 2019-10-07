@@ -178,13 +178,19 @@ public class Session {
         if (jshell != null) {
             jshell.close();
         }
-        jshell = JShell.builder()
-                .idGenerator(idGenerator)
-                .in(consoleModel.getIn())
-                .out(consoleModel.getOut())
-                .err(consoleModel.getErr())
-                .compilerOptions(env.getOptions())
-                .build();
+        try {
+            jshell = JShell.builder()
+                    .idGenerator(idGenerator)
+                    .in(consoleModel.getIn())
+                    .out(consoleModel.getOut())
+                    .err(consoleModel.getErr())
+                    .compilerOptions(env.getOptions())
+                    .build();
+            env.getClassPath().forEach(p -> jshell.addToClasspath(p));
+            env.getModuleLocations().forEach(p -> jshell.addToClasspath(p));
+        } catch (Exception e) {
+            e.printStackTrace(consoleModel.getErr());
+        }
         idGenerator.setJshell(jshell);
     }
 
