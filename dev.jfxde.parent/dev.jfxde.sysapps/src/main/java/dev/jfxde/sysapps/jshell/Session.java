@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.jooq.lambda.tuple.Tuple2;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.logic.JsonUtils;
 import dev.jfxde.sysapps.jshell.Feedback.Mode;
+import io.vavr.Tuple2;
 import javafx.stage.Window;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
@@ -166,8 +166,8 @@ public class Session {
         reset();
 
         snippets.forEach(s -> {
-            var newSnippets = snippetProcessor.getSnippetEvents(s.v1().source()).stream().map(SnippetEvent::snippet).collect(Collectors.toList());
-            if (s.v2() == Status.DROPPED) {
+            var newSnippets = snippetProcessor.getSnippetEvents(s._1().source()).stream().map(SnippetEvent::snippet).collect(Collectors.toList());
+            if (s._2() == Status.DROPPED) {
                 commandProcessor.drop(newSnippets);
             }
         });

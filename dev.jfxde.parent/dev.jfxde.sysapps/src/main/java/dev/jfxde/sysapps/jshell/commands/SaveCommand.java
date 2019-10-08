@@ -5,9 +5,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
-import org.jooq.lambda.Unchecked;
-
 import dev.jfxde.sysapps.jshell.CommandProcessor;
+import io.vavr.control.Try;
 import javafx.application.Platform;
 import javafx.stage.FileChooser;
 import jdk.jshell.Snippet;
@@ -69,7 +68,7 @@ public class SaveCommand extends BaseCommand {
             if (file != null) {
                 commandProcessor.getSession().getContext().tc().executeSequentially(() -> {
                     try (var f = Files.newBufferedWriter(file.toPath())) {
-                        snippets.forEach(Unchecked.consumer(s -> { f.append(s.strip()); f.newLine();}));
+                        snippets.forEach(s -> Try.run(() -> { f.append(s.strip()); f.newLine();}));
                     }
                 });
             }

@@ -1,7 +1,6 @@
 package dev.jfxde.sysapps.preferences;
 
 import dev.jfxde.logic.PreferencesManager;
-import dev.jfxde.logic.ResourceManager;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.Preference;
 import dev.jfxde.ui.DesktopEnvironment;

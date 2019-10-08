@@ -9,6 +9,7 @@ module dev.jfxde.jfxext {
     requires transitive javafx.web;
     requires transitive jdk.jsobject;
 
+    requires org.controlsfx.controls;
     requires transitive richtextfx;
     requires flowless;
     requires reactfx;

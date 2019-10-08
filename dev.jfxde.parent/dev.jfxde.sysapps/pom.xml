@@ -33,8 +33,8 @@
 			<artifactId>picocli</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.jooq</groupId>
-			<artifactId>jool</artifactId>
+			<groupId>io.vavr</groupId>
+			<artifactId>vavr</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>dev.jfxde</groupId>

@@ -12,19 +12,19 @@ module dev.jfxde.sysapps {
     requires wellbehavedfx;
     requires org.controlsfx.controls;
     requires info.picocli;
-    requires org.jooq.jool;
 
     requires dev.jfxde.api;
     requires dev.jfxde.logic;
     requires dev.jfxde.ui;
     requires dev.jfxde.jfxext;
     requires gson;
+    requires io.vavr;
 
     provides dev.jfxde.api.App with dev.jfxde.sysapps.appmanager.AppManagerApp,
             dev.jfxde.sysapps.console.ConsoleApp, dev.jfxde.sysapps.exceptionlog.ExceptionLogApp,
             dev.jfxde.sysapps.jvmmonitor.JvmMonitorApp, dev.jfxde.sysapps.jshell.JShellApp, dev.jfxde.sysapps.preferences.PreferencesApp;
 
-    opens dev.jfxde.sysapps.jshell to gson;
+    opens dev.jfxde.sysapps.jshell to gson, javafx.base;
     opens dev.jfxde.sysapps.jshell.commands to info.picocli;
     opens dev.jfxde.sysapps.appmanager.bundles;
     opens dev.jfxde.sysapps.console.css;

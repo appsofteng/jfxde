@@ -24,7 +24,7 @@ It depends on the following libraries and their dependencies:
 - [Java Parser](https://javaparser.org)
 - [Picocli](https://picocli.info)
 - [GSON](https://github.com/google/gson)
-- [JOOL](https://github.com/jOOQ/jOOL)
+- [vavr](https://www.vavr.io/)
 
 ## App Example
 This is a simple example of a hello world app. It implements the App interface and declares the required permissions.

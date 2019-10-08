@@ -14,8 +14,14 @@ public abstract class JsonUtils {
     private JsonUtils() {
     }
 
-    public static void toJson(Object obj, Path file) {
+    private static Gson getGson() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        return gson;
+    }
+
+    public static void toJson(Object obj, Path file) {
+        Gson gson = getGson();
         try (var f = Files.newBufferedWriter(file)) {
             gson.toJson(obj, f);
         } catch (JsonIOException | IOException e) {
@@ -27,7 +33,7 @@ public abstract class JsonUtils {
         T obj = defaultObj;
 
         if (Files.exists(file)) {
-            Gson gson = new Gson();
+            Gson gson = getGson();
 
             try (var f = Files.newBufferedReader(file)) {
                 obj = gson.fromJson(f, type);
@@ -43,7 +49,7 @@ public abstract class JsonUtils {
         T obj = defaultObj;
 
         if (Files.exists(file)) {
-            Gson gson = new Gson();
+            Gson gson = getGson();
 
             try (var f = Files.newBufferedReader(file)) {
                 obj = gson.fromJson(f, type);
