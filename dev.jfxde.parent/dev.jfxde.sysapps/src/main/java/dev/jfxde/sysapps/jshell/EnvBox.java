@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.controlsfx.control.ListSelectionView;
-
 import dev.jfxde.api.AppContext;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
@@ -35,14 +33,13 @@ public class EnvBox extends VBox {
 
     private AppContext context;
     private ObservableList<String> sourceModules = FXCollections.observableArrayList();
-    private ObservableList<String> targetModules;
     private ObservableList<Env> envs;
     private Env env;
 
     private ComboBox<Env> envCombo;
     private ListView<String> classpathView;
     private ListView<String> modulepathView;
-    private ListSelectionView<String> addModuleView;
+    private ListView<String> addModuleView;
     private ListView<ExportItem> exportView;
     private Button addEnv;
     private Button removeEnv;
@@ -72,7 +69,7 @@ public class EnvBox extends VBox {
 
         Label classpath = new Label(context.rc().getString("classpath"));
         classpathView = new ListView<>();
-        classpathView.setPrefHeight(100);
+        classpathView.setPrefSize(500, 100);
         classpathView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         Label modulepath = new Label(context.rc().getString("modulepath"));
@@ -80,18 +77,18 @@ public class EnvBox extends VBox {
         modulepathView.setPrefHeight(100);
         modulepathView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        addModuleView = new ListSelectionView<>();
-        addModuleView.setSourceHeader(new Label(context.rc().getString("availableModules")));
-        addModuleView.setTargetHeader(new Label(context.rc().getString("selectedModules")));
-        addModuleView.setSourceItems(sourceModules);
+        Label addModules = new Label(context.rc().getString("addModules"));
+        addModuleView = new ListView<>();
+        addModuleView.setItems(sourceModules);
         addModuleView.setPrefHeight(100);
+        addModuleView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        Label addExports = new Label(context.rc().getString("exports"));
+        Label addExports = new Label(context.rc().getString("addExports"));
         exportView = new ListView<>();
         exportView.setPrefHeight(100);
         exportView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        getChildren().addAll(envBox, classpath, classpathView, modulepath, modulepathView, addModuleView, addExports, exportView);
+        getChildren().addAll(envBox, classpath, classpathView, modulepath, modulepathView, addModules, addModuleView, addExports, exportView);
     }
 
     private void setBehavior() {
@@ -212,12 +209,12 @@ public class EnvBox extends VBox {
     private void setEnv() {
         classpathView.setItems(FXCollections.observableList(env.getClassPath()));
         modulepathView.setItems(FXCollections.observableList(env.getModulePath()));
-        targetModules = FXCollections.observableList(env.getAddModules());
-        addModuleView.setTargetItems(targetModules);
         exportView.setItems(FXCollections.observableList(env.getAddExports()));
 
         moduleLocations = getModules();
         sourceModules.setAll(moduleLocations.keySet().stream().sorted().collect(Collectors.toList()));
+
+        env.getAddModules().forEach(m -> addModuleView.getSelectionModel().select(m));
 
         modulepathView.getItems().addListener((Change<? extends String> c) -> {
 
@@ -231,14 +228,17 @@ public class EnvBox extends VBox {
         });
 
 
-        targetModules.addListener((Change<? extends String> c) -> {
+        addModuleView.getSelectionModel().getSelectedItems().addListener((Change<? extends String> c) -> {
 
             while (c.next()) {
 
                 if (c.wasAdded() || c.wasRemoved()) {
+                    env.getAddModules().clear();
                     env.getModuleLocations().clear();
+
+                    env.getAddModules().addAll(addModuleView.getSelectionModel().getSelectedItems());
                     env.getModuleLocations().addAll(
-                            addModuleView.getTargetItems().stream().map(s -> new File(moduleLocations.get(s)).toString()).collect(Collectors.toList()));
+                            addModuleView.getSelectionModel().getSelectedItems().stream().map(s -> new File(moduleLocations.get(s)).toString()).collect(Collectors.toList()));
                 }
             }
         });
