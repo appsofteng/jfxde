@@ -25,6 +25,7 @@ import jdk.jshell.SnippetEvent;
 public class Session {
 
     private static final String ENV_FILE_NAME = "env.json";
+    private static final String SETTINGS_FILE_NAME = "sessings.json";
 
     private Env env;
     private Settings settings;
@@ -47,7 +48,7 @@ public class Session {
         this.consoleModel = consoleModel;
 
         feedback = new Feedback(consoleModel);
-        loadEnv();
+        env = loadEnv();
         settings = loadSettings();
         idGenerator = new IdGenerator();
         reset();
@@ -105,12 +106,8 @@ public class Session {
         return snippetsByName;
     }
 
-    private void loadEnv() {
-        env = JsonUtils.fromJson(context.fc().getAppDataDir().resolve(ENV_FILE_NAME), Env.class, new Env("default"));
-    }
-
-    public Env getEnv() {
-        return env;
+    public Env loadEnv() {
+        return JsonUtils.fromJson(context.fc().getAppDataDir().resolve(ENV_FILE_NAME), Env.class, new Env("default"));
     }
 
     public void setEnv(Env env) {
@@ -119,8 +116,13 @@ public class Session {
         reload();
     }
 
-    private Settings loadSettings() {
-        return new Settings();
+    public Settings loadSettings() {
+        return JsonUtils.fromJson(context.fc().getAppDataDir().resolve(SETTINGS_FILE_NAME), Settings.class, new Settings());
+    }
+
+    public void setSettings(Settings settings) {
+        this.settings = settings;
+        JsonUtils.toJson(settings, context.fc().getAppDataDir().resolve(SETTINGS_FILE_NAME));
     }
 
     private void setListener() {
@@ -188,10 +190,11 @@ public class Session {
                     .build();
             env.getClassPath().forEach(p -> jshell.addToClasspath(p));
             env.getModuleLocations().forEach(p -> jshell.addToClasspath(p));
+            idGenerator.setJshell(jshell);
         } catch (Exception e) {
             e.printStackTrace(consoleModel.getErr());
         }
-        idGenerator.setJshell(jshell);
+
     }
 
     public void loadDefault() {
@@ -218,7 +221,7 @@ public class Session {
             if (Files.exists(path)) {
                 try {
                     String spippets = Files.readString(path);
-                    commandProcessor.getSession().getSnippetProcessor().process(spippets);
+                    commandProcessor.getSession().process(spippets);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

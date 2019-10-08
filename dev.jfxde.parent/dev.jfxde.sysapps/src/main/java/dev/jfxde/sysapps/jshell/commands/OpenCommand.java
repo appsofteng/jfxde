@@ -13,10 +13,10 @@ import picocli.CommandLine.Option;
 @Command(name = "/open")
 public class OpenCommand extends BaseCommand {
 
-    @Option(names = "default", descriptionKey = "/open.default")
+    @Option(names = { "default", "DEFAULT"}, descriptionKey = "/open.default")
     private boolean defaultImports;
 
-    @Option(names = "printing", descriptionKey = "/open.printing")
+    @Option(names = { "printing", "PRINTING"},  descriptionKey = "/open.printing")
     private boolean printing;
 
     public OpenCommand(CommandProcessor commandProcessor) {

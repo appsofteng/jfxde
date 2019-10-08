@@ -239,7 +239,6 @@ public class EnvBox extends VBox {
         removeSelection.disableProperty().bind(classpathView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
         removeSelection.setOnAction(e -> {
             classpathView.getItems().removeAll(classpathView.getSelectionModel().getSelectedItems());
-            ;
         });
 
         ContextMenu menu = new ContextMenu(addFiles, addDirectory, removeSelection);

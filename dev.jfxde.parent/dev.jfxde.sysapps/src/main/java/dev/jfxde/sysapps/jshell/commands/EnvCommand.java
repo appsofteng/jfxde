@@ -51,7 +51,7 @@ public class EnvCommand extends BaseCommand {
 
     private ObservableList<Env> getEnvs() {
         ObservableList<Env> envs = FXCollections.observableArrayList();
-        envs.add(commandProcessor.getSession().getEnv());
+        envs.add(commandProcessor.getSession().loadEnv());
 
         Type listType = new TypeToken<ArrayList<Env>>(){}.getType();
         List<Env> envsList = JsonUtils.fromJson(commandProcessor.getSession().getContext().fc().getAppDataDir().resolve(ENVS_FILE_NAME), listType, new ArrayList<>());

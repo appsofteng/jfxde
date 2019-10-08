@@ -45,7 +45,8 @@ public class CommandProcessor extends Processor {
     CommandProcessor(Session session) {
         super(session);
 
-        clTask = session.getContext().tc().executeSequentially(CTask.create(this::createCommands));
+    //    clTask = session.getContext().tc().executeSequentially(CTask.create(this::createCommands));
+        commandLine = createCommands();
         session.getContext().tc().executeSequentially(this::loadDoc);
     }
 
@@ -117,13 +118,13 @@ public class CommandProcessor extends Processor {
 
     public CommandLine getCommandLine() {
 
-        if (commandLine == null) {
-            try {
-                commandLine = clTask.get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-            }
-        }
+//        if (commandLine == null) {
+//            try {
+//                commandLine = clTask.get();
+//            } catch (InterruptedException | ExecutionException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
 
         return commandLine;
     }
