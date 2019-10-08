@@ -43,7 +43,7 @@ public class JShellContent extends BorderPane {
                 if (c.wasAdded()) {
                     List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
                     for (TextStyleSpans span : added) {
-                        session.process(span.getText());
+                        session.processAsync(span.getText());
                     }
                 }
             }

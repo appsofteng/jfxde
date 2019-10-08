@@ -120,14 +120,12 @@ public final class SnippetUtils {
 
     public static String toString(VarSnippet snippet, String value) {
 
-        return snippet.source().strip() + "\n";
-        //return snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
+        return snippet.source().strip() + " => " + snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
     }
 
     public static String toString(ExpressionSnippet snippet, String value) {
 
-        return snippet.source().strip() + "\n";
-      //  return snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
+        return snippet.source().strip() + " => " + snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
     }
 
     public static String toString(StatementSnippet snippet) {

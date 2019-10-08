@@ -48,14 +48,13 @@ public class Session {
         this.consoleModel = consoleModel;
 
         feedback = new Feedback(consoleModel);
+        commandProcessor = new CommandProcessor(this);
+        snippetProcessor = new SnippetProcessor(this);
         env = loadEnv();
         settings = loadSettings();
         idGenerator = new IdGenerator();
         reset();
         setListener();
-
-        commandProcessor = new CommandProcessor(this);
-        snippetProcessor = new SnippetProcessor(this);
     }
 
     public Feedback getFeedback() {
@@ -191,6 +190,7 @@ public class Session {
             env.getClassPath().forEach(p -> jshell.addToClasspath(p));
             env.getModuleLocations().forEach(p -> jshell.addToClasspath(p));
             idGenerator.setJshell(jshell);
+
         } catch (Exception e) {
             e.printStackTrace(consoleModel.getErr());
         }
@@ -229,6 +229,10 @@ public class Session {
         }
     }
 
+    public void processAsync(String input) {
+        context.tc().executeSequentially(() ->  process(input));
+    }
+
     public void process(String input) {
 
         if (input.isBlank()) {
@@ -245,17 +249,17 @@ public class Session {
             if (CommandProcessor.isCommand(line)) {
                 if (sb.length() > 0) {
                     String snippets = sb.toString();
-                    context.tc().executeSequentially(() -> snippetProcessor.process(snippets));
+                    snippetProcessor.process(snippets);
                     sb.delete(0, sb.length());
                 }
-                context.tc().executeSequentially(() -> commandProcessor.process(line));
+                commandProcessor.process(line);
             } else {
                 sb.append(line).append("\n");
             }
         }
 
         if (sb.length() > 0) {
-            context.tc().executeSequentially(() -> snippetProcessor.process(sb.toString()));
+            snippetProcessor.process(sb.toString());
         }
     }
 }

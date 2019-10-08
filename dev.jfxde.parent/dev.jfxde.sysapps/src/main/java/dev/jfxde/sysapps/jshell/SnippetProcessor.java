@@ -37,20 +37,24 @@ public class SnippetProcessor extends Processor {
 
         List<SnippetEvent> allSnippetEvents = new ArrayList<>();
 
-        for (String line : lines) {
-            sb.append(line).append("\n");
+        for (int i = 0; i < lines.length; i++) {
+            sb.append(lines[i]).append("\n");
             CompletionInfo info = sourceAnalysis.analyzeCompletion(sb.toString());
 
             if (info.completeness() == Completeness.CONSIDERED_INCOMPLETE) {
                 continue;
             } else if (info.completeness() == Completeness.DEFINITELY_INCOMPLETE) {
-                session.getFeedback().normaln(session.getContext().rc().getString("definitelyIncomplete") + "  " + sb.toString().strip(), ConsoleModel.ERROR_STYLE);
+                if (i == lines.length - 1) {
+                    session.getFeedback().normaln(session.getContext().rc().getString("definitelyIncomplete") + "  " + sb.toString().strip(),
+                            ConsoleModel.ERROR_STYLE);
+                }
                 continue;
             } else if (info.completeness() == Completeness.EMPTY) {
                 sb.delete(0, sb.length());
                 continue;
             } else if (info.completeness() == Completeness.UNKNOWN) {
-                session.getFeedback().normaln(session.getContext().rc().getString("unknown") + "  " + sb.toString().strip(), ConsoleModel.ERROR_STYLE);
+                session.getFeedback().normaln(session.getContext().rc().getString("unknown") + "  " + sb.toString().strip(),
+                        ConsoleModel.ERROR_STYLE);
                 sb.delete(0, sb.length());
                 continue;
             }

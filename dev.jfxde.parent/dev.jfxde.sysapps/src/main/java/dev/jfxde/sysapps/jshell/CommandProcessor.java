@@ -9,12 +9,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import dev.jfxde.jfxext.control.ConsoleModel;
-import dev.jfxde.jfxext.util.CTask;
 import dev.jfxde.sysapps.jshell.commands.Commands;
 import dev.jfxde.sysapps.jshell.commands.DropCommand;
 import dev.jfxde.sysapps.jshell.commands.EnvCommand;
@@ -31,7 +31,6 @@ import dev.jfxde.sysapps.jshell.commands.SaveCommand;
 import dev.jfxde.sysapps.jshell.commands.SetCommand;
 import dev.jfxde.sysapps.jshell.commands.TypeCommand;
 import dev.jfxde.sysapps.jshell.commands.VarCommand;
-import javafx.concurrent.Task;
 import jdk.jshell.Snippet;
 import picocli.CommandLine;
 
@@ -40,48 +39,52 @@ public class CommandProcessor extends Processor {
     private CommandLine commandLine;
     private PrintWriter out;
     private DropCommand dropCommand;
-    private Task<CommandLine> clTask;
+    private CompletableFuture<CommandLine> future;
 
     CommandProcessor(Session session) {
         super(session);
 
-    //    clTask = session.getContext().tc().executeSequentially(CTask.create(this::createCommands));
-        commandLine = createCommands();
-        session.getContext().tc().executeSequentially(this::loadDoc);
+        future = CompletableFuture.supplyAsync(this::createCommands)
+                .thenApplyAsync(this::loadDoc);
     }
 
     private CommandLine createCommands() {
-        this.out = new PrintWriter(session.getConsoleModel().getOut(ConsoleModel.COMMENT_STYLE), true);
-        CommandLine commandLine = new CachingCommandLine(new Commands())
-                .addSubcommand(new CachingCommandLine(dropCommand = new DropCommand(this)))
-                .addSubcommand(new CachingCommandLine(new EnvCommand(this)))
-                .addSubcommand(new CachingCommandLine(new HelpCommand(this)))
-                .addSubcommand(new CachingCommandLine(new HistoryCommand(this)))
-                .addSubcommand(new CachingCommandLine(new ImportCommand(this)))
-                .addSubcommand(new CachingCommandLine(new ListCommand(this)))
-                .addSubcommand(new CachingCommandLine(new MethodCommand(this)))
-                .addSubcommand(new CachingCommandLine(new OpenCommand(this)))
-                .addSubcommand(new CachingCommandLine(new ReloadCommand(this)))
-                .addSubcommand(new CachingCommandLine(new RerunCommand(this)))
-                .addSubcommand(new CachingCommandLine(new ResetCommand(this)))
-                .addSubcommand(new CachingCommandLine(new SaveCommand(this)))
-                .addSubcommand(new CachingCommandLine(new SetCommand(this)))
-                .addSubcommand(new CachingCommandLine(new TypeCommand(this)))
-                .addSubcommand(new CachingCommandLine(new VarCommand(this)))
-                .setOut(out)
-                .setErr(new PrintWriter(session.getConsoleModel().getErr(), true))
-                .setResourceBundle(session.getContext().rc().getStringBundle());
+        CommandLine cl = AccessController.doPrivileged((PrivilegedAction<CommandLine>) () -> {
+            this.out = new PrintWriter(session.getConsoleModel().getOut(ConsoleModel.COMMENT_STYLE), true);
+            CommandLine commandLine = new CachingCommandLine(new Commands())
+                    .addSubcommand(new CachingCommandLine(dropCommand = new DropCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new EnvCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new HelpCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new HistoryCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new ImportCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new ListCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new MethodCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new OpenCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new ReloadCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new RerunCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new ResetCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new SaveCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new SetCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new TypeCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new VarCommand(this)))
+                    .setOut(out)
+                    .setErr(new PrintWriter(session.getConsoleModel().getErr(), true))
+                    .setResourceBundle(session.getContext().rc().getStringBundle());
 
-        return commandLine;
+            return commandLine;
+        });
+
+        return cl;
     }
 
-    private void loadDoc() {
-        Map<String, CommandLine> commands = new HashMap<>(getCommandLine().getSubcommands());
-        commands.put("", getCommandLine());
+    private CommandLine loadDoc(CommandLine commandLine) {
+        Map<String, CommandLine> commands = new HashMap<>(commandLine.getSubcommands());
+        commands.put("", commandLine);
         // load and cache in parallel
         commands.entrySet().parallelStream()
                 .collect(Collectors.toMap(e -> e.getKey(),
                         e -> AccessController.doPrivileged((PrivilegedAction<String>) () -> e.getValue().getUsageMessage())));
+        return commandLine;
     }
 
     public void drop(List<Snippet> snippets) {
@@ -118,13 +121,13 @@ public class CommandProcessor extends Processor {
 
     public CommandLine getCommandLine() {
 
-//        if (commandLine == null) {
-//            try {
-//                commandLine = clTask.get();
-//            } catch (InterruptedException | ExecutionException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
+        if (commandLine == null) {
+            try {
+                commandLine = future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         return commandLine;
     }
