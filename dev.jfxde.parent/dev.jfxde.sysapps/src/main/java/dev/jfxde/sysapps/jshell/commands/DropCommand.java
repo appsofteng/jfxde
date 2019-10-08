@@ -31,7 +31,7 @@ public class DropCommand extends BaseCommand {
         StringBuilder sb = new StringBuilder();
         snippets.forEach(s -> {
             if (commandProcessor.getSession().getJshell().status(s) == Status.VALID) {
-                sb.append(commandProcessor.getSession().getContext().rc().getString("dropped") + SnippetUtils.toString(s));
+                sb.append(commandProcessor.getSession().getContext().rc().getString("dropped") + SnippetUtils.toString(s, commandProcessor.getSession().getJshell()));
                 commandProcessor.getSession().getJshell().drop(s);
             } else {
                 sb.append(commandProcessor.getSession().getContext().rc().getString("notValid") + SnippetUtils.toString(s));
