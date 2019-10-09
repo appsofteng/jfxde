@@ -14,6 +14,7 @@ module dev.jfxde.jfxext {
     requires flowless;
     requires reactfx;
     requires wellbehavedfx;
+    requires undofx;
 
     requires com.github.javaparser.core;
 

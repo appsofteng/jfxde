@@ -1,5 +1,8 @@
 package dev.jfxde.sysapps.jshell;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 
@@ -7,9 +10,21 @@ public class Feedback {
 
     private Mode mode = Mode.NORMAL;
     private ConsoleModel consoleModel;
+    private boolean cached;
+    private List<TextStyleSpans> cache = new ArrayList<>();
 
     public Feedback(ConsoleModel consoleModel) {
         this.consoleModel = consoleModel;
+    }
+
+    public void setCached(boolean cached) {
+        this.cached = cached;
+    }
+
+    public void flush() {
+        cached = false;
+        cache.forEach(s -> normal(s));
+        cache.clear();
     }
 
     public void setMode(Mode mode) {
@@ -18,7 +33,7 @@ public class Feedback {
 
     public void normal(String message) {
         if (mode.ordinal() >= Mode.NORMAL.ordinal()) {
-            consoleModel.addNewLineOutput(new TextStyleSpans(message));
+            normal(new TextStyleSpans(message));
         }
     }
 
@@ -28,7 +43,7 @@ public class Feedback {
 
     public void normal(String message, String style) {
         if (mode.ordinal() >= Mode.NORMAL.ordinal()) {
-            consoleModel.addNewLineOutput(new TextStyleSpans(message, style));
+            normal(new TextStyleSpans(message, style));
         }
     }
 
@@ -38,7 +53,11 @@ public class Feedback {
 
     public void normal(TextStyleSpans span) {
         if (mode.ordinal() >= Mode.NORMAL.ordinal()) {
-            consoleModel.addNewLineOutput(span);
+            if (cached) {
+                cache.add(span);
+            } else {
+                consoleModel.addNewLineOutput(span);
+            }
         }
     }
 

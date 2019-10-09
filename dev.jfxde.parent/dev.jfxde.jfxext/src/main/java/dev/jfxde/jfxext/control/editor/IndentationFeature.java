@@ -35,11 +35,11 @@ public class IndentationFeature<T extends GenericStyledArea<?,?,?>> extends Feat
 
         String indentation = getParagraphIndentation(getArea().getCurrentParagraph());
 
-        if (paragraph.matches(".*" + getOpeningDelimitersPattern() + " *$")) {
+        if (paragraph.substring(0, area.getCaretColumn()).matches(".*" + getOpeningDelimitersPattern() + " *$")) {
             indentation += getIndentation();
         }
 
-        if (paragraph.trim().isEmpty()  && getArea().getCaretColumn() < indentation.length()) {
+        if (paragraph.trim().isEmpty() && getArea().getCaretColumn() < indentation.length()) {
             indentation = "";
         }
 

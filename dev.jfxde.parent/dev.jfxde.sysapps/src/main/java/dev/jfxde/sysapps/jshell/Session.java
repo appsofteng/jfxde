@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.logic.JsonUtils;
@@ -230,7 +229,11 @@ public class Session {
     }
 
     public void processAsync(String input) {
-        context.tc().executeSequentially(() ->  process(input));
+        context.tc().executeSequentially(() -> {
+            feedback.setCached(true);
+            process(input);
+            feedback.flush();
+        });
     }
 
     public void process(String input) {
@@ -239,7 +242,7 @@ public class Session {
             return;
         }
 
-        history.add(input);
+        history.add(input.strip());
 
         String[] lines = input.split("\n");
         StringBuilder sb = new StringBuilder();
