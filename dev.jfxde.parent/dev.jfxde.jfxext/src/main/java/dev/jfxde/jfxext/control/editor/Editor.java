@@ -6,15 +6,17 @@ import java.util.Map;
 
 import org.fxmisc.richtext.GenericStyledArea;
 
-import javafx.scene.layout.StackPane;
-
-public class Editor<T extends GenericStyledArea<?, ?, ?>> extends StackPane {
+public class Editor<T extends GenericStyledArea<?, ?, ?>> {
 
     private T area;
     private Map<Class<?>, Feature<T>> features = new HashMap<>();
 
     public Editor(T area) {
         this.area = area;
+    }
+
+    public void init() {
+        features.values().forEach(Feature::init);
     }
 
     public T getArea() {

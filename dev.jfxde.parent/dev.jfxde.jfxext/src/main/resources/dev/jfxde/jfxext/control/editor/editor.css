@@ -1,0 +1,46 @@
+
+.jb-editor-button {
+    -fx-border-color: transparent;
+    -fx-background-color:transparent;
+    -fx-padding: 2;
+    -fx-font-size: 14.0px;
+    -fx-background-radius: 2.0;
+    -fx-border-radius: 2.0;
+    -fx-font-smoothing-type: lcd;
+}
+
+.jb-editor-label {
+    -fx-border-color: transparent;
+    -fx-background-color:transparent;
+    -fx-padding: 2;
+    -fx-font-size: 14.0px;
+    -fx-background-radius: 2.0;
+    -fx-border-radius: 2.0;
+    -fx-font-smoothing-type: lcd;
+}
+
+.jb-editor-button:hover {
+    -fx-background-color:#aaa;
+}
+
+.jb-editor-highlight {
+    -rtfx-background-color: #ccc;
+}
+
+.block-delimiter-match {
+    -fx-fill: red;
+    -rtfx-border-stroke-color: #aaa;
+    -rtfx-border-stroke-width: 1;
+    -rtfx-background-color: rgba(255,255,0,0.4);
+    -fx-font-weight: bold;    
+}
+
+.jb-file-explorer-item:deleted .text {
+    -fx-strikethrough: true;
+    -fx-fill: #ccc;
+}
+
+.jb-file-explorer-item:entered {
+    -fx-background-color: rgba(0.0, 150.0, 201.0, 0.5);
+}
+

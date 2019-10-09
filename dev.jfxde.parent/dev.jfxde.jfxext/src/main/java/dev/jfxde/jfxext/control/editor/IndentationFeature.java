@@ -17,7 +17,7 @@ public class IndentationFeature<T extends GenericStyledArea<?,?,?>> extends Feat
     private static final String INDENTATION = "    ";
 
     @Override
-    protected void init() {
+    public void init() {
         Nodes.addInputMap(getArea(), sequence(
                 consume(keyPressed(ENTER), e -> insertNewLineIndentation()),
                 consume(keyPressed(TAB), e -> insertIndentation()),

@@ -22,7 +22,7 @@ public class CompletionFeature<T extends GenericStyledArea<?,?,?>> extends Featu
         this.documentation = documentation;
     }
 
-    protected void init() {
+    public void init() {
         area.getStylesheets().add(getClass().getResource("completion.css").toExternalForm());
         area.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
 

@@ -11,6 +11,10 @@ public class JavaLexer extends Lexer {
     private final String KEYWORD_PATTERN;
     private final Pattern PATTERN;
 
+    public JavaLexer() {
+        this(LANG_KEYWORDS);
+    }
+
     private JavaLexer(String[] keywords) {
         this.KEYWORDS = keywords;
         this.KEYWORD_PATTERN = "\\b(?:" + String.join("|", KEYWORDS) + ")\\b";
@@ -30,12 +34,6 @@ public class JavaLexer extends Lexer {
         );
     }
 
-    static JavaLexer get(String fileName) {
-        var lexer = "module-info.java".equals(fileName) ? MODULE_LEXER : LANG_LEXER;
-
-        return lexer;
-    }
-
     private static final String[] LANG_KEYWORDS = new String[] {
         "abstract", "assert", "boolean", "break", "byte",
         "case", "catch", "char", "class", "const",
@@ -53,9 +51,6 @@ public class JavaLexer extends Lexer {
         "exports", "module", "opens", "provides", "requires", "static", "to",
         "transitive", "uses", "with"
     };
-
-    private static final JavaLexer LANG_LEXER = new JavaLexer(LANG_KEYWORDS);
-    private static final JavaLexer MODULE_LEXER = new JavaLexer(MODULE_KEYWORDS);
 
 
     private static final String PAREN_OPEN_PATTERN = "\\(";
@@ -90,8 +85,14 @@ public class JavaLexer extends Lexer {
     private static final Map<String,Pattern> TOKEN_PATTERNS = Map.of("generic-type", GENERIC_TYPE_TOKEN_PATTERN, "string", DELIMITER_PATTERN);
     private static final Map<String,BiFunction<Matcher,String,Token>> TOKEN_FUNCTIONS = Map.of("generic-type", JavaLexer::getGenericTypeToken, "string", JavaLexer::getDefaultToken);
 
-    String getCss() {
-        return "java-syntax.css";
+    public String getCss() {
+
+        return getClass().getResource("java-syntax.css").toExternalForm();
+    }
+
+    @Override
+    String getCssEdit() {
+        return getClass().getResource("java-syntax-edit.css").toExternalForm();
     }
 
     Pattern getPattern() {

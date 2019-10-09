@@ -69,6 +69,7 @@ public abstract class Lexer {
     }
 
     abstract String getCss();
+    abstract String getCssEdit();
     abstract Pattern getPattern();
     abstract boolean isDelimiter(String str);
     abstract boolean isOpeningDelimiter(String str);

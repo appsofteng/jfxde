@@ -22,10 +22,9 @@ public abstract class Feature<T extends GenericStyledArea<?, ?, ?>> {
     public void setEditor(Editor<T> editor) {
         this.editor = editor;
         this.area = editor.getArea();
-        init();
     }
 
-    protected abstract void init();
+    public void init() {}
 
     boolean isCaretPosition(int position, int insertionEnd) {
         int caretPosition = insertionEnd >= 0 ? insertionEnd : getArea().getCaretPosition();

@@ -75,6 +75,10 @@ public class SplitConsoleView extends BorderPane {
         return editor;
     }
 
+    public CodeArea getOutputArea() {
+        return outputArea;
+    }
+
     private void setGraphics() {
         getStylesheets().add(getClass().getResource("console.css").toExternalForm());
         outputArea.setEditable(false);

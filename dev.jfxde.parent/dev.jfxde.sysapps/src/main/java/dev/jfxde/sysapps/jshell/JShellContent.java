@@ -8,8 +8,12 @@ import org.fxmisc.richtext.CodeArea;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.SplitConsoleView;
+import dev.jfxde.jfxext.control.editor.BlockEndFeature;
 import dev.jfxde.jfxext.control.editor.CompletionFeature;
 import dev.jfxde.jfxext.control.editor.CompletionItem;
+import dev.jfxde.jfxext.control.editor.HighlightBlockDelimiterFeature;
+import dev.jfxde.jfxext.control.editor.JavaLexer;
+import dev.jfxde.jfxext.control.editor.LexerFeature;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.jfxext.util.CTask;
 import dev.jfxde.logic.JsonUtils;
@@ -61,7 +65,14 @@ public class JShellContent extends BorderPane {
             }
         });
 
-        consoleView.getEditor().add(new CompletionFeature<>(this::codeCompletion, completion::loadDocumentation));
+        JavaLexer lexer = new JavaLexer();
+        consoleView.getEditor()
+                .add(new CompletionFeature<>(this::codeCompletion, completion::loadDocumentation))
+                .add(new BlockEndFeature<>())
+                .add(new LexerFeature<>(lexer))
+                .add(new HighlightBlockDelimiterFeature<>())
+                .init();
+        consoleView.getOutputArea().getStylesheets().add(lexer.getCss());
     }
 
     private List<String> loadHistory() {
