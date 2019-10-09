@@ -11,19 +11,18 @@ import javafx.geometry.Bounds;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
-public class CompletionBehavior<T extends GenericStyledArea<?,?,?>> extends Behavior<T> {
+public class CompletionFeature<T extends GenericStyledArea<?,?,?>> extends Feature<T> {
 
     private CompletionPopup codeCompletion;
-    private Consumer<CompletionBehavior<T>> complete;
+    private Consumer<CompletionFeature<T>> complete;
     private Function<DocRef, String> documentation;
 
-    public CompletionBehavior(Consumer<CompletionBehavior<T>> complete, Function<DocRef, String> documentation) {
+    public CompletionFeature(Consumer<CompletionFeature<T>> complete, Function<DocRef, String> documentation) {
         this.complete = complete;
         this.documentation = documentation;
     }
 
-
-    protected void setBehavior() {
+    protected void init() {
         area.getStylesheets().add(getClass().getResource("completion.css").toExternalForm());
         area.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
 

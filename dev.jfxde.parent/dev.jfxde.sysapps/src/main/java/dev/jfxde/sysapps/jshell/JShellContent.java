@@ -8,7 +8,7 @@ import org.fxmisc.richtext.CodeArea;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.SplitConsoleView;
-import dev.jfxde.jfxext.control.editor.CompletionBehavior;
+import dev.jfxde.jfxext.control.editor.CompletionFeature;
 import dev.jfxde.jfxext.control.editor.CompletionItem;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.jfxext.util.CTask;
@@ -61,7 +61,7 @@ public class JShellContent extends BorderPane {
             }
         });
 
-        consoleView.getEditor().add(new CompletionBehavior<>(this::codeCompletion, completion::loadDocumentation));
+        consoleView.getEditor().add(new CompletionFeature<>(this::codeCompletion, completion::loadDocumentation));
     }
 
     private List<String> loadHistory() {
@@ -70,7 +70,7 @@ public class JShellContent extends BorderPane {
         return history;
     }
 
-    private void codeCompletion(CompletionBehavior<CodeArea> behavior) {
+    private void codeCompletion(CompletionFeature<CodeArea> behavior) {
 
         CTask<Collection<CompletionItem>> task = CTask.create(() -> completion.getCompletionItems(behavior.getArea()))
                 .onSucceeded(behavior::showCompletionItems);

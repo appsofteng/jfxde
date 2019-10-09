@@ -30,5 +30,4 @@ module dev.jfxde.sysapps {
     opens dev.jfxde.sysapps.console.css;
     opens dev.jfxde.sysapps.jvmmonitor.bundles;
     opens dev.jfxde.sysapps.jshell.bundles;
-    opens dev.jfxde.sysapps.jshell.css;
 }

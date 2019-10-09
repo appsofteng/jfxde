@@ -7,6 +7,7 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jfxde.jfxext.control.editor.Editor;
+import dev.jfxde.jfxext.control.editor.IndentationFeature;
 import dev.jfxde.jfxext.richtextfx.ContextMenuBuilder;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.application.Platform;
@@ -45,8 +46,13 @@ public class SplitConsoleView extends BorderPane {
         this.consoleModel = consoleModel;
         this.history.addAll(history);
         historyIndex = history.size();
+        initEditor();
         setGraphics();
         setBehavior();
+    }
+
+    private void initEditor() {
+        editor.add(new IndentationFeature<>());
     }
 
     public ConsoleModel getConsoleModel() {
