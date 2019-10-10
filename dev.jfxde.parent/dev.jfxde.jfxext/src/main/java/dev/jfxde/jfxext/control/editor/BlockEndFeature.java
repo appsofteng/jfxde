@@ -18,7 +18,7 @@ public class BlockEndFeature<T extends GenericStyledArea<?,?,?>> extends Feature
     @Override
     public void init() {
 
-        lexer = (Lexer) area.getProperties().get(LexerFeature.class);
+        lexer = ((LexerFeature) area.getProperties().get(LexerFeature.class)).getLexer();
         Nodes.addInputMap(getArea(), sequence(
                 consume(keyTyped().onlyIf(k -> lexer.isClosingDelimiter(k.getCharacter())), e -> insertBlockEnd(e.getCharacter()))
             ));

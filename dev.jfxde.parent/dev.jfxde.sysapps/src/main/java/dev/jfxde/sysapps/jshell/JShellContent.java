@@ -13,6 +13,7 @@ import dev.jfxde.jfxext.control.editor.BlockEndFeature;
 import dev.jfxde.jfxext.control.editor.CompletionFeature;
 import dev.jfxde.jfxext.control.editor.CompletionItem;
 import dev.jfxde.jfxext.control.editor.HighlightBlockDelimiterFeature;
+import dev.jfxde.jfxext.control.editor.IndentationFeature;
 import dev.jfxde.jfxext.control.editor.JavaLexer;
 import dev.jfxde.jfxext.control.editor.LexerFeature;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
@@ -70,6 +71,7 @@ public class JShellContent extends BorderPane {
         AreaFeatures.decorate(consoleView.getInputArea())
                 .add(new CompletionFeature<>(this::codeCompletion, completion::loadDocumentation))
                 .add(new BlockEndFeature<>())
+                .add(new IndentationFeature<>())
                 .add(new LexerFeature<>(lexer))
                 .add(new HighlightBlockDelimiterFeature<>())
                 .init();
