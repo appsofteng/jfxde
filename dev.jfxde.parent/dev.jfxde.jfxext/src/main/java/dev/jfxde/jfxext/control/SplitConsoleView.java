@@ -6,13 +6,13 @@ import java.util.List;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
-import dev.jfxde.jfxext.control.editor.Editor;
+import dev.jfxde.jfxext.control.editor.AreaFeatures;
 import dev.jfxde.jfxext.control.editor.IndentationFeature;
 import dev.jfxde.jfxext.richtextfx.ContextMenuBuilder;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.application.Platform;
-import javafx.collections.ListChangeListener.Change;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.control.SplitPane;
@@ -24,8 +24,7 @@ public class SplitConsoleView extends BorderPane {
 
     private static final int HISTORY_LIMIT = 100;
     private ConsoleModel consoleModel;
-    private Editor<CodeArea> editor = new Editor<>(new CodeArea());
-    private CodeArea inputArea = editor.getArea();
+    private CodeArea inputArea = new CodeArea();
     private CodeArea outputArea = new CodeArea();
     private ObservableList<String> history = FXCollections.observableArrayList();
     private int historyIndex;
@@ -46,13 +45,13 @@ public class SplitConsoleView extends BorderPane {
         this.consoleModel = consoleModel;
         this.history.addAll(history);
         historyIndex = history.size();
-        initEditor();
+        initInputArea();
         setGraphics();
         setBehavior();
     }
 
-    private void initEditor() {
-        editor.add(new IndentationFeature<>());
+    private void initInputArea() {
+        AreaFeatures.decorate(inputArea).add(new IndentationFeature<>()).init();
     }
 
     public ConsoleModel getConsoleModel() {
@@ -71,8 +70,8 @@ public class SplitConsoleView extends BorderPane {
         return consoleModel.getOutput();
     }
 
-    public Editor<CodeArea> getEditor() {
-        return editor;
+    public CodeArea getInputArea() {
+        return inputArea;
     }
 
     public CodeArea getOutputArea() {

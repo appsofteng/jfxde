@@ -13,16 +13,15 @@ import org.fxmisc.wellbehaved.event.Nodes;
 
 public class BlockEndFeature<T extends GenericStyledArea<?,?,?>> extends Feature<T> {
 
+    private Lexer lexer;
 
     @Override
     public void init() {
-        Nodes.addInputMap(getArea(), sequence(
-                consume(keyTyped().onlyIf(k -> getLexer().isClosingDelimiter(k.getCharacter())), e -> insertBlockEnd(e.getCharacter()))
-            ));
-    }
 
-    private Lexer getLexer() {
-    return editor.getFeature(LexerFeature.class).getLexer();
+        lexer = (Lexer) area.getProperties().get(LexerFeature.class);
+        Nodes.addInputMap(getArea(), sequence(
+                consume(keyTyped().onlyIf(k -> lexer.isClosingDelimiter(k.getCharacter())), e -> insertBlockEnd(e.getCharacter()))
+            ));
     }
 
     void insertBlockEnd(String closingDelimiter) {
@@ -57,8 +56,8 @@ public class BlockEndFeature<T extends GenericStyledArea<?,?,?>> extends Feature
 
     private int getBlockBeginningIndex(String closingDelimiter) {
         Deque<Integer> openingDelimiterPositions = new ArrayDeque<>();
-        Matcher matcher = getLexer().getPattern().matcher(getArea().getText());
-        String openingDelimiter = getLexer().getOpeningDelimiter(closingDelimiter);
+        Matcher matcher = lexer.getPattern().matcher(getArea().getText());
+        String openingDelimiter = lexer.getOpeningDelimiter(closingDelimiter);
         int index = -1;
 
         while (matcher.find() && matcher.start() <= getArea().getCaretPosition()) {

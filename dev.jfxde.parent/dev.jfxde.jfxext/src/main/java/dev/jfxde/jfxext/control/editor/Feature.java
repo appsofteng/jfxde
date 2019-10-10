@@ -12,16 +12,14 @@ import static org.fxmisc.richtext.model.TwoDimensional.Bias.Forward;
 
 public abstract class Feature<T extends GenericStyledArea<?, ?, ?>> {
 
-    protected Editor<T> editor;
     protected T area;
 
     public T getArea() {
         return area;
     }
 
-    public void setEditor(Editor<T> editor) {
-        this.editor = editor;
-        this.area = editor.getArea();
+    public void setArea(T area) {
+        this.area = area;
     }
 
     public void init() {}

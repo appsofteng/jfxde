@@ -8,6 +8,7 @@ import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
 import org.fxmisc.richtext.GenericStyledArea;
+import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.wellbehaved.event.Nodes;
 
 import javafx.scene.control.IndexRange;
@@ -16,8 +17,11 @@ public class IndentationFeature<T extends GenericStyledArea<?,?,?>> extends Feat
 
     private static final String INDENTATION = "    ";
 
+    private LexerFeature<StyleClassedTextArea> lexerFeature;
+
     @Override
     public void init() {
+        lexerFeature = (LexerFeature<StyleClassedTextArea>) area.getProperties().get(LexerFeature.class);
         Nodes.addInputMap(getArea(), sequence(
                 consume(keyPressed(ENTER), e -> insertNewLineIndentation()),
                 consume(keyPressed(TAB), e -> insertIndentation()),
@@ -47,7 +51,7 @@ public class IndentationFeature<T extends GenericStyledArea<?,?,?>> extends Feat
     }
 
     private String getOpeningDelimitersPattern() {
-        return editor.getFeature(LexerFeature.class) != null ? editor.getFeature(LexerFeature.class).getLexer().getOpeningDelimitersPattern() : "";
+        return lexerFeature != null ? lexerFeature.getLexer().getOpeningDelimitersPattern() : "";
     }
 
     void insertIndentation() {

@@ -28,7 +28,7 @@ public class HighlightBlockDelimiterFeature<T extends StyleClassedTextArea> exte
 
     @Override
     public void init() {
-        lexerFeature = editor.getFeature(LexerFeature.class);
+        lexerFeature = (LexerFeature<StyleClassedTextArea>) area.getProperties().get(LexerFeature.class);
         lexerFeature.addRichTextChangeConsumer(ch -> {
             insertionEnd = ch.toPlainTextChange().getInsertionEnd();
             delimiterFound = false;

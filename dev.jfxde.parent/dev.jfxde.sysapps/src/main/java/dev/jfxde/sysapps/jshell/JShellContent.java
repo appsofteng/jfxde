@@ -8,6 +8,7 @@ import org.fxmisc.richtext.CodeArea;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.SplitConsoleView;
+import dev.jfxde.jfxext.control.editor.AreaFeatures;
 import dev.jfxde.jfxext.control.editor.BlockEndFeature;
 import dev.jfxde.jfxext.control.editor.CompletionFeature;
 import dev.jfxde.jfxext.control.editor.CompletionItem;
@@ -66,7 +67,7 @@ public class JShellContent extends BorderPane {
         });
 
         JavaLexer lexer = new JavaLexer();
-        consoleView.getEditor()
+        AreaFeatures.decorate(consoleView.getInputArea())
                 .add(new CompletionFeature<>(this::codeCompletion, completion::loadDocumentation))
                 .add(new BlockEndFeature<>())
                 .add(new LexerFeature<>(lexer))
