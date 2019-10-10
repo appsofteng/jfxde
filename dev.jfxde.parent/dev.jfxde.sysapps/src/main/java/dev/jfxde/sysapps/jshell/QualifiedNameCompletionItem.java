@@ -2,9 +2,9 @@ package dev.jfxde.sysapps.jshell;
 
 import java.util.function.Function;
 
-import dev.jfxde.jfxext.control.editor.CompletionItem;
-import dev.jfxde.jfxext.control.editor.DocRef;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import dev.jfxde.jfxext.richtextfx.features.CompletionItem;
+import dev.jfxde.jfxext.richtextfx.features.DocRef;
 import javafx.collections.ObservableList;
 
 public class QualifiedNameCompletionItem extends CompletionItem {

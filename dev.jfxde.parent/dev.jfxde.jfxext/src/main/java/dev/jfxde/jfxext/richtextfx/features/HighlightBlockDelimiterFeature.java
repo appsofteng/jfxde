@@ -1,4 +1,4 @@
-package dev.jfxde.jfxext.control.editor;
+package dev.jfxde.jfxext.richtextfx.features;
 
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.StyleClassedTextArea;
@@ -37,7 +37,7 @@ public class HighlightBlockDelimiterFeature<T extends StyleClassedTextArea> exte
         lexerFeature.getLexer().addListener(this);
 
         getArea().caretPositionProperty().addListener(this::highlightBlockDelimiters);
-        area.getStylesheets().add(getClass().getResource("editor.css").toExternalForm());
+        area.getStylesheets().add(getClass().getResource("features.css").toExternalForm());
 
     }
 

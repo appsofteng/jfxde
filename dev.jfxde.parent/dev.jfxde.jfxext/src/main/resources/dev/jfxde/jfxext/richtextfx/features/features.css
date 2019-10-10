@@ -1,0 +1,7 @@
+.block-delimiter-match {
+    -fx-fill: red;
+    -rtfx-border-stroke-color: #aaa;
+    -rtfx-border-stroke-width: 1;
+    -rtfx-background-color: rgba(255,255,0,0.4);
+    -fx-font-weight: bold;
+}

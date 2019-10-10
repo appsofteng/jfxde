@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 
 import org.fxmisc.richtext.CodeArea;
 
-import dev.jfxde.jfxext.control.editor.CompletionItem;
-import dev.jfxde.jfxext.control.editor.DocRef;
+import dev.jfxde.jfxext.richtextfx.features.CompletionItem;
+import dev.jfxde.jfxext.richtextfx.features.DocRef;
 import dev.jfxde.jfxext.util.JavadocUtils;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;

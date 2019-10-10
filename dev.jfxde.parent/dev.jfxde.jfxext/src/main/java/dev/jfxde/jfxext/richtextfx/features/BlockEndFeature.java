@@ -1,4 +1,4 @@
-package dev.jfxde.jfxext.control.editor;
+package dev.jfxde.jfxext.richtextfx.features;
 
 import static org.fxmisc.wellbehaved.event.EventPattern.keyTyped;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;

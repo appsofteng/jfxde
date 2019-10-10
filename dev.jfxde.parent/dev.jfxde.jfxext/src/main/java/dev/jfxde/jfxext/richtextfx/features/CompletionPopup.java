@@ -1,4 +1,4 @@
-package dev.jfxde.jfxext.control.editor;
+package dev.jfxde.jfxext.richtextfx.features;
 
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.ESCAPE;

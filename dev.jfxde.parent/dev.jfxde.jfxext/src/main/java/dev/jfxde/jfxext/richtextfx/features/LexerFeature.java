@@ -1,4 +1,4 @@
-package dev.jfxde.jfxext.control.editor;
+package dev.jfxde.jfxext.richtextfx.features;
 
 import java.time.Duration;
 import java.util.ArrayList;

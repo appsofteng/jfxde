@@ -1,4 +1,4 @@
-package dev.jfxde.jfxext.control.editor;
+package dev.jfxde.jfxext.richtextfx.features;
 
 public abstract class CompletionItem implements Comparable<CompletionItem> {
 

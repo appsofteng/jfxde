@@ -6,10 +6,10 @@ import java.util.List;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 
-import dev.jfxde.jfxext.control.editor.AreaFeatures;
-import dev.jfxde.jfxext.control.editor.IndentationFeature;
 import dev.jfxde.jfxext.richtextfx.ContextMenuBuilder;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import dev.jfxde.jfxext.richtextfx.features.AreaFeatures;
+import dev.jfxde.jfxext.richtextfx.features.IndentationFeature;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
