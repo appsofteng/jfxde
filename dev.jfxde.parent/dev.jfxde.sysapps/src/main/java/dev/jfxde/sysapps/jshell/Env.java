@@ -45,6 +45,10 @@ public class Env implements Comparable<Env> {
         return moduleLocations;
     }
 
+    public void setModuleLocations(List<String> moduleLocations) {
+        this.moduleLocations = moduleLocations;
+    }
+
     public List<ExportItem> getAddExports() {
         return addExports;
     }

@@ -92,9 +92,9 @@
 	-fx-border-radius: 2.0;
 }
 
-.dialog-pane .label {
-	-fx-font-weight: bold;
-}
+/* .dialog-pane .label { */
+/* 	-fx-font-weight: bold; */
+/* } */
 
 /* Desktop ********************************************************************/
 

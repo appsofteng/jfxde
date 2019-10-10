@@ -3,18 +3,18 @@ package dev.jfxde.sysapps.jshell;
 import java.io.File;
 import java.lang.module.ModuleFinder;
 import java.lang.module.ModuleReference;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.controlsfx.control.CheckComboBox;
 import org.controlsfx.control.ListSelectionView;
 
 import dev.jfxde.api.AppContext;
@@ -28,7 +28,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -36,7 +35,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
@@ -226,6 +224,7 @@ public class EnvBox extends VBox {
                 if (c.wasAdded() || c.wasRemoved()) {
                     env.getAddModules().clear();
                     env.getAddModules().addAll(addModuleView.getTargetItems());
+                    env.setModuleLocations(env.getAddModules().stream().map(m -> new File(modulePathModuleReferences.get(m).location().get()).toString()).collect(Collectors.toList()));
                 }
             }
         });
@@ -310,10 +309,12 @@ public class EnvBox extends VBox {
     }
 
     private void setEnv() {
+        env.getClassPath().removeIf(p -> Files.notExists(Paths.get(p)));
         classpathView.setItems(FXCollections.observableList(env.getClassPath()));
+        env.getModulePath().removeIf(p -> Files.notExists(Paths.get(p)));
         modulepathView.setItems(FXCollections.observableList(env.getModulePath()));
+
         addModuleView.getTargetItems().setAll(env.getAddModules());
-        exportView.setItems(FXCollections.observableList(env.getAddExports()));
 
         setModules();
 
@@ -349,6 +350,9 @@ public class EnvBox extends VBox {
                 .collect(Collectors.toMap(r -> r.descriptor().name(), r -> r)));
         exportModuleReferences.putAll(systemModuleReferences);
         exportModules.setAll(exportModuleReferences.keySet());
+
+        env.getAddExports().removeIf(e -> !exportModules.contains(e.getSourceModule()) || e.getTargetModules().removeIf(t -> !exportModules.contains(t)) && e.getTargetModules().isEmpty());
+        exportView.setItems(FXCollections.observableList(env.getAddExports()));
 
         FXCollections.sort(exportModules);
     }
