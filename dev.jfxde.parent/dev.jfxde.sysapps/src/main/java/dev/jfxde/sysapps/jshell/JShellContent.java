@@ -15,7 +15,7 @@ import dev.jfxde.jfxext.richtextfx.features.CompletionFeature;
 import dev.jfxde.jfxext.richtextfx.features.CompletionItem;
 import dev.jfxde.jfxext.richtextfx.features.HighlightBlockDelimiterFeature;
 import dev.jfxde.jfxext.richtextfx.features.IndentationFeature;
-import dev.jfxde.jfxext.richtextfx.features.JavaLexer;
+import dev.jfxde.jfxext.richtextfx.features.Lexer;
 import dev.jfxde.jfxext.richtextfx.features.LexerFeature;
 import dev.jfxde.jfxext.util.CTask;
 import dev.jfxde.logic.JsonUtils;
@@ -67,7 +67,7 @@ public class JShellContent extends BorderPane {
             }
         });
 
-        JavaLexer lexer = new JavaLexer();
+        Lexer lexer = Lexer.get("file.java", CommandProcessor.COMMAND_PATTERN);
         AreaFeatures.decorate(consoleView.getInputArea())
                 .add(new CompletionFeature<>(this::codeCompletion, completion::loadDocumentation))
                 .add(new BlockEndFeature<>())

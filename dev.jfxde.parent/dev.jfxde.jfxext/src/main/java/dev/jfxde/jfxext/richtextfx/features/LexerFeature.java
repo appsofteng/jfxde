@@ -8,8 +8,6 @@ import java.util.function.Consumer;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.RichTextChange;
 
-import javafx.scene.Parent;
-
 public class LexerFeature<T extends StyleClassedTextArea> extends Feature<T> {
 
     private Lexer lexer;

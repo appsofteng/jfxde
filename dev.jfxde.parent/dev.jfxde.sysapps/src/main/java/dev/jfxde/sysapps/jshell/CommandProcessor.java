@@ -36,6 +36,7 @@ import picocli.CommandLine;
 
 public class CommandProcessor extends Processor {
 
+    static final String COMMAND_PATTERN = "^/[\\w!?\\-]*( .*)*$";
     private CommandLine commandLine;
     private PrintWriter out;
     private DropCommand dropCommand;
@@ -150,7 +151,7 @@ public class CommandProcessor extends Processor {
     }
 
     static boolean isCommand(String input) {
-        return input.matches("/[\\w!?\\-]*( .*)*");
+        return input.matches(COMMAND_PATTERN);
     }
 
     private static class CachingCommandLine extends CommandLine {

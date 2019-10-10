@@ -11,15 +11,13 @@ public class JavaLexer extends Lexer {
     private final String KEYWORD_PATTERN;
     private final Pattern PATTERN;
 
-    public JavaLexer() {
-        this(LANG_KEYWORDS);
-    }
-
-    private JavaLexer(String[] keywords) {
+    private JavaLexer(String[] keywords, String skipPattern) {
         this.KEYWORDS = keywords;
+        this.skipPattern = skipPattern;
         this.KEYWORD_PATTERN = "\\b(?:" + String.join("|", KEYWORDS) + ")\\b";
         this.PATTERN = Pattern.compile(
-            "(?<KEYWORD>" + KEYWORD_PATTERN + ")"
+                (skipPattern != null && !skipPattern.isBlank() ? "(?<SKIP>" + skipPattern + ")|" : "")
+            + "(?<KEYWORD>" + KEYWORD_PATTERN + ")"
             + "|(?<PARENOPEN>" + PAREN_OPEN_PATTERN + ")"
             + "|(?<PARENCLOSE>" + PAREN_CLOSE_PATTERN + ")"
             + "|(?<BRACEOPEN>" + BRACE_OPEN_PATTERN + ")"
@@ -32,6 +30,12 @@ public class JavaLexer extends Lexer {
             + "|(?<STRING>" + STRING_PATTERN + ")"
             + "|(?<COMMENT>" + COMMENT_PATTERN + ")"
         );
+    }
+
+    static JavaLexer getJava(String fileName, String skipPattern) {
+        var lexer = "module-info.java".equals(fileName) ? new JavaLexer(MODULE_KEYWORDS, skipPattern) : new JavaLexer(LANG_KEYWORDS, skipPattern);
+
+        return lexer;
     }
 
     private static final String[] LANG_KEYWORDS = new String[] {
@@ -138,6 +142,7 @@ public class JavaLexer extends Lexer {
                 (value = matcher.group("CHAR")) != null ? "char" :
                 (value = matcher.group("STRING")) != null ? "string" :
                 (value = matcher.group("COMMENT")) != null ? "comment" :
+                (value = matcher.group("SKIP")) != null ? defaultStyleClass :
                 defaultStyleClass;
 
         Token token = new Token(styleClass, value, TOKEN_PATTERNS.get(styleClass), TOKEN_FUNCTIONS.get(styleClass));

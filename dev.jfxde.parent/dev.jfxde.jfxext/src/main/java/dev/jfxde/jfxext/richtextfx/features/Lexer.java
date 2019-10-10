@@ -14,6 +14,27 @@ public abstract class Lexer {
 
     private static final String INDENTATION = "    ";
     private List<TokenListener> tokenListeners = new ArrayList<>();
+    protected String skipPattern;
+
+
+    public static Lexer get(String fileName) {
+        return get(fileName, null);
+    }
+
+    public static Lexer get(String fileName, String skipPattern) {
+        Lexer lexer = null;
+        int i = fileName.lastIndexOf(".");
+
+        if (i > 0) {
+            String extension = fileName.substring(i + 1);
+
+            if ("java".equalsIgnoreCase(extension)) {
+                lexer = JavaLexer.getJava(fileName, skipPattern);
+            }
+        }
+
+        return lexer;
+    }
 
     String getIndentation() {
         return INDENTATION;
@@ -68,7 +89,7 @@ public abstract class Lexer {
 
     }
 
-    abstract String getCss();
+    public abstract String getCss();
     abstract String getCssEdit();
     abstract Pattern getPattern();
     abstract boolean isDelimiter(String str);
