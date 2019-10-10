@@ -5,6 +5,8 @@ import java.lang.module.ModuleFinder;
 import java.lang.module.ModuleReference;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,15 +14,21 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.controlsfx.control.CheckComboBox;
+import org.controlsfx.control.ListSelectionView;
+
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.AutoCompleteTextFieldTableCell;
+import dev.jfxde.jfxext.control.CheckComboBoxTableCell;
+import dev.jfxde.jfxext.control.CollectionStringConverter;
 import io.vavr.control.Try;
+import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder;
 import javafx.beans.property.adapter.JavaBeanStringPropertyBuilder;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
@@ -28,6 +36,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
@@ -42,7 +51,7 @@ import javafx.util.converter.DefaultStringConverter;
 public class EnvBox extends VBox {
 
     private AppContext context;
-    private ObservableList<String> modulePathModules = FXCollections.observableArrayList();
+
     private Map<String, ModuleReference> modulePathModuleReferences = new HashMap<>();
     private Map<String, ModuleReference> systemModuleReferences;
     private ObservableList<String> exportModules = FXCollections.observableArrayList();
@@ -53,7 +62,7 @@ public class EnvBox extends VBox {
     private ComboBox<Env> envCombo;
     private ListView<String> classpathView;
     private ListView<String> modulepathView;
-    private ListView<String> addModuleView;
+    private ListSelectionView<String> addModuleView;
     private TableView<ExportItem> exportView;
     private Button addEnv;
     private Button removeEnv;
@@ -94,11 +103,12 @@ public class EnvBox extends VBox {
         modulepathView.setPrefHeight(100);
         modulepathView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        Label addModules = new Label(context.rc().getString("addModules"));
-        addModuleView = new ListView<>();
-        addModuleView.setItems(modulePathModules);
+        addModuleView = new ListSelectionView<>();
+        Label sourceHeader = new Label(context.rc().getString("availableModules"));
+        addModuleView.setSourceHeader(sourceHeader);
+        Label targetHeader = new Label(context.rc().getString("addModules"));
+        addModuleView.setTargetHeader(targetHeader);
         addModuleView.setPrefHeight(100);
-        addModuleView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         Label addExports = new Label(context.rc().getString("addExports"));
         exportView = new TableView<>();
@@ -149,30 +159,16 @@ public class EnvBox extends VBox {
             return cell;
         });
 
-        TableColumn<ExportItem, String> targetColumn = new TableColumn<>();
-        targetColumn.textProperty().bind(context.rc().getStringBinding("targetModule"));
+        TableColumn<ExportItem, Collection<String>> targetColumn = new TableColumn<>();
+        targetColumn.textProperty().bind(context.rc().getStringBinding("targetModules"));
         targetColumn.setCellValueFactory(
-                f -> Try.of(() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("targetModule").build()).getOrNull());
+                f -> Try.of(() -> JavaBeanObjectPropertyBuilder.create().bean(f.getValue()).name("targetModules").build()).getOrNull());
 //        targetColumn.setCellFactory(ChoiceBoxTableCell.forTableColumn(availableModules));
-        targetColumn.setCellFactory(f -> {
-            TextFieldTableCell<ExportItem, String> cell = new AutoCompleteTextFieldTableCell<>(new DefaultStringConverter(), exportModules) {
-
-                public void commitEdit(String newValue) {
-
-                    if (exportModules.contains(newValue)) {
-                        super.commitEdit(newValue);
-                    } else {
-                        cancelEdit();
-                    }
-                }
-            };
-
-            return cell;
-        });
+        targetColumn.setCellFactory(CheckComboBoxTableCell.forTableColumn(new CollectionStringConverter(), exportModules));
 
         exportView.getColumns().addAll(sourceColumn, packageColumn, targetColumn);
 
-        getChildren().addAll(envBox, classpath, classpathView, modulepath, modulepathView, addModules, addModuleView, addExports, exportView);
+        getChildren().addAll(envBox, classpath, classpathView, modulepath, modulepathView, addModuleView, addExports, exportView);
     }
 
     private void setBehavior() {
@@ -220,6 +216,17 @@ public class EnvBox extends VBox {
                 env = envs.get(0);
                 setEnv();
                 envCombo.getSelectionModel().select(env);
+            }
+        });
+
+        addModuleView.getTargetItems().addListener((Change<? extends String> c) -> {
+
+            while (c.next()) {
+
+                if (c.wasAdded() || c.wasRemoved()) {
+                    env.getAddModules().clear();
+                    env.getAddModules().addAll(addModuleView.getTargetItems());
+                }
             }
         });
     }
@@ -302,32 +309,13 @@ public class EnvBox extends VBox {
         return paths;
     }
 
-    private ListChangeListener<String> addModuleListener = (Change<? extends String> c) -> {
-
-        while (c.next()) {
-
-            if (c.wasAdded() || c.wasRemoved()) {
-                env.getAddModules().clear();
-                env.getModuleLocations().clear();
-
-                env.getAddModules().addAll(addModuleView.getSelectionModel().getSelectedItems());
-                env.getModuleLocations().addAll(
-                        addModuleView.getSelectionModel().getSelectedItems().stream()
-                                .map(s -> new File(modulePathModuleReferences.get(s).location().orElse(null)).toString())
-                                .collect(Collectors.toList()));
-            }
-        }
-    };
-
     private void setEnv() {
         classpathView.setItems(FXCollections.observableList(env.getClassPath()));
         modulepathView.setItems(FXCollections.observableList(env.getModulePath()));
+        addModuleView.getTargetItems().setAll(env.getAddModules());
         exportView.setItems(FXCollections.observableList(env.getAddExports()));
 
         setModules();
-
-        addModuleView.getSelectionModel().getSelectedItems().removeListener(addModuleListener);
-        env.getAddModules().forEach(m -> addModuleView.getSelectionModel().select(m));
 
         modulepathView.getItems().addListener((Change<? extends String> c) -> {
 
@@ -338,8 +326,6 @@ public class EnvBox extends VBox {
                 }
             }
         });
-
-        addModuleView.getSelectionModel().getSelectedItems().addListener(addModuleListener);
     }
 
     private Map<String, ModuleReference> getModulePathModuleReferences() {
@@ -351,7 +337,13 @@ public class EnvBox extends VBox {
 
     private void setModules() {
         modulePathModuleReferences = getModulePathModuleReferences();
-        modulePathModules.setAll(modulePathModuleReferences.keySet().stream().sorted().collect(Collectors.toList()));
+        addModuleView.getSourceItems().setAll(modulePathModuleReferences.keySet()
+                .stream()
+                .filter(m -> !addModuleView.getTargetItems().contains(m))
+                .sorted()
+                .collect(Collectors.toList()));
+
+        addModuleView.getTargetItems().removeIf(m -> !modulePathModuleReferences.keySet().contains(m));
 
         exportModuleReferences = new HashMap<>(modulePathModuleReferences.values().stream().filter(r -> !r.descriptor().packages().isEmpty())
                 .collect(Collectors.toMap(r -> r.descriptor().name(), r -> r)));

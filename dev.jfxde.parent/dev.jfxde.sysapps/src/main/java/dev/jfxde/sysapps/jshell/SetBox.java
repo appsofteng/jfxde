@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import dev.jfxde.api.AppContext;
 import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -45,6 +46,7 @@ public class SetBox extends VBox {
         printingCheck.setSelected(settings.isLoadPrinting());
 
         Label filesLabel = new Label(context.rc().getString("loadFiles"));
+        filesLabel.setPadding(new Insets(5,0,0,0));
         filesView = new ListView<>(FXCollections.observableList(settings.getLoadFiles()));
         filesView.setPrefSize(500, 300);
 
