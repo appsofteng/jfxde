@@ -4,6 +4,7 @@ import static javafx.scene.layout.Region.USE_PREF_SIZE;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -150,8 +151,15 @@ public final class ResourceManager extends Manager implements ResourceController
 
     @Override
     public String getCss(String name) {
-        String url = caller.getResource(CSS_DIR_NAME + "/" + name + ".css").toExternalForm();
-        return url;
+        String css = null;
+        URL url = caller.getResource(CSS_DIR_NAME + "/" + name + ".css");
+
+        if (url == null) {
+            css = parent.getCss(name);
+        } else {
+            css = url.toExternalForm();
+        }
+        return css;
     }
 
     public Region getMediumIcon(String style) {
