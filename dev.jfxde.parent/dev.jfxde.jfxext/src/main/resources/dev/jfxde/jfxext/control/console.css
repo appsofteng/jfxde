@@ -1,12 +1,16 @@
-.jd-console-normal {
+.styled-text-area .selection {
+    -fx-fill: rgba(30,144,255,0.3);
+}
+
+.styled-text-area .jd-console-normal {
     -fx-fill: inherit;
 }
 
-.jd-console-error {
+.styled-text-area .jd-console-error {
     -fx-fill: red;
 }
 
-.jd-console-comment {
+.styled-text-area .jd-console-comment {
     -fx-fill: #666;
     -fx-font-style: italic;
 }

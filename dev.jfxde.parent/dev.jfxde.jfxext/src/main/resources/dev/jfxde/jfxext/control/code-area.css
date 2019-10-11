@@ -1,9 +1,0 @@
-/* Rich text FX */
-.styled-text-area .selection {
-    -fx-fill: rgba(30,144,255,0.3);
-}
-
-.styled-text-area .text {
-    -fx-font-smoothing-type: gray;
-}
-

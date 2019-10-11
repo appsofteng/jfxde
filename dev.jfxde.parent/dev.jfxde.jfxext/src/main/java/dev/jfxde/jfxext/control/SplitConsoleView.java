@@ -79,16 +79,12 @@ public class SplitConsoleView extends BorderPane {
     }
 
     private void setGraphics() {
-        getStylesheets().add(getClass().getResource("console.css").toExternalForm());
         outputArea.setEditable(false);
-        outputArea.getStylesheets().add(getClass().getResource("code-area.css").toExternalForm());
         outputArea.setFocusTraversable(false);
         ContextMenuBuilder.get(outputArea).copy().selectAll().clear();
 
         inputArea.requestFocus();
-        inputArea.getStylesheets().add(getClass().getResource("code-area.css").toExternalForm());
         inputArea.setWrapText(true);
-        inputArea.getStyleClass().add("jd-input");
         ContextMenuBuilder.get(inputArea).copy().cut().paste().selectAll().clear().separator().undo().redo();
 
         SplitPane splitPane = new SplitPane(new VirtualizedScrollPane<>(outputArea), new VirtualizedScrollPane<>(inputArea));
@@ -96,6 +92,11 @@ public class SplitConsoleView extends BorderPane {
         splitPane.setDividerPositions(0.8f);
 
         setCenter(splitPane);
+    }
+
+    @Override
+    public String getUserAgentStylesheet() {
+        return getClass().getResource("console.css").toExternalForm();
     }
 
     private void setBehavior() {

@@ -15,6 +15,7 @@ import javafx.css.PseudoClass;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
@@ -27,7 +28,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-import javafx.scene.Node;
 
 public class InternalWindow extends Pane {
 
@@ -95,6 +95,10 @@ public class InternalWindow extends Pane {
         setMoveable();
         setHandlers();
         setTitleMenu();
+    }
+
+    void setCss(String css) {
+        contentPane.getStylesheets().addAll(css);
     }
 
     void setContent(Node node) {

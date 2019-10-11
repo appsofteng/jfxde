@@ -20,6 +20,8 @@ public class AppWindow extends InternalWindow {
         title.setGraphic(appDescriptor.getAppProviderDescriptor().getSmallIcon());
         newWindow.setDisable(appDescriptor.isSingleton());
 
+        setCss(appDescriptor.getAppProviderDescriptor().getCss());
+
         PauseTransition pause = new PauseTransition(Duration.seconds(1));
 
         appDescriptor.contentProperty().addListener((v, o, n) -> {

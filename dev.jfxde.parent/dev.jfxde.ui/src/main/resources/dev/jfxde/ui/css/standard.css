@@ -24,7 +24,7 @@
 	-jd-base-color-alpha5: rgba(0%, 0%, 0%, 0.5);
 	-jd-base-color-alpha6: rgba(0%, 0%, 0%, 0.6);
 	-jd-base-color-alpha7: rgba(0%, 0%, 0%, 0.7);
-	-jd-text-background-color: -jd-base-color;
+	-jd-background-color: -jd-base-color;
 
     -jd-light-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha4, 200%) 0%, derive(-jd-base-color-alpha4, 50%) 50%, derive(-jd-base-color-alpha4, -50%) 100%);
     -jd-dark-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha6, 200%) 0%, derive(-jd-base-color-alpha6, 50%) 50%, derive(-jd-base-color-alpha6, -50%) 100%);
@@ -99,13 +99,13 @@
 /* Desktop ********************************************************************/
 
 .jd-desktop-environment {
-	-fx-background-color: -jd-text-background-color;
+	-fx-background-color: -jd-background-color;
 }
 
 /* Shortcut pane **************************************************************/
 
 .jd-desktop-shortcut-pane {
-   -fx-background-color: -jd-text-background-color;
+   -fx-background-color: -jd-background-color;
 }
 
 .jd-desktop-shortcut-icon {
@@ -114,7 +114,7 @@
 	-fx-text-alignment: center;
 	-fx-background-radius: 2.0;
 	-fx-border-radius: 2.0;
-	-fx-text-fill: -jd-text-background-color;
+	-fx-text-fill: -jd-background-color;
 }
 
 .jd-desktop-shortcut-name {
@@ -261,7 +261,7 @@
 }
 
 .jd-internal-window-content {
-	-fx-background-color: #fff;
+	-fx-background-color: -fx-background;
 }
 
 .jd-internal-window-title-bar {

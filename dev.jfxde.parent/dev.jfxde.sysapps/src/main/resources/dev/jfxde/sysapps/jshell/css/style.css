@@ -1,0 +1,38 @@
+.jd-internal-window-content {
+	-fx-background-color: black;
+}
+
+/* Rich text FX */
+.styled-text-area {
+    -fx-background-color: black;
+}
+
+.styled-text-area .caret {
+    -fx-stroke: white;
+}
+
+/* Not working */
+.styled-text-area .selection {
+    -fx-fill: pink;
+}
+
+.styled-text-area .text {
+    -fx-font-smoothing-type: lcd;
+    -fx-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.2em;
+}
+
+/* Console */
+
+.styled-text-area .jd-console-normal {
+    -fx-fill: white;
+}
+
+.styled-text-area .jd-console-error {
+    -fx-fill: red;
+}
+
+.styled-text-area .jd-console-comment {
+    -fx-font-style: italic;
+}

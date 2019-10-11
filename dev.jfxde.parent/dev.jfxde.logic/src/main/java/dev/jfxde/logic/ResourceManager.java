@@ -5,7 +5,9 @@ import static javafx.scene.layout.Region.USE_PREF_SIZE;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -29,6 +31,7 @@ public final class ResourceManager extends Manager implements ResourceController
 
     private static final String BUNDLE_DIR_NAME = "bundles";
     private static final String BUNDLE_FILE_NAME = "strings";
+
     private final String bundleDir;
     private final String bundleBaseName;
 
@@ -41,6 +44,7 @@ public final class ResourceManager extends Manager implements ResourceController
     private String iconAltText = "";
 
     private static final String CSS_DIR_NAME = "css";
+    private static final String CSS_FILE_NAME = "style";
 
     private Class<?> caller;
     private ResourceManager parent;
@@ -54,7 +58,8 @@ public final class ResourceManager extends Manager implements ResourceController
         this.iconAltText = iconAltText;
         this.parent = parentCaller;
 
-        this.bundleDir = caller.getPackageName().replace(".", "/") + "/" + BUNDLE_DIR_NAME + "/";
+        String path = caller.getPackageName().replace(".", "/");
+        this.bundleDir = path + "/" + BUNDLE_DIR_NAME + "/";
         this.bundleBaseName = caller.getPackageName() + "." + BUNDLE_DIR_NAME + "." + BUNDLE_FILE_NAME;
     }
 
@@ -160,6 +165,14 @@ public final class ResourceManager extends Manager implements ResourceController
             css = url.toExternalForm();
         }
         return css;
+    }
+
+    public String getCss() {
+        return getCss(CSS_FILE_NAME);
+    }
+
+    public List<String> getCss(String[] names) {
+        return Arrays.stream(names).map(n -> getCss(n)).filter(s -> s != null).collect(Collectors.toList());
     }
 
     public Region getMediumIcon(String style) {

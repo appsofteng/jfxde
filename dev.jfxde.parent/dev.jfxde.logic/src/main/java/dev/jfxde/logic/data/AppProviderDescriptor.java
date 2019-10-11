@@ -188,6 +188,10 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
         this.system = system;
     }
 
+    public String getCss() {
+        return resourceManager.getCss();
+    }
+
     public int match(Resource resource) {
 
         match = 0;

@@ -37,8 +37,6 @@ public class HighlightBlockDelimiterFeature<T extends StyleClassedTextArea> exte
         lexerFeature.getLexer().addListener(this);
 
         getArea().caretPositionProperty().addListener(this::highlightBlockDelimiters);
-        area.getStylesheets().add(getClass().getResource("features.css").toExternalForm());
-
     }
 
     private void highlightBlockDelimiters(ObservableValue<? extends Integer> observable, int oldValue, int newValue) {
