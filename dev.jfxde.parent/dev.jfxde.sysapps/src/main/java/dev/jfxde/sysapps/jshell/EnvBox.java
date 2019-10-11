@@ -224,7 +224,9 @@ public class EnvBox extends VBox {
                 if (c.wasAdded() || c.wasRemoved()) {
                     env.getAddModules().clear();
                     env.getAddModules().addAll(addModuleView.getTargetItems());
-                    env.setModuleLocations(env.getAddModules().stream().map(m -> new File(modulePathModuleReferences.get(m).location().get()).toString()).collect(Collectors.toList()));
+                    env.setModuleLocations(env.getAddModules().stream()
+                            .filter(m -> modulePathModuleReferences.get(m).location().isPresent())
+                            .map(m -> new File(modulePathModuleReferences.get(m).location().get()).toString()).collect(Collectors.toList()));
                 }
             }
         });
