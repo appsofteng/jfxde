@@ -2,6 +2,7 @@ package dev.jfxde.sysapps.jshell;
 
 import java.util.stream.Collectors;
 
+import jdk.jshell.ErroneousSnippet;
 import jdk.jshell.ExpressionSnippet;
 import jdk.jshell.ImportSnippet;
 import jdk.jshell.JShell;
@@ -75,14 +76,14 @@ public final class SnippetUtils {
             value = jshell.varValue((VarSnippet)snippet);
         }
 
-        return toString(snippet, value);
+        return toString(snippet, value, jshell.status(snippet).toString());
     }
 
-    public static String toString(Snippet snippet) {
-        return toString(snippet, "");
+    public static String toString(Snippet snippet, String value, JShell jshell) {
+        return toString(snippet, value, jshell.status(snippet).toString());
     }
 
-    public static String toString(Snippet snippet, String value) {
+    private static String toString(Snippet snippet, String value, String status) {
 
         String output = String.format("%4s : ", snippet.id());
 
@@ -98,38 +99,47 @@ public final class SnippetUtils {
             output += toString((ExpressionSnippet)snippet, value);
         } else if (snippet instanceof StatementSnippet) {
             output += toString((StatementSnippet)snippet);
+        } else if (snippet instanceof ErroneousSnippet) {
+            output += toString((ErroneousSnippet)snippet);
         }
+
+        output +=  " " + status + "\n";
 
         return output;
     }
 
     public static String toString(ImportSnippet snippet) {
 
-        return "import " + (snippet.isStatic() ? "static " : "") + snippet.fullname() + "\n";
+        return "import " + (snippet.isStatic() ? "static " : "") + snippet.fullname();
     }
 
     public static String toString(MethodSnippet snippet) {
 
-        return snippet.signature().substring(snippet.signature().indexOf(")") + 1) + " " + snippet.name() + "(" + snippet.parameterTypes() + ")\n";
+        return snippet.signature().substring(snippet.signature().indexOf(")") + 1) + " " + snippet.name() + "(" + snippet.parameterTypes() + ")";
     }
 
     public static String toString(TypeDeclSnippet snippet) {
 
-        return SnippetUtils.getSubkind(snippet) + " " + snippet.name() + "\n";
+        return SnippetUtils.getSubkind(snippet) + " " + snippet.name();
     }
 
     public static String toString(VarSnippet snippet, String value) {
 
-        return snippet.source().strip() + " => " + snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
+        return snippet.source().strip() + " => " + snippet.typeName() + " " + snippet.name() + " = " + value;
     }
 
     public static String toString(ExpressionSnippet snippet, String value) {
 
-        return snippet.source().strip() + " => " + snippet.typeName() + " " + snippet.name() + " = " + value + "\n";
+        return snippet.source().strip() + " => " + snippet.typeName() + " " + snippet.name() + " = " + value;
     }
 
     public static String toString(StatementSnippet snippet) {
 
-        return snippet.source().strip().lines().map(String::strip).collect(Collectors.joining()) + "\n";
+        return snippet.source().strip().lines().map(String::strip).collect(Collectors.joining());
+    }
+
+    public static String toString(ErroneousSnippet snippet) {
+
+        return snippet.source().strip().lines().map(String::strip).collect(Collectors.joining());
     }
 }

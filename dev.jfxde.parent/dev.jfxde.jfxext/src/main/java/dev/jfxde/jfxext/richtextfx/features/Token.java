@@ -50,8 +50,7 @@ public class Token {
         return style.isEmpty() ? "" : style.get(0);
     }
 
-    public void setStyleClass(String styleClass) {
-        style.clear();
+    public void addStyleClass(String styleClass) {
         style.add(styleClass);
     }
 

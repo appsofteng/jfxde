@@ -166,7 +166,7 @@ public class SnippetProcessor extends Processor {
             }
         }
 
-        msg += SnippetUtils.toString(snippet, value);
+        msg += SnippetUtils.toString(snippet, value, session.getJshell());
 
         return msg;
     }

@@ -1,10 +1,14 @@
 package dev.jfxde.jfxext.control;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import dev.jfxde.jfxext.richtextfx.ContextMenuBuilder;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
@@ -28,22 +32,24 @@ public class SplitConsoleView extends BorderPane {
     private CodeArea outputArea = new CodeArea();
     private ObservableList<String> history = FXCollections.observableArrayList();
     private int historyIndex;
+    private List<String> styleFilter;
 
     public SplitConsoleView() {
-        this(new ConsoleModel(), List.of());
+        this(new ConsoleModel(), List.of(), List.of());
     }
 
-    public SplitConsoleView(List<String> history) {
-        this(new ConsoleModel(), history);
+    public SplitConsoleView(List<String> history, List<String> styleFilter) {
+        this(new ConsoleModel(), history, styleFilter);
     }
 
     public SplitConsoleView(ConsoleModel consoleModel) {
-        this(consoleModel, List.of());
+        this(consoleModel, List.of(), List.of());
     }
 
-    public SplitConsoleView(ConsoleModel consoleModel, List<String> history) {
+    public SplitConsoleView(ConsoleModel consoleModel, List<String> history, List<String> styleFilter) {
         this.consoleModel = consoleModel;
         this.history.addAll(history);
+        this.styleFilter = styleFilter;
         historyIndex = history.size();
         initInputArea();
         setGraphics();
@@ -157,7 +163,8 @@ public class SplitConsoleView extends BorderPane {
         }
 
         inputArea.appendText("\n");
-        TextStyleSpans span = new TextStyleSpans(inputArea.getText(), inputArea.getStyleSpans(0, inputArea.getText().length()));
+
+        TextStyleSpans span = new TextStyleSpans(inputArea.getText(), filterStyles());
         getInput().add(span);
 
         history.add(span.getText().strip());
@@ -169,6 +176,31 @@ public class SplitConsoleView extends BorderPane {
         historyIndex = history.size();
 
         inputArea.clear();
+    }
+
+    public void enter(String input) {
+        if (outputArea.getLength() > 0 && !outputArea.getText().endsWith("\n\n")) {
+            outputArea.appendText("\n");
+        }
+
+        getInput().add(new TextStyleSpans(input));
+    }
+
+    private StyleSpans<Collection<String>> filterStyles() {
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+
+        inputArea.getStyleSpans(0, inputArea.getText().length()).forEach(s -> {
+            if (s.getStyle().contains("block-delimiter-match")) {
+                var n = s.getStyle().stream().filter(c -> !styleFilter.contains(c)).collect(Collectors.toList());
+                spansBuilder.add(n, s.getLength());
+            } else {
+                spansBuilder.add(s);
+            }
+        });
+
+        var styleSpans = spansBuilder.create();
+
+        return styleSpans;
     }
 
     private void historyUp() {

@@ -160,7 +160,9 @@ public final class ResourceManager extends Manager implements ResourceController
         URL url = caller.getResource(CSS_DIR_NAME + "/" + name + ".css");
 
         if (url == null) {
-            css = parent.getCss(name);
+            if (parent != null) {
+                css = parent.getCss(name);
+            }
         } else {
             css = url.toExternalForm();
         }

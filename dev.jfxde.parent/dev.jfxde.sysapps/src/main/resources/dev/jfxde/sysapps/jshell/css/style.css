@@ -35,4 +35,9 @@
 
 .styled-text-area .jd-console-comment {
     -fx-font-style: italic;
+    -fx-fill: green;
+}
+
+.styled-text-area .jd-console-help {
+    -fx-fill: white;
 }

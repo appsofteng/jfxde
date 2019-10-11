@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
+import dev.jfxde.jfxext.control.SplitConsoleView;
 import dev.jfxde.logic.JsonUtils;
 import dev.jfxde.sysapps.jshell.Feedback.Mode;
 import io.vavr.Tuple2;
@@ -41,10 +42,10 @@ public class Session {
     private Map<String, Snippet> snippetsById = new HashMap<>();
     private Map<String, List<Snippet>> snippetsByName = new HashMap<>();
 
-    public Session(AppContext context, JShellContent content, ConsoleModel consoleModel) {
-        this.context = context;
+    public Session(JShellContent content) {
+        this.context = content.getContext();
         this.content = content;
-        this.consoleModel = consoleModel;
+        this.consoleModel = content.getConsoleView().getConsoleModel();
 
         feedback = new Feedback(consoleModel);
         commandProcessor = new CommandProcessor(this);
@@ -66,6 +67,10 @@ public class Session {
 
     public JShell getJshell() {
         return jshell;
+    }
+
+    SplitConsoleView getConsoleView() {
+        return content.getConsoleView();
     }
 
     public ConsoleModel getConsoleModel() {

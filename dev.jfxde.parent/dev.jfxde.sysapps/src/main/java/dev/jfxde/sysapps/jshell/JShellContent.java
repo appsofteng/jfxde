@@ -33,11 +33,19 @@ public class JShellContent extends BorderPane {
 
     public JShellContent(AppContext context) {
         this.context = context;
-        consoleView = new SplitConsoleView(loadHistory());
+        consoleView = new SplitConsoleView(loadHistory(), List.of("block-delimiter-match"));
         setCenter(consoleView);
-        session = new Session(context, this, consoleView.getConsoleModel());
+        session = new Session(this);
         completion = new Completion(session);
         setBehavior();
+    }
+
+    AppContext getContext() {
+        return context;
+    }
+
+    SplitConsoleView getConsoleView() {
+        return consoleView;
     }
 
     private void setBehavior() {

@@ -51,7 +51,7 @@ public class CommandProcessor extends Processor {
 
     private CommandLine createCommands() {
         CommandLine cl = AccessController.doPrivileged((PrivilegedAction<CommandLine>) () -> {
-            this.out = new PrintWriter(session.getConsoleModel().getOut(ConsoleModel.COMMENT_STYLE), true);
+            this.out = new PrintWriter(session.getConsoleModel().getOut(ConsoleModel.HELP_STYLE), true);
             CommandLine commandLine = new CachingCommandLine(new Commands())
                     .addSubcommand(new CachingCommandLine(dropCommand = new DropCommand(this)))
                     .addSubcommand(new CachingCommandLine(new EnvCommand(this)))

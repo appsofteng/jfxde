@@ -112,8 +112,8 @@ public class HighlightBlockDelimiterFeature<T extends StyleClassedTextArea> exte
 
                 if (!delimiterFound && (isCaretPosition(open.getStart(), insertionEnd) || isCaretPosition(token.getStart(), insertionEnd))) {
 
-                    open.setStyleClass("block-delimiter-match");
-                    token.setStyleClass("block-delimiter-match");
+                    open.addStyleClass("block-delimiter-match");
+                    token.addStyleClass("block-delimiter-match");
                     delimiterFound = true;
                 }
             }

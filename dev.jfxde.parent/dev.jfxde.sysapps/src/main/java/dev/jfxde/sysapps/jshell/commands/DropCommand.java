@@ -34,7 +34,7 @@ public class DropCommand extends BaseCommand {
                 sb.append(commandProcessor.getSession().getContext().rc().getString("dropped") + SnippetUtils.toString(s, commandProcessor.getSession().getJshell()));
                 commandProcessor.getSession().getJshell().drop(s);
             } else {
-                sb.append(commandProcessor.getSession().getContext().rc().getString("notValid") + SnippetUtils.toString(s));
+                sb.append(commandProcessor.getSession().getContext().rc().getString("notValid") + SnippetUtils.toString(s, commandProcessor.getSession().getJshell()));
             }
         });
 

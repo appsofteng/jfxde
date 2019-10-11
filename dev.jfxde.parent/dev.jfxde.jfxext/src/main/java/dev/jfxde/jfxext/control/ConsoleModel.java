@@ -18,6 +18,7 @@ public class ConsoleModel {
 
     public static final String NORMAL_STYLE = "jd-console-normal";
     public static final String COMMENT_STYLE = "jd-console-comment";
+    public static final String HELP_STYLE = "jd-console-help";
     public static final String ERROR_STYLE = "jd-console-error";
     private ObservableList<TextStyleSpans> input = FXCollections.observableArrayList();
     private ObservableList<TextStyleSpans> inputToOutput = FXCollections.observableArrayList();

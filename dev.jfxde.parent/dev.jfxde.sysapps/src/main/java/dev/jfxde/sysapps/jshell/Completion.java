@@ -131,7 +131,7 @@ public class Completion {
         if (!qualifiedNames.isResolvable()) {
             Set<CompletionItem> names = qualifiedNames.getNames()
                     .stream()
-                    .map(n -> new QualifiedNameCompletionItem(session.getConsoleModel().getInput(), n, this::loadDocumentation))
+                    .map(n -> new QualifiedNameCompletionItem(i -> session.getConsoleView().enter(i) , n, this::loadDocumentation))
                     .sorted()
                     .collect(Collectors.toSet());
 

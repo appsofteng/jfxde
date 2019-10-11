@@ -98,7 +98,9 @@ public class InternalWindow extends Pane {
     }
 
     void setCss(String css) {
-        contentPane.getStylesheets().addAll(css);
+        if (css != null) {
+            contentPane.getStylesheets().addAll(css);
+        }
     }
 
     void setContent(Node node) {
