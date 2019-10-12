@@ -11,6 +11,8 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
@@ -25,13 +27,11 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
-public class InternalWindow extends Pane {
+public class InternalWindow extends InternalFrame {
 
-    private static final double CURSOR_BORDER_WIDTH = 5;
     private static final PseudoClass ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("active");
     private static final PseudoClass FULL_PSEUDO_CLASS = PseudoClass.getPseudoClass("full");
 
@@ -56,11 +56,14 @@ public class InternalWindow extends Pane {
     private Point2D pressDragPoint;
     private Node focusOwner = contentPane;
 
+    private ObservableList<InternalDialog> dialogs = FXCollections.observableArrayList();
+
     private ChangeListener<Boolean> activateListener = (v, o, n) -> {
         if (n) {
             activate();
         } else {
             deactivate();
+            dialogs.forEach(InternalDialog::deactivate);
         }
     };
 
@@ -110,6 +113,14 @@ public class InternalWindow extends Pane {
 
     void removeContent(Node node) {
         contentPane.getChildren().remove(node);
+    }
+
+    WindowPane getWindowPane() {
+        return windowPane;
+    }
+
+    ObservableList<InternalDialog> getDialogs() {
+        return dialogs;
     }
 
     @Override
@@ -240,7 +251,13 @@ public class InternalWindow extends Pane {
 
     private void setHandlers() {
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            window.activate();
+
+            if (window.isActive()) {
+                activate();
+            } else {
+
+                window.activate();
+            }
         });
 
         title.setOnMouseClicked(e -> {

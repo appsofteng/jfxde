@@ -108,7 +108,7 @@ public class WindowPane extends Pane {
     }
 
     void removeWindow(Window window) {
-        InternalWindow appWindow = (InternalWindow) getChildren().stream().filter(ch -> ((InternalWindow) ch).getWindow() == window).findFirst().orElseGet(null);
+        InternalWindow appWindow = (InternalWindow) getChildren().stream().filter(c -> c instanceof InternalWindow).filter(c -> ((InternalWindow) c).getWindow() == window).findFirst().orElseGet(null);
 
         if (appWindow != null) {
             getChildren().remove(appWindow);

@@ -10,6 +10,7 @@ import dev.jfxde.logic.JsonUtils;
 import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.Env;
 import dev.jfxde.sysapps.jshell.EnvBox;
+import dev.jfxde.ui.InternalDialog;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,19 +34,23 @@ public class EnvCommand extends BaseCommand {
     public void run() {
 
         Platform.runLater(() -> {
-            Dialog<ButtonType> dialog = new Dialog<>();
-            dialog.initOwner(commandProcessor.getSession().getWindow());
-            dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.initStyle(StageStyle.UTILITY);
 
-            EnvBox envBox = new EnvBox(commandProcessor.getSession().getContext(), getEnvs());
-            dialog.getDialogPane().setContent(envBox);
-            ButtonType okButtonType = new ButtonType(commandProcessor.getSession().getContext().rc().getString("ok"), ButtonData.OK_DONE);
-            ButtonType cancelButtonType = new ButtonType(commandProcessor.getSession().getContext().rc().getString("cancel"),
-                    ButtonData.CANCEL_CLOSE);
-            dialog.getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
-            dialog.showAndWait().filter(response -> response == okButtonType)
-                    .ifPresent(b -> saveEnvs(envBox.getEnv(), envBox.getEnvs()));
+            InternalDialog d = InternalDialog.create(commandProcessor.getSession().getContent());
+            d.show();
+
+//            Dialog<ButtonType> dialog = new Dialog<>();
+//            dialog.initOwner(commandProcessor.getSession().getWindow());
+//            dialog.initModality(Modality.APPLICATION_MODAL);
+//            dialog.initStyle(StageStyle.UTILITY);
+//
+//            EnvBox envBox = new EnvBox(commandProcessor.getSession().getContext(), getEnvs());
+//            dialog.getDialogPane().setContent(envBox);
+//            ButtonType okButtonType = new ButtonType(commandProcessor.getSession().getContext().rc().getString("ok"), ButtonData.OK_DONE);
+//            ButtonType cancelButtonType = new ButtonType(commandProcessor.getSession().getContext().rc().getString("cancel"),
+//                    ButtonData.CANCEL_CLOSE);
+//            dialog.getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
+//            dialog.showAndWait().filter(response -> response == okButtonType)
+//                    .ifPresent(b -> saveEnvs(envBox.getEnv(), envBox.getEnvs()));
         });
     }
 

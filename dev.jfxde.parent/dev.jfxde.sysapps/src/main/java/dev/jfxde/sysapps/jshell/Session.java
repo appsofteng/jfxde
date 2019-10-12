@@ -57,6 +57,10 @@ public class Session {
         setListener();
     }
 
+    public JShellContent getContent() {
+        return content;
+    }
+
     public Feedback getFeedback() {
         return feedback;
     }
