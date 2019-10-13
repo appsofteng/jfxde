@@ -79,12 +79,15 @@ public final class LayoutUtils {
     public static void makeResizable(Node resizableNode, Region preferredSizeNode, double cursorDetectionBorderWidth) {
 
         resizableNode.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
-            addResizeCursors(resizableNode, cursorDetectionBorderWidth, new Point2D(e.getX(), e.getY()));
+            if (!preferredSizeNode.isDisabled()) {
+                addResizeCursors(resizableNode, cursorDetectionBorderWidth, new Point2D(e.getX(), e.getY()));
+            }
         });
 
         resizableNode.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
 
-            if (!resizableNode.isResizable() || !isInScene(resizableNode.getScene(), e.getSceneX(), e.getSceneY())) {
+            if (!resizableNode.isResizable() || preferredSizeNode.isDisabled()
+                    || !isInScene(resizableNode.getScene(), e.getSceneX(), e.getSceneY())) {
                 return;
             }
 

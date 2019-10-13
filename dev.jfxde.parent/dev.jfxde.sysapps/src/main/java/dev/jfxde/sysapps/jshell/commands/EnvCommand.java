@@ -14,11 +14,10 @@ import dev.jfxde.ui.InternalDialog;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
+import javafx.scene.control.DialogPane;
 import picocli.CommandLine.Command;
 
 @Command(name = "/env")
@@ -35,22 +34,21 @@ public class EnvCommand extends BaseCommand {
 
         Platform.runLater(() -> {
 
-            InternalDialog d = InternalDialog.create(commandProcessor.getSession().getContent());
-            d.show();
+            InternalDialog d = InternalDialog.create(commandProcessor.getSession().getContent(), true);
+            EnvBox envBox = new EnvBox(commandProcessor.getSession().getContext(), getEnvs());
+            DialogPane dialogPane = new DialogPane();
+            dialogPane.setContent(envBox);
+            ButtonType okButtonType = new ButtonType(commandProcessor.getSession().getContext().rc().getString("ok"), ButtonData.OK_DONE);
+            ButtonType cancelButtonType = new ButtonType(commandProcessor.getSession().getContext().rc().getString("cancel"),
+                  ButtonData.CANCEL_CLOSE);
+            dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
+            final Button btOk = (Button) dialogPane.lookupButton(okButtonType);
+            btOk.setOnAction(e -> {d.close(); saveEnvs(envBox.getEnv(), envBox.getEnvs());});
+            final Button cancel = (Button) dialogPane.lookupButton(cancelButtonType);
+            cancel.setOnAction(e -> d.close());
 
-//            Dialog<ButtonType> dialog = new Dialog<>();
-//            dialog.initOwner(commandProcessor.getSession().getWindow());
-//            dialog.initModality(Modality.APPLICATION_MODAL);
-//            dialog.initStyle(StageStyle.UTILITY);
-//
-//            EnvBox envBox = new EnvBox(commandProcessor.getSession().getContext(), getEnvs());
-//            dialog.getDialogPane().setContent(envBox);
-//            ButtonType okButtonType = new ButtonType(commandProcessor.getSession().getContext().rc().getString("ok"), ButtonData.OK_DONE);
-//            ButtonType cancelButtonType = new ButtonType(commandProcessor.getSession().getContext().rc().getString("cancel"),
-//                    ButtonData.CANCEL_CLOSE);
-//            dialog.getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
-//            dialog.showAndWait().filter(response -> response == okButtonType)
-//                    .ifPresent(b -> saveEnvs(envBox.getEnv(), envBox.getEnvs()));
+            d.show(dialogPane);
+
         });
     }
 
@@ -66,8 +64,10 @@ public class EnvCommand extends BaseCommand {
     }
 
     private void saveEnvs(Env env, ObservableList<Env> envs) {
-        commandProcessor.getSession().setEnv(env);
-        envs.remove(env);
-        JsonUtils.toJson(envs, commandProcessor.getSession().getContext().fc().getAppDataDir().resolve(ENVS_FILE_NAME));
+        commandProcessor.getSession().getContext().tc().executeSequentially(() -> {
+            commandProcessor.getSession().setEnv(env);
+            envs.remove(env);
+            JsonUtils.toJson(envs, commandProcessor.getSession().getContext().fc().getAppDataDir().resolve(ENVS_FILE_NAME));
+        });
     }
 }

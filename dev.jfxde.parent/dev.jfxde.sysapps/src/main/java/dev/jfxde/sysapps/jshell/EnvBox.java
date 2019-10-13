@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -93,12 +92,19 @@ public class EnvBox extends VBox {
 
         Label classpath = new Label(context.rc().getString("classpath"));
         classpathView = new ListView<>();
-        classpathView.setPrefSize(500, 100);
+        classpathView.setPrefWidth(400);
+        classpathView.setPrefHeight(100);
+        // Set the sizes or the list view flickers in the dialog pane.
+        classpathView.setMinHeight(100);
+        classpathView.setMaxHeight(100);
         classpathView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         Label modulepath = new Label(context.rc().getString("modulepath"));
         modulepathView = new ListView<>();
+        modulepathView.setPrefWidth(400);
         modulepathView.setPrefHeight(100);
+        modulepathView.setMinHeight(100);
+        modulepathView.setMaxHeight(100);
         modulepathView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         addModuleView = new ListSelectionView<>();
@@ -106,11 +112,15 @@ public class EnvBox extends VBox {
         addModuleView.setSourceHeader(sourceHeader);
         Label targetHeader = new Label(context.rc().getString("addModules"));
         addModuleView.setTargetHeader(targetHeader);
+        addModuleView.setPrefWidth(400);
         addModuleView.setPrefHeight(100);
 
         Label addExports = new Label(context.rc().getString("addExports"));
         exportView = new TableView<>();
+        exportView.setPrefWidth(400);
         exportView.setPrefHeight(100);
+        exportView.setMinHeight(100);
+        exportView.setMaxHeight(100);
         exportView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         exportView.setEditable(true);
 
@@ -118,7 +128,6 @@ public class EnvBox extends VBox {
         sourceColumn.textProperty().bind(context.rc().getStringBinding("sourceModule"));
         sourceColumn.setCellValueFactory(
                 f -> Try.of(() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("sourceModule").build()).getOrNull());
-//        sourceColumn.setCellFactory(ChoiceBoxTableCell.forTableColumn(availableModules));
         sourceColumn.setCellFactory(f -> {
             TextFieldTableCell<ExportItem, String> cell = new AutoCompleteTextFieldTableCell<>(new DefaultStringConverter(), exportModules) {
 
@@ -161,7 +170,6 @@ public class EnvBox extends VBox {
         targetColumn.textProperty().bind(context.rc().getStringBinding("targetModules"));
         targetColumn.setCellValueFactory(
                 f -> Try.of(() -> JavaBeanObjectPropertyBuilder.create().bean(f.getValue()).name("targetModules").build()).getOrNull());
-//        targetColumn.setCellFactory(ChoiceBoxTableCell.forTableColumn(availableModules));
         targetColumn.setCellFactory(CheckComboBoxTableCell.forTableColumn(new CollectionStringConverter(), exportModules));
 
         exportView.getColumns().addAll(sourceColumn, packageColumn, targetColumn);

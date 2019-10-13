@@ -1,89 +1,43 @@
 package dev.jfxde.ui;
 
 import dev.jfxde.jfxext.util.LayoutUtils;
-import dev.jfxde.logic.Sys;
-import javafx.collections.ListChangeListener.Change;
-import javafx.css.PseudoClass;
 import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Rectangle;
 
 public class InternalDialog extends InternalFrame {
 
-    private static final PseudoClass ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("active");
-
     private InternalWindow window;
-    private WindowPane windowPane;
-    private Label title = new Label();
-    private HBox buttonBox = new HBox();
-    private BorderPane titleBar = new BorderPane();
-    private BorderPane payload = new BorderPane();
-    private StackPane contentPane = new StackPane();
-    private Node focusOwner = contentPane;
-
-    private Button close = new Button("x");
-
-    private Point2D pressDragPoint;
-    private Bounds restoreBounds;
-
-    private int index;
+    private boolean modal;
 
     private InternalDialog(InternalWindow window) {
+        this(window, false);
+    }
+
+    private InternalDialog(InternalWindow window, boolean modal) {
+        super(window.getWindowPane());
         this.window = window;
-        window.getDialogs().add(this);
-        this.windowPane = window.getWindowPane();
+        this.parent = window;
+        this.modal = modal;
+        if (modal) {
+            parent.freez();
+        }
+        window.add(this);
         addButtons();
-        buildLayout(window.getBoundsInLocal().getWidth() / 2, window.getBoundsInLocal().getHeight() / 2);
+        buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
         setMoveable();
         setHandlers();
     }
 
-    @Override
-    WindowPane getWindowPane() {
-        return windowPane;
-    }
-
-    private void addButtons() {
-        close.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
-        close.setFocusTraversable(false);
-        close.setTooltip(new Tooltip());
-        close.getTooltip().textProperty().bind(Sys.rm().getStringBinding("close"));
+    protected void addButtons() {
+       super.addButtons();
 
         buttonBox.getChildren().addAll(close);
         buttonBox.setMinWidth(USE_PREF_SIZE);
         buttonBox.setMinHeight(USE_PREF_SIZE);
-    }
-
-    private void buildLayout(double width, double height) {
-        payload.setPrefSize(width, height);
-
-        title.setPrefWidth(Double.MAX_VALUE);
-
-        titleBar.setLeft(title);
-        titleBar.setRight(buttonBox);
-        titleBar.minWidthProperty().bind(buttonBox.widthProperty().add(10));
-        payload.setTop(titleBar);
-        payload.setCenter(contentPane);
-        payload.minWidthProperty().bind(titleBar.minWidthProperty().add(10));
-        payload.setMinHeight(70);
-
-        titleBar.getStyleClass().add("jd-internal-window-title-bar");
-        contentPane.getStyleClass().add("jd-internal-window-content");
-        payload.getStyleClass().add("jd-internal-window-payload");
-        getStyleClass().add("jd-internal-window");
-
-        getChildren().add(payload);
-        relocate(width / 2 + window.getLayoutX(), height / 2 + window.getLayoutY());
-        restoreBounds = getBoundsInParent();
     }
 
     private void setMoveable() {
@@ -114,31 +68,14 @@ public class InternalDialog extends InternalFrame {
 
     private void setHandlers() {
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            activate();
-        });
 
-        windowPane.getChildren().addListener((Change<? extends Node> c) -> {
+            if (!isActive()) {
 
-            while (c.next()) {
-                if (c.wasAdded()) {
-                    if (windowPane.getChildren().indexOf(this) == windowPane.getChildren().size() - 1) {
-                        activate();
-                    }
-                } else if (c.wasRemoved()) {
-                    if (c.getRemoved().contains(this) && c.getFrom() == c.getList().size()) {
-                        deactivate();
-                    }
-                }
+                activateAll();
             }
         });
 
         close.setOnAction(e -> close());
-    }
-
-    private void close() {
-        setVisible(false);
-        window.getDialogs().remove(this);
-        window.getWindowPane().getChildren().remove(this);
     }
 
     private boolean isMaximized() {
@@ -149,7 +86,19 @@ public class InternalDialog extends InternalFrame {
 
     }
 
+    public boolean isModal() {
+        return modal;
+    }
+
+    void disableOthers() {
+
+    }
+
     public static InternalDialog create(Node node) {
+        return create(node, false);
+    }
+
+    public static InternalDialog create(Node node, boolean modal) {
         InternalDialog dialog = null;
         Parent parent = node.getParent();
 
@@ -158,28 +107,80 @@ public class InternalDialog extends InternalFrame {
         }
 
         if (parent instanceof InternalWindow) {
-            dialog = new InternalDialog((InternalWindow) parent);
+            dialog = new InternalDialog((InternalWindow) parent, modal);
         }
         return dialog;
     }
 
-    public void show() {
+    public void show(Node node) {
+        setContent(node);
+        payload.minWidthProperty().unbind();
+        payload.minHeightProperty().unbind();
+
+        payload.setPrefWidth(USE_COMPUTED_SIZE);
+        payload.setPrefHeight(USE_COMPUTED_SIZE);
+
+        payload.widthProperty().addListener((v, o, n) -> {
+            if (payload.getPrefWidth() == USE_COMPUTED_SIZE) {
+                if (n.doubleValue() > windowPane.getWidth()) {
+                    payload.setPrefWidth(windowPane.getWidth() / 2);
+                } else {
+                    payload.setPrefWidth(n.doubleValue());
+                }
+                payload.setMinWidth(contentPane.getMinWidth());
+                relocate((windowPane.getWidth() - payload.getPrefWidth()) / 2, (windowPane.getHeight() - payload.getPrefHeight()) / 2);
+            }
+        });
+
+        payload.heightProperty().addListener((v, o, n) -> {
+            if (payload.getPrefHeight() == USE_COMPUTED_SIZE) {
+                if (n.doubleValue() > windowPane.getHeight()) {
+                    payload.setPrefHeight(windowPane.getHeight());
+                } else {
+                    payload.setPrefHeight(n.doubleValue());
+                }
+                payload.setMinHeight(contentPane.getMinHeight());
+                relocate((windowPane.getWidth() - payload.getPrefWidth()) / 2, (windowPane.getHeight() - payload.getPrefHeight()) / 2);
+            }
+        });
+
+//        Rectangle clipRect = new Rectangle(400, 650);
+//
+//        clipRect.heightProperty().bind(payload.prefHeightProperty().subtract(20));
+//        clipRect.widthProperty().bind(payload.prefWidthProperty());
+//        contentPane.setClip(clipRect);
 
         window.getWindowPane().getChildren().add(this);
-        index = window.getWindowPane().getChildren().size() - 1;
-        activate();
+        activateAll();
+    }
+
+    public void close() {
+        window.remove(this);
+        window.getDialogs().removeAll(subdialogs);
+        window.getWindowPane().getChildren().remove(this);
+        window.getWindowPane().getChildren().removeAll(subdialogs);
+        if (modal) {
+            parent.unfreez();
+        }
+        parent.activate();
+    }
+
+    void activateAll() {
+        window.activateWindow();
+        var modalDialog = window.getModalDialog();
+
+        if (modalDialog == null || modalDialog == this) {
+            window.deactivate();
+            window.deactivateDialogs();
+            active.set(true);
+            toFront();
+            focusOwner.requestFocus();
+        }
     }
 
     void activate() {
-        pseudoClassStateChanged(ACTIVE_PSEUDO_CLASS, true);
-
+        active.set(true);
         toFront();
-
         focusOwner.requestFocus();
-    }
-
-    void deactivate() {
-        pseudoClassStateChanged(ACTIVE_PSEUDO_CLASS, false);
-        focusOwner = getScene().getFocusOwner();
     }
 }
