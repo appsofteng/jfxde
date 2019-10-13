@@ -56,10 +56,6 @@ public abstract class InternalFrame extends Region {
 
     public InternalFrame(WindowPane windowPane) {
         this.windowPane = windowPane;
-
-        windowPane.getScene().focusOwnerProperty().addListener((v,o,n) -> {
-            System.out.println(n);
-        });
     }
 
     protected void addButtons() {
