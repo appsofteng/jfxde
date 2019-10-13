@@ -140,8 +140,8 @@ public final class LayoutUtils {
         double mouseX = e.getX();
         double mouseY = e.getY();
 
-        double width = resizableNode.boundsInLocalProperty().get().getWidth();
-        double height = resizableNode.boundsInLocalProperty().get().getHeight();
+        double width = resizableNode.getLayoutBounds().getWidth();
+        double height = resizableNode.getLayoutBounds().getHeight();
 
         if (Math.abs(mouseX) < cursorDetectionBorderWidth && Math.abs(mouseY) < cursorDetectionBorderWidth) {
             resizableNode.setCursor(Cursor.NW_RESIZE);

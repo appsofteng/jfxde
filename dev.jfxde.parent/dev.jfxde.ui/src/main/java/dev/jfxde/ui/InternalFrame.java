@@ -1,5 +1,6 @@
 package dev.jfxde.ui;
 
+import dev.jfxde.jfxext.animation.DropShadowTransition;
 import dev.jfxde.logic.Sys;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
@@ -8,14 +9,17 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
+import javafx.scene.CacheHint;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
 
 public abstract class InternalFrame extends Region {
 
@@ -56,6 +60,7 @@ public abstract class InternalFrame extends Region {
 
     public InternalFrame(WindowPane windowPane) {
         this.windowPane = windowPane;
+        setEffect();
     }
 
     protected void addButtons() {
@@ -90,6 +95,20 @@ public abstract class InternalFrame extends Region {
         getChildren().add(payload);
         center();
         restoreBounds = getBoundsInParent();
+    }
+
+    private void setEffect() {
+        DropShadow shadow = new DropShadow();
+        shadow.setRadius(10.0);
+        shadow.setOffsetX(0);
+        shadow.setOffsetY(0);
+        shadow.setWidth(30);
+        shadow.setHeight(30);
+        shadow.setSpread(0.5);
+        shadow.setColor(Color.color(0.4, 0.5, 0.5));
+        setEffect(shadow);
+        setCache(true);
+        setCacheHint(CacheHint.SPEED);
     }
 
     WindowPane getWindowPane() {
@@ -141,5 +160,10 @@ public abstract class InternalFrame extends Region {
 
     void center() {
         relocate((windowPane.getWidth() - payload.getPrefWidth()) / 2, (windowPane.getHeight() - payload.getPrefHeight()) / 2);
+    }
+
+    void doModalEffect() {
+
+        new DropShadowTransition((DropShadow) getEffect(), this).play();
     }
 }

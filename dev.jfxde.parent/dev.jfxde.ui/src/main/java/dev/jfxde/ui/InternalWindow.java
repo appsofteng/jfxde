@@ -214,6 +214,13 @@ public class InternalWindow extends InternalFrame {
 
     private void setHandlers() {
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+
+            InternalDialog dialog = getModalDialog();
+
+            if (dialog != null) {
+                dialog.doModalEffect();
+            }
+
             if (window.isActive()) {
                 if (modalDialogs.isEmpty()) {
                     activate();

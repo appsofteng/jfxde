@@ -18,6 +18,7 @@ module dev.jfxde.jfxext {
 
     requires com.github.javaparser.core;
 
+    exports dev.jfxde.jfxext.animation to dev.jfxde.ui;
     exports dev.jfxde.jfxext.control to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
     exports dev.jfxde.jfxext.richtextfx.features to dev.jfxde.sysapps;
     exports dev.jfxde.jfxext.richtextfx to dev.jfxde.sysapps, dev.jfxde.logic;

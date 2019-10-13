@@ -66,6 +66,12 @@ public class InternalDialog extends InternalFrame {
     private void setHandlers() {
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
 
+            InternalDialog dialog = window.getModalDialog();
+
+            if (dialog != null && dialog != this) {
+                dialog.doModalEffect();
+            }
+
             if (!isActive()) {
 
                 activateAll();
@@ -111,13 +117,12 @@ public class InternalDialog extends InternalFrame {
 
     public void show(Node node) {
         setContent(node);
-        payload.setPrefWidth(USE_COMPUTED_SIZE);
+        payload.setPrefWidth(windowPane.getWidth() / 2);
         payload.setPrefHeight(USE_COMPUTED_SIZE);
 
         payload.heightProperty().addListener((v,o,n) -> {
             if (payload.getPrefHeight() == USE_COMPUTED_SIZE) {
                 payload.setPrefHeight(Math.min(n.doubleValue(), windowPane.getHeight() - 20));
-                payload.setPrefWidth(windowPane.getWidth() / 2);
                 center();
                 setVisible(true);
             }
