@@ -49,6 +49,8 @@ public class SetBox extends VBox {
         filesLabel.setPadding(new Insets(5,0,0,0));
         filesView = new ListView<>(FXCollections.observableList(settings.getLoadFiles()));
         filesView.setPrefSize(500, 300);
+        filesView.setMinHeight(300);
+        filesView.setMaxHeight(300);
 
         getChildren().addAll(defaultCheck, printingCheck, filesLabel, filesView);
     }

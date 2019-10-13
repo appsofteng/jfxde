@@ -119,10 +119,12 @@ public class InternalDialog extends InternalFrame {
                 payload.setPrefHeight(Math.min(n.doubleValue(), windowPane.getHeight() - 20));
                 payload.setPrefWidth(windowPane.getWidth() / 2);
                 center();
+                setVisible(true);
             }
         });
 
-        window.getWindowPane().getChildren().add(this);
+        setVisible(false);
+        windowPane.getChildren().add(this);
         activateAll();
     }
 
