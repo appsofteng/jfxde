@@ -1,7 +1,7 @@
 
 .styled-text-area .keyword {
-    -fx-fill: blue;
-    -fx-font-weight: bold;
+    -fx-fill: deepskyblue;
+    -fx-font-weight: bolder;
 }
 .styled-text-area .semicolon {
     -fx-font-weight: bold;

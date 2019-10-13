@@ -11,9 +11,9 @@
     -fx-stroke: white;
 }
 
-/* Not working */
+/* Not working unless directly on text area*/
 .styled-text-area .selection {
-    -fx-fill: pink;
+    -fx-fill: rgba(30,144,255,0.3);
 }
 
 .styled-text-area .text {
@@ -35,7 +35,7 @@
 
 .styled-text-area .jd-console-comment {
     -fx-font-style: italic;
-    -fx-fill: green;
+    -fx-fill: lime;
 }
 
 .styled-text-area .jd-console-help {
