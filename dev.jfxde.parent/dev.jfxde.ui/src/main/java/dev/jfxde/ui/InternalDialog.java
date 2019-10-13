@@ -6,7 +6,6 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.shape.Rectangle;
 
 public class InternalDialog extends InternalFrame {
 
@@ -36,8 +35,6 @@ public class InternalDialog extends InternalFrame {
        super.addButtons();
 
         buttonBox.getChildren().addAll(close);
-        buttonBox.setMinWidth(USE_PREF_SIZE);
-        buttonBox.setMinHeight(USE_PREF_SIZE);
     }
 
     private void setMoveable() {
@@ -114,41 +111,16 @@ public class InternalDialog extends InternalFrame {
 
     public void show(Node node) {
         setContent(node);
-        payload.minWidthProperty().unbind();
-        payload.minHeightProperty().unbind();
-
         payload.setPrefWidth(USE_COMPUTED_SIZE);
         payload.setPrefHeight(USE_COMPUTED_SIZE);
 
-        payload.widthProperty().addListener((v, o, n) -> {
-            if (payload.getPrefWidth() == USE_COMPUTED_SIZE) {
-                if (n.doubleValue() > windowPane.getWidth()) {
-                    payload.setPrefWidth(windowPane.getWidth() / 2);
-                } else {
-                    payload.setPrefWidth(n.doubleValue());
-                }
-                payload.setMinWidth(contentPane.getMinWidth());
-                relocate((windowPane.getWidth() - payload.getPrefWidth()) / 2, (windowPane.getHeight() - payload.getPrefHeight()) / 2);
-            }
-        });
-
-        payload.heightProperty().addListener((v, o, n) -> {
+        payload.heightProperty().addListener((v,o,n) -> {
             if (payload.getPrefHeight() == USE_COMPUTED_SIZE) {
-                if (n.doubleValue() > windowPane.getHeight()) {
-                    payload.setPrefHeight(windowPane.getHeight());
-                } else {
-                    payload.setPrefHeight(n.doubleValue());
-                }
-                payload.setMinHeight(contentPane.getMinHeight());
-                relocate((windowPane.getWidth() - payload.getPrefWidth()) / 2, (windowPane.getHeight() - payload.getPrefHeight()) / 2);
+                payload.setPrefHeight(Math.min(n.doubleValue(), windowPane.getHeight() - 20));
+                payload.setPrefWidth(windowPane.getWidth() / 2);
+                center();
             }
         });
-
-//        Rectangle clipRect = new Rectangle(400, 650);
-//
-//        clipRect.heightProperty().bind(payload.prefHeightProperty().subtract(20));
-//        clipRect.widthProperty().bind(payload.prefWidthProperty());
-//        contentPane.setClip(clipRect);
 
         window.getWindowPane().getChildren().add(this);
         activateAll();

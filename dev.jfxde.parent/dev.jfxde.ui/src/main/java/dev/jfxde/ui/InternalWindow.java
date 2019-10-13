@@ -16,7 +16,6 @@ import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -86,12 +85,8 @@ public class InternalWindow extends InternalFrame {
 
     void setCss(String css) {
         if (css != null) {
-            contentPane.getStylesheets().addAll(css);
+            contentRegion.getStylesheets().addAll(css);
         }
-    }
-
-    void removeContent(Node node) {
-        contentPane.getChildren().remove(node);
     }
 
     void add(InternalDialog dialog) {
@@ -133,22 +128,22 @@ public class InternalWindow extends InternalFrame {
 
     protected void addButtons() {
         super.addButtons();
-        newWindow.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
+        newWindow.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         newWindow.setFocusTraversable(false);
         newWindow.setTooltip(new Tooltip());
         newWindow.getTooltip().textProperty().bind(Sys.rm().getStringBinding("newWindow"));
 
-        tile.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
+        tile.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         tile.setFocusTraversable(false);
         tile.setTooltip(new Tooltip());
         tile.getTooltip().textProperty().bind(Sys.rm().getStringBinding("tile"));
 
-        minimize.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
+        minimize.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         minimize.setFocusTraversable(false);
         minimize.setTooltip(new Tooltip());
         minimize.getTooltip().textProperty().bind(Sys.rm().getStringBinding("minimize"));
 
-        maximize.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
+        maximize.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         maximize.setFocusTraversable(false);
         maximize.textProperty()
                 .bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
@@ -158,14 +153,12 @@ public class InternalWindow extends InternalFrame {
         maximize.getTooltip().textProperty().bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
                 .then(Sys.rm().getStringBinding("restore")).otherwise(Sys.rm().getStringBinding("maximize")));
 
-        full.getStyleClass().addAll("jd-internal-window-button", "jd-octicons");
+        full.getStyleClass().addAll("jd-frame-button", "jd-octicons");
         full.setFocusTraversable(false);
         full.setTooltip(new Tooltip());
         full.getTooltip().textProperty().bind(Sys.rm().getStringBinding("full"));
 
         buttonBox.getChildren().addAll(newWindow, tile, minimize, maximize, full, close);
-        buttonBox.setMinWidth(USE_PREF_SIZE);
-        buttonBox.setMinHeight(USE_PREF_SIZE);
     }
 
     private void setTitleMenu() {

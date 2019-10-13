@@ -235,12 +235,12 @@
 
 /* Internal window ************************************************************/
 
-.jd-internal-window:active .jd-internal-window-payload {
+.jd-frame:active .jd-frame-payload {
 	-fx-background-color: -jd-active-background-color;
 	-fx-border-color: -jd-active-background-color;
 }
 
-.jd-internal-window:full .jd-internal-window-payload {
+.jd-frame:full .jd-frame-payload {
 	-fx-background-color: #fff;
 	-fx-border-color: #fff;
 	-fx-border-width: 0.0;
@@ -248,11 +248,11 @@
 	-fx-border-radius: 0.0;
 }
 
-.jd-internal-window:active .jd-internal-window-title-bar {
+.jd-frame:active .jd-frame-title-bar {
 	-fx-background-color: -jd-active-background-color;
 }
 
-.jd-internal-window-payload {
+.jd-frame-payload {
 	-fx-background-color: -jd-passive-background-color;
 	-fx-border-color: -jd-passive-background-color;
 	-fx-border-width: 4.0;
@@ -260,16 +260,16 @@
 	-fx-border-radius: 5.0;
 }
 
-.jd-internal-window-content {
+.jd-frame-content {
 	-fx-background-color: -fx-background;
 }
 
-.jd-internal-window-title-bar {
+.jd-frame-title-bar {
 	-fx-background-color: -jd-passive-background-color;
 	-fx-padding: 2.0 2.0 4.0 2.0;
 }
 
-.jd-internal-window-button {
+.jd-frame-button {
     -fx-background-color:
         #707070,
         linear-gradient(#fcfcfc, #f3f3f3),
@@ -282,19 +282,19 @@
     -fx-opacity: 1.0;
 }
 
-.jd-internal-window-button .list-view {
+.jd-frame-button .list-view {
     -fx-opacity: 1.0;
 }
 
-.jd-internal-window-button .arrow-button {
+.jd-frame-button .arrow-button {
 	-fx-padding: 0.0;
 }
 
-.jd-internal-window-button:disabled {
+.jd-frame-button:disabled {
 	-fx-opacity: 0.4;
 }
 
-.jd-internal-window-button:hover {
+.jd-frame-button:hover {
     -fx-background-color:#ddd;
 }
 

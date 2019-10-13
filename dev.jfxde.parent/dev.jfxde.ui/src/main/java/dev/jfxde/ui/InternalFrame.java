@@ -16,7 +16,6 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 
 public abstract class InternalFrame extends Region {
 
@@ -30,8 +29,8 @@ public abstract class InternalFrame extends Region {
     protected HBox buttonBox = new HBox();
     protected BorderPane titleBar = new BorderPane();
     protected BorderPane payload = new BorderPane();
-    protected StackPane contentPane = new StackPane();
-    protected Node focusOwner = contentPane;
+    protected ContentRegion contentRegion = new ContentRegion();
+    protected Node focusOwner = contentRegion;
 
     protected Button close = new Button("x");
 
@@ -60,7 +59,7 @@ public abstract class InternalFrame extends Region {
     }
 
     protected void addButtons() {
-        close.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
+        close.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         close.setFocusTraversable(false);
         close.setTooltip(new Tooltip());
         close.getTooltip().textProperty().bind(Sys.rm().getStringBinding("close"));
@@ -69,23 +68,27 @@ public abstract class InternalFrame extends Region {
     protected void buildLayout(double width, double height) {
         title.setPrefWidth(Double.MAX_VALUE);
 
+        buttonBox.setMinWidth(USE_PREF_SIZE);
+        buttonBox.setMinHeight(USE_PREF_SIZE);
+
         titleBar.setLeft(title);
         titleBar.setRight(buttonBox);
         titleBar.minWidthProperty().bind(buttonBox.widthProperty().add(10));
 
         payload.setTop(titleBar);
-        payload.setCenter(contentPane);
+        payload.setCenter(contentRegion);
 
-        titleBar.getStyleClass().add("jd-internal-window-title-bar");
-        contentPane.getStyleClass().add("jd-internal-window-content");
-        payload.getStyleClass().add("jd-internal-window-payload");
-        getStyleClass().add("jd-internal-window");
+        titleBar.getStyleClass().add("jd-frame-title-bar");
+        contentRegion.getStyleClass().add("jd-frame-content");
+
+        payload.getStyleClass().add("jd-frame-payload");
+        getStyleClass().add("jd-frame");
         payload.minWidthProperty().bind(titleBar.minWidthProperty().add(10));
-        payload.setMinHeight(70);
+        payload.minHeightProperty().bind(titleBar.heightProperty().add(10));
 
         payload.setPrefSize(width, height);
         getChildren().add(payload);
-        relocate(width / 2, height / 2);
+        center();
         restoreBounds = getBoundsInParent();
     }
 
@@ -94,8 +97,12 @@ public abstract class InternalFrame extends Region {
     }
 
     void setContent(Node node) {
-        contentPane.getChildren().add(node);
+        contentRegion.setContent(node);
         focusOwner = node;
+    }
+
+    void removeContent() {
+        contentRegion.removeContent();
     }
 
     abstract void activate();
@@ -130,5 +137,9 @@ public abstract class InternalFrame extends Region {
 
     boolean isInFront() {
         return !windowPane.getChildren().isEmpty() && windowPane.getChildren().indexOf(this) == windowPane.getChildren().size() - 1;
+    }
+
+    void center() {
+        relocate((windowPane.getWidth() - payload.getPrefWidth()) / 2, (windowPane.getHeight() - payload.getPrefHeight()) / 2);
     }
 }

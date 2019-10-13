@@ -29,7 +29,7 @@ public class AppWindow extends InternalWindow {
 
                 pause.stop();
                 if (progressIndicator != null) {
-                    removeContent(progressIndicator);
+                    removeContent();
                     progressIndicator = null;
                 }
 
