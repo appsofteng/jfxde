@@ -16,7 +16,7 @@ public class ImportCommand extends BaseCommand {
 
     @Override
     public void run() {
-        String imports = commandProcessor.getSession().getJshell().imports().map(SnippetUtils::toString).sorted().collect(Collectors.joining());
+        String imports = commandProcessor.getSession().getJshell().imports().map(SnippetUtils::toString).sorted().collect(Collectors.joining("\n"));
 
         commandProcessor.getSession().getFeedback().normaln(imports);
     }
