@@ -285,7 +285,7 @@ public class EnvBox extends VBox {
         add.setOnAction(e -> {
             exportView.getItems().add(
                     new ExportItem(exportModules.get(0), exportModuleReferences.get(exportModules.get(0)).descriptor().packages().iterator().next(),
-                            exportModules.get(2)));
+                            exportModules.get(1)));
         });
 
         MenuItem removeSelection = new MenuItem(context.rc().getString("removeSelection"));
