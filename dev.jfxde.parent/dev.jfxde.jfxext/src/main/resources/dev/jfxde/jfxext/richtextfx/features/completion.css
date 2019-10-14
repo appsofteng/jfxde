@@ -6,8 +6,3 @@
     -fx-background-radius: 2.0;
     -fx-border-radius: 2.0;
 }
-
-.list-cell .text {
-	-fx-text-fill: black;
-	-fx-fill: black;
-}

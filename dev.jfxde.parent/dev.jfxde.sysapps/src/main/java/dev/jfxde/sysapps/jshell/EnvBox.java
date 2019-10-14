@@ -21,6 +21,7 @@ import dev.jfxde.jfxext.control.AutoCompleteTextFieldTableCell;
 import dev.jfxde.jfxext.control.CheckComboBoxTableCell;
 import dev.jfxde.jfxext.control.CollectionStringConverter;
 import io.vavr.control.Try;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder;
 import javafx.beans.property.adapter.JavaBeanStringPropertyBuilder;
 import javafx.collections.FXCollections;
@@ -38,6 +39,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.ChoiceBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
@@ -233,6 +236,7 @@ public class EnvBox extends VBox {
                     env.getAddModules().clear();
                     env.getAddModules().addAll(addModuleView.getTargetItems());
                     env.setModuleLocations(env.getAddModules().stream()
+                            .filter(m -> modulePathModuleReferences.get(m) != null)
                             .filter(m -> modulePathModuleReferences.get(m).location().isPresent())
                             .map(m -> new File(modulePathModuleReferences.get(m).location().get()).toString()).collect(Collectors.toList()));
                 }
@@ -257,7 +261,16 @@ public class EnvBox extends VBox {
             classpathView.getItems().removeAll(classpathView.getSelectionModel().getSelectedItems());
         });
 
-        ContextMenu menu = new ContextMenu(addFiles, addDirectory, removeSelection);
+        MenuItem copySelection = new MenuItem(context.rc().getString("copyPathToClipboard"));
+        copySelection.disableProperty().bind(Bindings.size(classpathView.getSelectionModel().getSelectedIndices()).isNotEqualTo(1));
+        copySelection.setOnAction(e -> {
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            ClipboardContent content = new ClipboardContent();
+            content.putString(classpathView.getSelectionModel().getSelectedItem().replace("\\", "/"));
+            clipboard.setContent(content);
+        });
+
+        ContextMenu menu = new ContextMenu(addFiles, addDirectory, removeSelection, copySelection);
         classpathView.setContextMenu(menu);
     }
 
@@ -274,7 +287,16 @@ public class EnvBox extends VBox {
             modulepathView.getItems().removeAll(modulepathView.getSelectionModel().getSelectedItems());
         });
 
-        ContextMenu menu = new ContextMenu(addDirectory, removeSelection);
+        MenuItem copySelection = new MenuItem(context.rc().getString("copyPathToClipboard"));
+        copySelection.disableProperty().bind(Bindings.size(modulepathView.getSelectionModel().getSelectedIndices()).isNotEqualTo(1));
+        copySelection.setOnAction(e -> {
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            ClipboardContent content = new ClipboardContent();
+            content.putString(modulepathView.getSelectionModel().getSelectedItem().replace("\\", "/"));
+            clipboard.setContent(content);
+        });
+
+        ContextMenu menu = new ContextMenu(addDirectory, removeSelection, copySelection);
         modulepathView.setContextMenu(menu);
     }
 
@@ -361,7 +383,8 @@ public class EnvBox extends VBox {
         exportModuleReferences.putAll(systemModuleReferences);
         exportModules.setAll(exportModuleReferences.keySet());
 
-        env.getAddExports().removeIf(e -> !exportModules.contains(e.getSourceModule()) || e.getTargetModules().removeIf(t -> !exportModules.contains(t)) && e.getTargetModules().isEmpty());
+        env.getAddExports().removeIf(e -> !exportModules.contains(e.getSourceModule())
+                || e.getTargetModules().removeIf(t -> !exportModules.contains(t)) && e.getTargetModules().isEmpty());
         exportView.setItems(FXCollections.observableList(env.getAddExports()));
 
         FXCollections.sort(exportModules);

@@ -4,9 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import jdk.jshell.DeclarationSnippet;
 import jdk.jshell.EvalException;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Kind;
@@ -138,7 +140,8 @@ public class SnippetProcessor extends Processor {
 
     private String getSuccessMessage(SnippetEvent event) {
 
-        if (event.previousStatus() == event.status()) {
+        if (event.previousStatus() == event.status() || event.previousStatus() == Status.RECOVERABLE_DEFINED
+                || event.previousStatus() == Status.RECOVERABLE_NOT_DEFINED) {
             return "";
         }
 
@@ -156,17 +159,27 @@ public class SnippetProcessor extends Processor {
             }
         }
 
+        String dependency = "";
+        if (event.status() == Status.RECOVERABLE_DEFINED || event.status() == Status.RECOVERABLE_NOT_DEFINED) {
+            Snippet snippet = event.snippet();
+
+            if (snippet != null && snippet instanceof DeclarationSnippet) {
+                String dependencies = session.getJshell().unresolvedDependencies((DeclarationSnippet)snippet).collect(Collectors.joining(", "));
+                dependency = ", " + session.getContext().rc().getString("undeclared", dependencies);
+            }
+        }
+
         String value = event.value();
         Snippet snippet = event.snippet();
 
         if (event.causeSnippet() != null) {
             snippet = event.causeSnippet();
-            if (snippet instanceof VarSnippet) {
+            if (snippet instanceof VarSnippet && session.getJshell().status(snippet) == Status.VALID) {
                 value = session.getJshell().varValue((VarSnippet) event.causeSnippet());
             }
         }
 
-        msg += SnippetUtils.toString(snippet, value, session.getJshell());
+        msg += SnippetUtils.toString(snippet, value, session.getJshell()).stripTrailing() + dependency + "\n";
 
         return msg;
     }

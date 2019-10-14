@@ -101,7 +101,7 @@ public class JShellContent extends BorderPane {
     }
 
     public void stop() {
-        var task = CTask.create(() -> session.getJshell().close())
+        var task = CTask.create(() -> session.close())
                 .onFinished(t -> consoleView.dispose());
 
         context.tc().executeSequentially(task);

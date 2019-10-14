@@ -18,6 +18,7 @@ import dev.jfxde.sysapps.jshell.Feedback.Mode;
 import io.vavr.Tuple2;
 import javafx.stage.Window;
 import jdk.jshell.JShell;
+import jdk.jshell.JShell.Subscription;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.SnippetEvent;
@@ -41,6 +42,7 @@ public class Session {
     private int startSnippetMaxIndex;
     private Map<String, Snippet> snippetsById = new HashMap<>();
     private Map<String, List<Snippet>> snippetsByName = new HashMap<>();
+    private Subscription subscription;
 
     public Session(JShellContent content) {
         this.context = content.getContext();
@@ -133,7 +135,7 @@ public class Session {
     }
 
     private void setListener() {
-        jshell.onSnippetEvent(e -> {
+        subscription = jshell.onSnippetEvent(e -> {
 
             if (e.snippet() == null || e.snippet().id() == null) {
                 return;
@@ -184,9 +186,7 @@ public class Session {
 
     private void buildJShell() {
 
-        if (jshell != null) {
-            jshell.close();
-        }
+        close();
         try {
             jshell = JShell.builder()
                     .idGenerator(idGenerator)
@@ -195,6 +195,8 @@ public class Session {
                     .err(consoleModel.getErr())
                     .compilerOptions(env.getOptions())
                     .build();
+            // Create the analysis before putting on the class path.
+            jshell.sourceCodeAnalysis();
             env.getClassPath().forEach(p -> jshell.addToClasspath(p));
             env.getModuleLocations().forEach(p -> jshell.addToClasspath(p));
             idGenerator.setJshell(jshell);
@@ -202,7 +204,17 @@ public class Session {
         } catch (Exception e) {
             e.printStackTrace(consoleModel.getErr());
         }
+    }
 
+    void close() {
+
+        if (jshell != null) {
+            if (subscription != null) {
+                jshell.unsubscribe(subscription);
+            }
+
+            jshell.close();
+        }
     }
 
     public void loadDefault() {

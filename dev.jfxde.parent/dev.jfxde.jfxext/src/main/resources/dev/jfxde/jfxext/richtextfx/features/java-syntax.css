@@ -11,7 +11,7 @@
     -fx-font-weight: bold;
 }
 .styled-text-area .bracket-open, .styled-text-area .bracket-close {
-    -fx-fill: darkgreen;
+    -fx-fill: green;
     -fx-font-weight: bold;
 }
 .styled-text-area .brace-open, .styled-text-area .brace-close {
@@ -21,11 +21,11 @@
 .styled-text-area .generic-type {
 }
 .styled-text-area .char {
-    -fx-fill: gray;
+    -fx-fill: khaki;
 }
 
 .styled-text-area .string {
-    -fx-fill: gray;
+    -fx-fill: khaki;
 }
 
 .styled-text-area .comment {

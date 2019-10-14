@@ -23,6 +23,16 @@
     -fx-font-size: 1.2em;
 }
 
+.list-cell .text {
+	-fx-text-fill: -fx-text-background-color;
+	-fx-fill: -fx-text-background-color;
+}
+
+.context-menu .text {
+	-fx-text-fill: -fx-text-background-color;
+	-fx-fill: -fx-text-background-color;
+}
+
 /* Console */
 
 .styled-text-area .jd-console-normal {

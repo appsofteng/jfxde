@@ -93,7 +93,6 @@ public class SplitConsoleView extends BorderPane {
 
         inputArea.requestFocus();
         inputArea.getStylesheets().add(areaCss);
-        inputArea.setWrapText(true);
         ContextMenuBuilder.get(inputArea).copy().cut().paste().selectAll().clear().separator().undo().redo();
 
         SplitPane splitPane = new SplitPane(new VirtualizedScrollPane<>(outputArea), new VirtualizedScrollPane<>(inputArea));
