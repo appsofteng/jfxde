@@ -1,7 +1,3 @@
-.styled-text-area .selection {
-    -fx-fill: rgba(30,144,255,0.3);
-}
-
 .styled-text-area .jd-console-normal {
     -fx-fill: inherit;
 }

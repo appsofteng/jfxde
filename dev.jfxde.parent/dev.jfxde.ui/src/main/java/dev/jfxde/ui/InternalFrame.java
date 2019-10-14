@@ -102,8 +102,8 @@ public abstract class InternalFrame extends Region {
         shadow.setRadius(10.0);
         shadow.setOffsetX(0);
         shadow.setOffsetY(0);
-        shadow.setWidth(30);
-        shadow.setHeight(30);
+        shadow.setWidth(20);
+        shadow.setHeight(20);
         shadow.setSpread(0.5);
         shadow.setColor(Color.color(0.4, 0.5, 0.5));
         setEffect(shadow);
