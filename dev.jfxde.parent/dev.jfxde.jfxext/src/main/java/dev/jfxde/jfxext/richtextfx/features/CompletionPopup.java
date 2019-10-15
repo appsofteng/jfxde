@@ -14,7 +14,7 @@ import java.util.function.Function;
 import org.fxmisc.wellbehaved.event.Nodes;
 
 import dev.jfxde.jfxext.util.LayoutUtils;
-import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -32,21 +32,10 @@ public class CompletionPopup extends Tooltip {
     static final double DEFAULT_HEIGHT = 200;
     private ListView<CompletionItem> itemView = new ListView<>();
     private DocPopup docPopup;
+    private ChangeListener<Boolean> focusListener;
+    private ChangeListener<Number> windowListener;
 
-    private EventHandler<KeyEvent> handler = e -> {
-
-        if (e.getCode() == KeyCode.ENTER) {
-            e.consume();
-            selected();
-        } else if (e.getCode() == KeyCode.ESCAPE) {
-            close();
-            e.consume();
-        } else if (e.getCode() == KeyCode.UP) {
-            selectPrevious();
-        } else if (e.getCode() == KeyCode.DOWN) {
-            selectNext();
-        }
-    };
+    private EventHandler<KeyEvent> handler;
 
     public CompletionPopup(Collection<? extends CompletionItem> items, Function<DocRef, String> documentation) {
         docPopup = new DocPopup(documentation);
@@ -57,7 +46,6 @@ public class CompletionPopup extends Tooltip {
         setHideOnEscape(false);
 
         itemView.setItems(FXCollections.observableArrayList(items));
-        itemView.setFocusTraversable(false);
 
         setMinSize(10, 10);
         setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -70,23 +58,68 @@ public class CompletionPopup extends Tooltip {
         setBehavior();
     }
 
+    public void setItems(Collection<? extends CompletionItem> items) {
+        itemView.setItems(FXCollections.observableArrayList(items));
+    }
+
     private void setBehavior() {
+
+        focusListener = (v, o, n) -> {
+
+            if (!n) {
+                v.removeListener(focusListener);
+                close();
+            }
+        };
+
+        windowListener = (v, o, n) -> {
+            v.removeListener(windowListener);
+            close();
+        };
+
+        handler = e -> {
+
+            if (e.getCode() == KeyCode.ENTER) {
+                e.consume();
+                selected();
+            } else if (e.getCode() == KeyCode.ESCAPE) {
+                close();
+                e.consume();
+            } else if (e.getCode() == KeyCode.UP) {
+                selectPrevious();
+            } else if (e.getCode() == KeyCode.DOWN) {
+                selectNext();
+            }
+        };
 
         Nodes.addInputMap(itemView,
                 sequence(consume(keyPressed(ENTER), e -> selected()),
                         consume(keyPressed(ESCAPE), e -> close()),
-                        consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> itemView.setFocusTraversable(true)),
                         consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 2), e -> selected())));
 
+        anchorXProperty().addListener((v, o, n) -> {
+            double offset = Screen.getPrimary().getBounds().getWidth() - n.doubleValue() - getPrefWidth() > n.doubleValue() ? getPrefWidth()
+                    : -docPopup.getPrefWidth();
+            docPopup.setAnchorX(n.doubleValue() + offset);
+        });
+
+        anchorYProperty().addListener((v, o, n) -> {
+            docPopup.setAnchorY(n.doubleValue());
+        });
+
         itemView.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
+
+            if (!isShowing()) {
+                return;
+            }
 
             if (n != null) {
 
                 if (docPopup.loadContent(n.getDocRef())) {
-                    double offset = Screen.getPrimary().getBounds().getWidth() - getAnchorX() - getPrefWidth() > getAnchorX() ? getPrefWidth()
-                            : -docPopup.getPrefWidth();
-
-                    docPopup.show(this, getAnchorX() + offset, getAnchorY());
+                    if (!docPopup.isShowing()) {
+                        docPopup.show(this);
+                        docPopup.getGraphic().requestFocus();
+                    }
                 } else {
                     docPopup.hide();
                 }
@@ -119,49 +152,45 @@ public class CompletionPopup extends Tooltip {
         return itemView.getSelectionModel().getSelectedItem();
     }
 
-    public ReadOnlyObjectProperty<CompletionItem> selectedItemProperty() {
-        return itemView.getSelectionModel().selectedItemProperty();
-    }
-
     public void close() {
-        itemView.getSelectionModel().clearSelection();
-        getOwnerNode().removeEventFilter(KeyEvent.KEY_PRESSED, handler);
         hide();
     }
 
-    public void selected() {
-        getOwnerNode().removeEventFilter(KeyEvent.KEY_PRESSED, handler);
+    private void selected() {
         hide();
+        CompletionItem selection = itemView.getSelectionModel().getSelectedItem();
+        if (selection != null) {
+            selection.complete();
+        }
     }
 
     @Override
     public void hide() {
-        docPopup.hide();
-        super.hide();
+        if (isShowing()) {
+            getOwnerNode().removeEventFilter(KeyEvent.KEY_PRESSED, handler);
+            docPopup.hide();
+            super.hide();
+        }
     }
 
     @Override
     public void show(Node ownerNode, double anchorX, double anchorY) {
+        if (isShowing()) {
+            setAnchorX(anchorX);
+            setAnchorY(anchorY);
+            itemView.getSelectionModel().clearSelection();
+            itemView.getSelectionModel().selectFirst();
+        } else {
+            ownerNode.focusedProperty().addListener(focusListener);
+            ownerNode.getScene().getWindow().xProperty().addListener(windowListener);
+            ownerNode.getScene().getWindow().yProperty().addListener(windowListener);
+            ownerNode.addEventFilter(KeyEvent.KEY_PRESSED, handler);
 
-        ownerNode.focusedProperty().addListener((v, o, n) -> {
+            super.show(ownerNode, anchorX, anchorY);
 
-            if (!n) {
-                close();
-            }
-        });
-
-        ownerNode.getScene().getWindow().xProperty().addListener((wv, wo, wn) -> {
-            close();
-        });
-
-        ownerNode.getScene().getWindow().yProperty().addListener((wv, wo, wn) -> {
-            close();
-        });
-
-        ownerNode.addEventFilter(KeyEvent.KEY_PRESSED, handler);
-
-        super.show(ownerNode, anchorX, anchorY);
-
-        itemView.getSelectionModel().clearAndSelect(0);
+            getGraphic().requestFocus();
+            itemView.getSelectionModel().clearSelection();
+            itemView.getSelectionModel().selectFirst();
+        }
     }
 }

@@ -11,7 +11,7 @@ import javafx.geometry.Bounds;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
-public class CompletionFeature<T extends GenericStyledArea<?,?,?>> extends Feature<T> {
+public class CompletionFeature<T extends GenericStyledArea<?, ?, ?>> extends Feature<T> {
 
     private CompletionPopup codeCompletion;
     private Consumer<CompletionFeature<T>> complete;
@@ -32,7 +32,7 @@ public class CompletionFeature<T extends GenericStyledArea<?,?,?>> extends Featu
         });
 
         area.caretPositionProperty().addListener((v, o, n) -> {
-            if (codeCompletion != null) {
+            if (codeCompletion != null && codeCompletion.isShowing()) {
                 codeCompletion();
             }
         });
@@ -40,28 +40,23 @@ public class CompletionFeature<T extends GenericStyledArea<?,?,?>> extends Featu
 
     private void codeCompletion() {
 
-        if (codeCompletion != null) {
-            codeCompletion.close();
-        }
-
         complete.accept(this);
     }
 
     public void showCompletionItems(Collection<CompletionItem> items) {
-        codeCompletion = new CompletionPopup(items, documentation);
 
         Optional<Bounds> boundsOption = area.caretBoundsProperty().getValue();
 
         if (boundsOption.isPresent()) {
             Bounds bounds = boundsOption.get();
+
+            if (codeCompletion != null) {
+                codeCompletion.setItems(items);
+            } else {
+                codeCompletion = new CompletionPopup(items, documentation);
+            }
+
             codeCompletion.show(area, bounds.getMaxX(), bounds.getMaxY());
-            codeCompletion.setOnHidden(ev -> {
-                CompletionItem selection = codeCompletion.getSelection();
-                codeCompletion = null;
-                if (selection != null) {
-                    selection.complete();
-                }
-            });
         }
     }
 }

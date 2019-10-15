@@ -1,7 +1,7 @@
 package dev.jfxde.jfxext.richtextfx.features;
 
-import static javafx.scene.input.MouseButton.PRIMARY;
-import static org.fxmisc.wellbehaved.event.EventPattern.mousePressed;
+import static javafx.scene.input.KeyCode.ESCAPE;
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
@@ -38,7 +38,7 @@ public class DocPopup extends Tooltip {
         this.documentation = documentation;
         setMinSize(10, 10);
         setPrefSize(CompletionPopup.DEFAULT_WIDTH, CompletionPopup.DEFAULT_HEIGHT);
-        webView.setFocusTraversable(false);
+//        webView.setFocusTraversable(false);
         webView.setContextMenuEnabled(false);
         StackPane pane = new StackPane(webView);
         pane.setPadding(new Insets(5));
@@ -49,8 +49,10 @@ public class DocPopup extends Tooltip {
     }
 
     private void setBehavior() {
+        setHideOnEscape(false);
         Nodes.addInputMap(webView,
-                sequence(consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> webView.setFocusTraversable(true))));
+                sequence(consume(keyPressed(ESCAPE), e -> getOwnerWindow().hide())));
+                      //  consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> webView.setFocusTraversable(true))));
 
         webView.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
 
