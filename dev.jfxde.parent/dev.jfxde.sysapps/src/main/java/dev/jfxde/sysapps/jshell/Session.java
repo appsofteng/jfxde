@@ -188,12 +188,14 @@ public class Session {
 
         close();
         try {
+            String[] options = env.getOptions();
             jshell = JShell.builder()
                     .idGenerator(idGenerator)
                     .in(consoleModel.getIn())
                     .out(consoleModel.getOut())
                     .err(consoleModel.getErr())
-                    .compilerOptions(env.getOptions())
+                    .compilerOptions(options)
+                    .remoteVMOptions(options)
                     .build();
             // Create the analysis before putting on the class path.
             jshell.sourceCodeAnalysis();
