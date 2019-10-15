@@ -266,7 +266,7 @@ public class EnvBox extends VBox {
         copySelection.setOnAction(e -> {
             Clipboard clipboard = Clipboard.getSystemClipboard();
             ClipboardContent content = new ClipboardContent();
-            content.putString(classpathView.getSelectionModel().getSelectedItem().replace("\\", "/"));
+            content.putString(classpathView.getSelectionModel().getSelectedItem().replace("\\", "\\\\"));
             clipboard.setContent(content);
         });
 
@@ -292,7 +292,7 @@ public class EnvBox extends VBox {
         copySelection.setOnAction(e -> {
             Clipboard clipboard = Clipboard.getSystemClipboard();
             ClipboardContent content = new ClipboardContent();
-            content.putString(modulepathView.getSelectionModel().getSelectedItem().replace("\\", "/"));
+            content.putString(modulepathView.getSelectionModel().getSelectedItem().replace("\\", "\\\\"));
             clipboard.setContent(content);
         });
 
