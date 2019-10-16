@@ -1,4 +1,4 @@
-package dev.jfxde.jfxext.control;
+package dev.jfxde.jfxext.util;
 
 import java.util.Arrays;
 import java.util.Collection;

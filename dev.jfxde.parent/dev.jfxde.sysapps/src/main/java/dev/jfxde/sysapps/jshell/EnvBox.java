@@ -17,9 +17,9 @@ import java.util.stream.Stream;
 import org.controlsfx.control.ListSelectionView;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.control.CollectionStringConverter;
 import dev.jfxde.jfxext.control.cell.AutoCompleteTextFieldTableCell;
 import dev.jfxde.jfxext.control.cell.CheckComboBoxTableCell;
+import dev.jfxde.jfxext.util.CollectionStringConverter;
 import io.vavr.control.Try;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder;
