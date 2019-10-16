@@ -119,11 +119,21 @@ public class Session {
         return JsonUtils.fromJson(context.fc().getAppDataDir().resolve(ENV_FILE_NAME), Env.class, new Env("default"));
     }
 
-    public void setEnv(Env env) {
+    private void setEnv(Env env) {
         this.env = env;
         JsonUtils.toJson(env, context.fc().getAppDataDir().resolve(ENV_FILE_NAME));
-        reload();
     }
+
+    public void resetEnv(Env env) {
+        setEnv(env);
+        reset();
+    }
+
+    public void reloadEnv(Env env) {
+        setEnv(env);
+        reload(Mode.SILENT);
+    }
+
 
     public Settings loadSettings() {
         return JsonUtils.fromJson(context.fc().getAppDataDir().resolve(SETTINGS_FILE_NAME), Settings.class, new Settings());
@@ -172,7 +182,12 @@ public class Session {
     }
 
     public void reload() {
+        reload(Mode.NORMAL);
+    }
 
+    private void reload(Mode mode) {
+
+        feedback.setMode(mode);
         List<Tuple2<Snippet, Status>> snippets = jshell.snippets()
                 .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
                 .map(s -> new Tuple2<>(s, jshell.status(s)))
@@ -185,6 +200,8 @@ public class Session {
                 commandProcessor.drop(newSnippets);
             }
         });
+
+        feedback.setMode(Mode.NORMAL);
     }
 
     private void buildJShell() {
@@ -218,6 +235,7 @@ public class Session {
                 jshell.unsubscribe(subscription);
             }
 
+            jshell.stop();
             jshell.close();
         }
     }
