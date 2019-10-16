@@ -1,6 +1,7 @@
 package dev.jfxde.ui;
 
 import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfxext.util.LayoutUtils;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.Window;
 import dev.jfxde.logic.data.Window.State;
@@ -10,58 +11,42 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
-import javafx.scene.Node;
 
-public class InternalWindow extends Pane {
+public class InternalWindow extends InternalFrame {
 
-    private static final double CURSOR_BORDER_WIDTH = 5;
-    private static final PseudoClass ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("active");
     private static final PseudoClass FULL_PSEUDO_CLASS = PseudoClass.getPseudoClass("full");
+    private static final Duration MINIMALIZATION_DURATION = Duration.millis(300);
 
     private Window window;
-    private WindowPane windowPane;
-    protected Label title = new Label();
-    private HBox buttonBox = new HBox();
+
     protected Button newWindow = new Button(Fonts.Unicode.TWO_JOINED_SQUARES);
     private Button tile = new Button(Fonts.FontAwesome.TH_LARGE);
     private Button minimize = new Button("_");
     private Button maximize = new Button(Fonts.Unicode.WHITE_LARGE_SQUARE);
     private Button full = new Button(Fonts.Octicons.SCREEN_FULL);
-    private Button close = new Button("x");
 
-    private BorderPane titleBar = new BorderPane();
-    private BorderPane payload = new BorderPane();
-    private StackPane contentPane = new StackPane();
-
-    private static final Duration MINIMALIZATION_DURATION = Duration.millis(300);
-
-    private Bounds restoreBounds;
-    private Point2D pressDragPoint;
-    private Node focusOwner = contentPane;
+    private ObservableList<InternalDialog> dialogs = FXCollections.observableArrayList();
+    private ObservableList<InternalDialog> modalDialogs = FXCollections.observableArrayList();;
 
     private ChangeListener<Boolean> activateListener = (v, o, n) -> {
         if (n) {
-            activate();
+            activateAll();
         } else {
             deactivate();
+            dialogs.forEach(InternalDialog::deactivate);
         }
-
     };
 
     private ChangeListener<State> stateListener = (v, o, n) -> {
@@ -79,7 +64,7 @@ public class InternalWindow extends Pane {
         } else if (n == State.TILED) {
             tile(o);
         } else if (n == State.CLOSED) {
-            onClose();
+            close();
         }
 
         if (o == State.TILED) {
@@ -88,8 +73,9 @@ public class InternalWindow extends Pane {
     };
 
     public InternalWindow(Window window, WindowPane windowPane) {
+        super(windowPane);
         this.window = window;
-        this.windowPane = windowPane;
+
         addButtons();
         buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
         setMoveable();
@@ -97,9 +83,32 @@ public class InternalWindow extends Pane {
         setTitleMenu();
     }
 
-    void setContent(Node node) {
-        contentPane.getChildren().add(node);
-        focusOwner = node;
+    void setCss(String css) {
+        if (css != null) {
+            contentRegion.getStylesheets().addAll(css);
+        }
+    }
+
+    void add(InternalDialog dialog) {
+        dialogs.add(dialog);
+        subdialogs.add(dialog);
+        if (dialog.isModal()) {
+            modalDialogs.add(dialog);
+        }
+    }
+
+    void remove(InternalDialog dialog) {
+        dialogs.remove(dialog);
+        subdialogs.remove(dialog);
+        modalDialogs.remove(dialog);
+    }
+
+    public ObservableList<InternalDialog> getDialogs() {
+        return dialogs;
+    }
+
+    public ObservableList<InternalDialog> getModalDialogs() {
+        return modalDialogs;
     }
 
     @Override
@@ -111,47 +120,30 @@ public class InternalWindow extends Pane {
         return window;
     }
 
-    private void buildLayout(double width, double height) {
-        title.setPrefWidth(Double.MAX_VALUE);
-
-        titleBar.setLeft(title);
-        titleBar.setRight(buttonBox);
-        titleBar.minWidthProperty().bind(buttonBox.widthProperty().add(10));
+    protected void buildLayout(double width, double height) {
+        super.buildLayout(width, height);
         titleBar.visibleProperty().bind(window.stateProperty().isNotEqualTo(State.FULL));
         titleBar.managedProperty().bind(titleBar.visibleProperty());
-
-        payload.setTop(titleBar);
-        payload.setCenter(contentPane);
-
-        titleBar.getStyleClass().add("jd-internal-window-title-bar");
-        contentPane.getStyleClass().add("jd-internal-window-content");
-        payload.getStyleClass().add("jd-internal-window-payload");
-        getStyleClass().add("jd-internal-window");
-        payload.minWidthProperty().bind(titleBar.minWidthProperty().add(10));
-
-        payload.setPrefSize(width, height);
-        getChildren().add(payload);
-        relocate(width / 2, height / 2);
-        restoreBounds = getBoundsInParent();
     }
 
-    private void addButtons() {
-        newWindow.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
+    protected void addButtons() {
+        super.addButtons();
+        newWindow.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         newWindow.setFocusTraversable(false);
         newWindow.setTooltip(new Tooltip());
-        newWindow.getTooltip().textProperty().bind(Sys.rm().getTextBinding("newWindow"));
+        newWindow.getTooltip().textProperty().bind(Sys.rm().getStringBinding("newWindow"));
 
-        tile.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
+        tile.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         tile.setFocusTraversable(false);
         tile.setTooltip(new Tooltip());
-        tile.getTooltip().textProperty().bind(Sys.rm().getTextBinding("tile"));
+        tile.getTooltip().textProperty().bind(Sys.rm().getStringBinding("tile"));
 
-        minimize.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
+        minimize.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         minimize.setFocusTraversable(false);
         minimize.setTooltip(new Tooltip());
-        minimize.getTooltip().textProperty().bind(Sys.rm().getTextBinding("minimize"));
+        minimize.getTooltip().textProperty().bind(Sys.rm().getStringBinding("minimize"));
 
-        maximize.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
+        maximize.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         maximize.setFocusTraversable(false);
         maximize.textProperty()
                 .bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
@@ -159,45 +151,39 @@ public class InternalWindow extends Pane {
                         .otherwise(Fonts.Unicode.WHITE_LARGE_SQUARE));
         maximize.setTooltip(new Tooltip());
         maximize.getTooltip().textProperty().bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
-                .then(Sys.rm().getTextBinding("restore")).otherwise(Sys.rm().getTextBinding("maximize")));
+                .then(Sys.rm().getStringBinding("restore")).otherwise(Sys.rm().getStringBinding("maximize")));
 
-        full.getStyleClass().addAll("jd-internal-window-button", "jd-octicons");
+        full.getStyleClass().addAll("jd-frame-button", "jd-octicons");
         full.setFocusTraversable(false);
         full.setTooltip(new Tooltip());
-        full.getTooltip().textProperty().bind(Sys.rm().getTextBinding("full"));
-
-        close.getStyleClass().addAll("jd-internal-window-button", "jd-font-awesome-solid");
-        close.setFocusTraversable(false);
-        close.setTooltip(new Tooltip());
-        close.getTooltip().textProperty().bind(Sys.rm().getTextBinding("close"));
+        full.getTooltip().textProperty().bind(Sys.rm().getStringBinding("full"));
 
         buttonBox.getChildren().addAll(newWindow, tile, minimize, maximize, full, close);
-        buttonBox.setMinWidth(USE_PREF_SIZE);
     }
 
     private void setTitleMenu() {
         MenuItem minimizeOthers = new MenuItem();
-        minimizeOthers.textProperty().bind(Sys.rm().getTextBinding("minimizeOthers"));
+        minimizeOthers.textProperty().bind(Sys.rm().getStringBinding("minimizeOthers"));
         minimizeOthers.disableProperty().bind(Bindings.size(windowPane.getVisibleWindows()).isEqualTo(1));
         minimizeOthers.setOnAction(e -> window.getDesktop().minimizeOthers());
 
         MenuItem minimizeAll = new MenuItem();
-        minimizeAll.textProperty().bind(Sys.rm().getTextBinding("minimizeAll"));
+        minimizeAll.textProperty().bind(Sys.rm().getStringBinding("minimizeAll"));
         minimizeAll.setOnAction(e -> window.getDesktop().minimizeAll());
 
         MenuItem closeOthers = new MenuItem();
-        closeOthers.textProperty().bind(Sys.rm().getTextBinding("closeOthers"));
+        closeOthers.textProperty().bind(Sys.rm().getStringBinding("closeOthers"));
         closeOthers.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows())
                 .or(Bindings.size(windowPane.getClosableWindows()).lessThan(2)));
         closeOthers.setOnAction(e -> window.getDesktop().closeOthers());
 
         MenuItem closeAll = new MenuItem();
-        closeAll.textProperty().bind(Sys.rm().getTextBinding("closeAll"));
+        closeAll.textProperty().bind(Sys.rm().getStringBinding("closeAll"));
         closeAll.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows()));
         closeAll.setOnAction(e -> window.getDesktop().closeAll());
 
         ContextMenu titleContextMenu = new ContextMenu(minimizeOthers, minimizeAll, closeOthers, closeAll);
-        title.setContextMenu(titleContextMenu);
+        titleLabel.setContextMenu(titleContextMenu);
     }
 
     private void setMoveable() {
@@ -228,14 +214,32 @@ public class InternalWindow extends Pane {
 
     private void setHandlers() {
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-            window.activate();
+
+            InternalDialog dialog = getModalDialog();
+
+            if (dialog != null) {
+                dialog.doModalEffect();
+            }
+
+            if (window.isActive()) {
+                if (modalDialogs.isEmpty()) {
+                    activate();
+                }
+            } else {
+                window.activate();
+            }
         });
 
-        title.setOnMouseClicked(e -> {
+        titleLabel.setOnMouseClicked(e -> {
 
-            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
-                window.maximizeRestore();
+            if (modalDialogs.isEmpty()) {
+                if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+                    window.maximizeRestore();
+                }
+            } else {
+                e.consume();
             }
+
         });
 
         newWindow.setOnAction(e -> onNewWindow());
@@ -257,28 +261,53 @@ public class InternalWindow extends Pane {
 
     }
 
+    private void close() {
+        windowPane.getChildren().removeAll(dialogs);
+        onClose();
+    }
+
     protected void onClose() {
     }
 
+    InternalDialog getModalDialog() {
+        var modalDialog = modalDialogs.isEmpty() ? null : modalDialogs.get(modalDialogs.size() - 1);
+        return modalDialog;
+    }
+
+    void activateWindow() {
+        window.activate();
+    }
+
     void activate() {
-        pseudoClassStateChanged(ACTIVE_PSEUDO_CLASS, true);
-
-        if (window.isMinimized()) {
-            restoreTransition(MINIMALIZATION_DURATION);
-        }
-
-        toFront();
-
+        active.set(true);
+        deactivateDialogs();
+        requestFocus();
         focusOwner.requestFocus();
     }
 
-    void deactivate() {
-        pseudoClassStateChanged(ACTIVE_PSEUDO_CLASS, false);
-        focusOwner = getScene().getFocusOwner();
+    void activateAll() {
+        toFront();
+
+        if (!modalDialogs.isEmpty()) {
+            getModalDialog().activate();
+        } else {
+
+            active.set(true);
+
+            if (window.isMinimized()) {
+                restoreTransition(MINIMALIZATION_DURATION);
+            }
+
+            focusOwner.requestFocus();
+        }
+    }
+
+    void deactivateDialogs() {
+        dialogs.forEach(InternalDialog::deactivate);
     }
 
     void minimize(State old) {
-
+        dialogs.forEach(d -> d.setVisible(false));
         if (old == State.RESTORED) {
             restoreBounds = getBoundsInParent();
         }
@@ -406,6 +435,7 @@ public class InternalWindow extends Pane {
         fadeTransition.setToValue(1);
 
         parallelTransition.getChildren().addAll(translateTransition, scaleTransition, fadeTransition);
+        parallelTransition.setOnFinished(e -> dialogs.forEach(d -> d.setVisible(true)));
 
         parallelTransition.play();
     }

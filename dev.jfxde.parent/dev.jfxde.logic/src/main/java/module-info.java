@@ -11,6 +11,8 @@ module dev.jfxde.logic {
     requires transitive java.logging;
     requires com.h2database;
     requires javafx.base;
+    requires transitive dev.jfxde.jfxext;
+    requires gson;
 
     exports dev.jfxde.logic to  dev.jfxde.ui, dev.jfxde.sysapps;
     exports dev.jfxde.logic.data to  dev.jfxde.ui, dev.jfxde.sysapps;

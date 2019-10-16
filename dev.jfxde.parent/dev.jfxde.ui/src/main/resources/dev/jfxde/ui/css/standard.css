@@ -24,7 +24,7 @@
 	-jd-base-color-alpha5: rgba(0%, 0%, 0%, 0.5);
 	-jd-base-color-alpha6: rgba(0%, 0%, 0%, 0.6);
 	-jd-base-color-alpha7: rgba(0%, 0%, 0%, 0.7);
-	-jd-text-background-color: -jd-base-color;
+	-jd-background-color: -jd-base-color;
 
     -jd-light-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha4, 200%) 0%, derive(-jd-base-color-alpha4, 50%) 50%, derive(-jd-base-color-alpha4, -50%) 100%);
     -jd-dark-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha6, 200%) 0%, derive(-jd-base-color-alpha6, 50%) 50%, derive(-jd-base-color-alpha6, -50%) 100%);
@@ -45,7 +45,7 @@
 	-fx-border-color: transparent;
 	-fx-background-color: -jd-active-background-color;
 	-fx-text-fill: black;
-	-fx-font-size: 0.85em;
+	-fx-font-size: 0.95em;
     -fx-padding: 2;
     -fx-background-radius: 2.0;
     -fx-border-radius: 2.0;
@@ -92,16 +92,20 @@
 	-fx-border-radius: 2.0;
 }
 
+/* .dialog-pane .label { */
+/* 	-fx-font-weight: bold; */
+/* } */
+
 /* Desktop ********************************************************************/
 
 .jd-desktop-environment {
-	-fx-background-color: -jd-text-background-color;
+	-fx-background-color: -jd-background-color;
 }
 
 /* Shortcut pane **************************************************************/
 
 .jd-desktop-shortcut-pane {
-   -fx-background-color: -jd-text-background-color;
+   -fx-background-color: -jd-background-color;
 }
 
 .jd-desktop-shortcut-icon {
@@ -110,7 +114,7 @@
 	-fx-text-alignment: center;
 	-fx-background-radius: 2.0;
 	-fx-border-radius: 2.0;
-	-fx-text-fill: -jd-text-background-color;
+	-fx-text-fill: -jd-background-color;
 }
 
 .jd-desktop-shortcut-name {
@@ -231,12 +235,12 @@
 
 /* Internal window ************************************************************/
 
-.jd-internal-window:active .jd-internal-window-payload {
+.jd-frame:active .jd-frame-payload {
 	-fx-background-color: -jd-active-background-color;
 	-fx-border-color: -jd-active-background-color;
 }
 
-.jd-internal-window:full .jd-internal-window-payload {
+.jd-frame:full .jd-frame-payload {
 	-fx-background-color: #fff;
 	-fx-border-color: #fff;
 	-fx-border-width: 0.0;
@@ -244,11 +248,11 @@
 	-fx-border-radius: 0.0;
 }
 
-.jd-internal-window:active .jd-internal-window-title-bar {
+.jd-frame:active .jd-frame-title-bar {
 	-fx-background-color: -jd-active-background-color;
 }
 
-.jd-internal-window-payload {
+.jd-frame-payload {
 	-fx-background-color: -jd-passive-background-color;
 	-fx-border-color: -jd-passive-background-color;
 	-fx-border-width: 4.0;
@@ -256,16 +260,16 @@
 	-fx-border-radius: 5.0;
 }
 
-.jd-internal-window-content {
-	-fx-background-color: #fff;
+.jd-frame-content {
+	-fx-background-color: -fx-background;
 }
 
-.jd-internal-window-title-bar {
+.jd-frame-title-bar {
 	-fx-background-color: -jd-passive-background-color;
 	-fx-padding: 2.0 2.0 4.0 2.0;
 }
 
-.jd-internal-window-button {
+.jd-frame-button {
     -fx-background-color:
         #707070,
         linear-gradient(#fcfcfc, #f3f3f3),
@@ -278,19 +282,19 @@
     -fx-opacity: 1.0;
 }
 
-.jd-internal-window-button .list-view {
+.jd-frame-button .list-view {
     -fx-opacity: 1.0;
 }
 
-.jd-internal-window-button .arrow-button {
+.jd-frame-button .arrow-button {
 	-fx-padding: 0.0;
 }
 
-.jd-internal-window-button:disabled {
+.jd-frame-button:disabled {
 	-fx-opacity: 0.4;
 }
 
-.jd-internal-window-button:hover {
+.jd-frame-button:hover {
     -fx-background-color:#ddd;
 }
 

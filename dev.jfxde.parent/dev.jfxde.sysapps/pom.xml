@@ -29,6 +29,14 @@
 			<artifactId>richtextfx</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>info.picocli</groupId>
+			<artifactId>picocli</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.vavr</groupId>
+			<artifactId>vavr</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>dev.jfxde</groupId>
 			<artifactId>dev.jfxde.api</artifactId>
 		</dependency>
@@ -39,6 +47,10 @@
 		<dependency>
 			<groupId>dev.jfxde</groupId>
 			<artifactId>dev.jfxde.fonts</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>dev.jfxde</groupId>
+			<artifactId>dev.jfxde.jfxext</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>dev.jfxde</groupId>

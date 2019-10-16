@@ -40,14 +40,14 @@ public class WebMenuBar extends BorderPane {
 	private void initControls() {
 		back.getStyleClass().addAll("jd-font-awesome-solid");
 		back.setTooltip(new Tooltip());
-		back.getTooltip().textProperty().bind(context.rc().getTextBinding("back"));
+		back.getTooltip().textProperty().bind(context.rc().getStringBinding("back"));
 		back.setOnAction(e -> webPageView.back());
 		back.disableProperty().bind(webPageView.backDisableProperty());
 		back.setFocusTraversable(false);
 
 		forward.getStyleClass().addAll("jd-font-awesome-solid");
 		forward.setTooltip(new Tooltip());
-		forward.getTooltip().textProperty().bind(context.rc().getTextBinding("forward"));
+		forward.getTooltip().textProperty().bind(context.rc().getStringBinding("forward"));
 		forward.setOnAction(e -> webPageView.forward());
 		forward.disableProperty().bind(webPageView.forwardDisableProperty());
 		forward.setFocusTraversable(false);
@@ -57,7 +57,7 @@ public class WebMenuBar extends BorderPane {
 		reload.textProperty().bind(Bindings.when(webPageView.runningProperty()).then(Fonts.FontAwesome.TIMES)
 				.otherwise(Fonts.FontAwesome.REDO));
 		reload.getTooltip().textProperty().bind(Bindings.when(webPageView.runningProperty())
-				.then(context.rc().getTextBinding("stop")).otherwise(context.rc().getTextBinding("reload")));
+				.then(context.rc().getStringBinding("stop")).otherwise(context.rc().getStringBinding("reload")));
 		reload.setFocusTraversable(false);
 
 		TilePane buttonPane = new TilePane();

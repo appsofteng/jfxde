@@ -9,10 +9,12 @@ import dev.jfxde.logic.FileManager;
 import dev.jfxde.logic.Sys;
 import javafx.application.Application;
 import javafx.application.Preloader.ProgressNotification;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.text.Font;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -44,7 +46,8 @@ public class Main extends Application {
         stage.setFullScreenExitHint("");
         DesktopEnvironment desktopEnvironment = new DesktopEnvironment();
 
-        Scene scene = new Scene(desktopEnvironment, 700, 600, false, SceneAntialiasing.BALANCED);
+        Rectangle2D screen = Screen.getPrimary().getBounds();
+        Scene scene = new Scene(desktopEnvironment, screen.getWidth() * 0.7 , screen.getHeight() * 0.7, false, SceneAntialiasing.BALANCED);
         scene.getStylesheets().add(Sys.rm().getCss("standard"));
         stage.setScene(scene);
 

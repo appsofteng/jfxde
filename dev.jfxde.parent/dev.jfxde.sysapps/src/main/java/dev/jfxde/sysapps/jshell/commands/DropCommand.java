@@ -1,30 +1,47 @@
 package dev.jfxde.sysapps.jshell.commands;
 
-import org.fxmisc.richtext.CodeArea;
+import java.util.ArrayList;
+import java.util.List;
 
-import dev.jfxde.logic.data.ConsoleOutput;
-import dev.jfxde.logic.data.ConsoleOutput.Type;
+import dev.jfxde.jfxext.control.ConsoleModel;
+import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.SnippetUtils;
-import dev.jfxde.sysapps.util.CodeAreaUtils;
-import jdk.jshell.JShell;
+import jdk.jshell.Snippet;
+import jdk.jshell.Snippet.Status;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
-public class DropCommand extends Command {
+@Command(name = "/drop")
+public class DropCommand extends BaseCommand {
 
-    public DropCommand(JShell jshell, CodeArea outputArea) {
-        super("/drop", jshell, outputArea);
+    @Parameters(arity = "1..*", paramLabel = "{name|id|startID-endID}[ {name|id|startID-endID}...]")
+    private ArrayList<String> parameters;
+
+    public DropCommand(CommandProcessor commandProcessor) {
+        super(commandProcessor);
     }
 
     @Override
-    public void execute(SnippetMatch input) {
-        StringBuilder sb = new StringBuilder();
-        jshell.snippets()
-                .filter(s -> jshell.status(s).isActive())
-                .filter(s -> input.matches(s))
-                .forEach(s -> {
-                    sb.append("dropped" + SnippetUtils.toString(s, jshell));
-                    jshell.drop(s);
-                });
+    public void run() {
 
-        CodeAreaUtils.addOutputLater(outputArea, new ConsoleOutput(sb.toString() + "\n", Type.COMMENT));
+        drop(commandProcessor.matches(parameters));
+    }
+
+    public void drop(List<Snippet> snippets) {
+        StringBuilder sb = new StringBuilder();
+        snippets.forEach(s -> {
+            if (commandProcessor.getSession().getJshell().status(s) == Status.VALID) {
+                sb.append(commandProcessor.getSession().getContext().rc().getString("dropped") + SnippetUtils.toString(s, commandProcessor.getSession().getJshell()));
+                commandProcessor.getSession().getJshell().drop(s);
+            } else {
+                sb.append(commandProcessor.getSession().getContext().rc().getString("notValid") + SnippetUtils.toString(s, commandProcessor.getSession().getJshell()));
+            }
+        });
+
+        if (sb.length() == 0) {
+            sb.append(commandProcessor.getSession().getContext().rc().getString("noSuchSnippet") + "\n");
+        }
+
+        commandProcessor.getSession().getFeedback().normal(sb.toString(), ConsoleModel.COMMENT_STYLE);
     }
 }

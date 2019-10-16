@@ -3,6 +3,7 @@ package dev.jfxde.apps.webbrowser;
 import java.util.Objects;
 
 import dev.jfxde.api.AppContext;
+import dev.jfxde.jfxext.util.JSUtils;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -55,7 +56,7 @@ public class WebPageView extends StackPane {
 	}
 
 	private void setListeners() {
-		title.bind(context.rc().getTextBinding("new"));
+		title.bind(context.rc().getStringBinding("new"));
 		backDisable.bind(Bindings.equal(engine.getHistory().currentIndexProperty(), 0));
 		forwardDisable.bind(Bindings.isEmpty(engine.getHistory().getEntries()).or(engine.getHistory()
 				.currentIndexProperty().isEqualTo(Bindings.size(engine.getHistory().getEntries()).subtract(1))));
@@ -93,7 +94,7 @@ public class WebPageView extends StackPane {
 			JSObject linkJsobject = JSUtils.getJSObject(jsobject, "a");
 
 			if (linkJsobject != null) {
-				String url = (String) jsobject.getMember("href");
+				String url = (String) linkJsobject.getMember("href");
 				Bounds bounds = webView.getBoundsInLocal();
 				Bounds screenBounds = webView.localToScreen(bounds);
 

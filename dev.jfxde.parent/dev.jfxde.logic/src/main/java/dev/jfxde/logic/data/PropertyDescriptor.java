@@ -6,7 +6,7 @@ import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class PropertyDescriptor implements Comparable<PropertyDescriptor>, Treeable {
+public class PropertyDescriptor implements Comparable<PropertyDescriptor> {
 
     private StringProperty key = new SimpleStringProperty();
     private StringProperty value = new SimpleStringProperty();
@@ -56,7 +56,6 @@ public class PropertyDescriptor implements Comparable<PropertyDescriptor>, Treea
         return key.get().compareTo(o.key.get());
     }
 
-    @Override
     public boolean isLeaf() {
         return getValue() != null;
     }

@@ -12,6 +12,7 @@
 		<module>dev.jfxde.data</module>
 		<module>dev.jfxde.logic</module>
 		<module>dev.jfxde.fonts</module>
+		<module>dev.jfxde.jfxext</module>
 		<module>dev.jfxde.ui</module>
 		<module>dev.jfxde.sysapps</module>
 		<module>dev.jfxde.apps</module>
@@ -24,8 +25,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ojfxVersion>13</ojfxVersion>
+		<picocliVersion>4.0.4</picocliVersion>
 		<javafx.platform>win</javafx.platform>
 		<scriptExtension>bat</scriptExtension>
+		<pathSeparator>;</pathSeparator>
+		<osHomeDir>"%HOME%"</osHomeDir>
 		<distFormat>zip</distFormat>
 		<sourceJdkModules>${java.home}</sourceJdkModules>
 		<sysName>jfxde</sysName>
@@ -75,7 +79,17 @@
 			<dependency>
 				<groupId>org.controlsfx</groupId>
 				<artifactId>controlsfx</artifactId>
-				<version>11.0.0</version>
+				<version>12.0.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.javaparser</groupId>
+				<artifactId>javaparser-symbol-solver-core</artifactId>
+				<version>3.14.159265359</version>
+			</dependency>
+			<dependency>
+				<groupId>info.picocli</groupId>
+				<artifactId>picocli</artifactId>
+				<version>${picocliVersion}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.h2database</groupId>
@@ -96,6 +110,16 @@
 				<groupId>org.fxmisc.richtext</groupId>
 				<artifactId>richtextfx</artifactId>
 				<version>0.10.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>2.8.5</version>
+			</dependency>
+			<dependency>
+				<groupId>io.vavr</groupId>
+				<artifactId>vavr</artifactId>
+				<version>1.0.0-alpha-3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
@@ -120,6 +144,11 @@
 			<dependency>
 				<groupId>dev.jfxde</groupId>
 				<artifactId>dev.jfxde.fonts</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>dev.jfxde</groupId>
+				<artifactId>dev.jfxde.jfxext</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -165,6 +194,13 @@
 					<version>3.8.1</version>
 					<configuration>
 						<release>12</release>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>info.picocli</groupId>
+								<artifactId>picocli-codegen</artifactId>
+								<version>${picocliVersion}</version>
+							</path>
+						</annotationProcessorPaths>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -231,6 +267,8 @@
 				<javafx.platform>linux</javafx.platform>
 				<sourceJdkModules>${env.JAVA_HOME_LINUX}</sourceJdkModules>
 				<scriptExtension>sh</scriptExtension>
+				<pathSeparator>:</pathSeparator>
+				<osHomeDir>~</osHomeDir>
 				<distFormat>tgz</distFormat>
 			</properties>
 		</profile>
@@ -254,6 +292,8 @@
 			<!-- </activation> -->
 			<properties>
 				<javafx.platform>win</javafx.platform>
+				<pathSeparator>;</pathSeparator>
+				<osHomeDir>"%HOME%"</osHomeDir>
 			</properties>
 		</profile>
 		<profile>
@@ -268,6 +308,19 @@
 			</properties>
 		</profile>
 	</profiles>
+
+	<repositories>
+		<repository>
+			<id>sonatype.snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 	<pluginRepositories>
 		<pluginRepository>

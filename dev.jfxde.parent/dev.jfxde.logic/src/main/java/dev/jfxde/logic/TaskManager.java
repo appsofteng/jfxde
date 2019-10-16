@@ -3,9 +3,10 @@ package dev.jfxde.logic;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,9 +28,9 @@ public final class TaskManager extends Manager {
     private final ExecutorService executorService = Executors.newWorkStealingPool();
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-    private final ObservableList<TaskDescriptor<? extends Worker<?>>> taskDescriptors = FXCollections
-            .observableArrayList((td) -> new Observable[]{td.stateProperty()});
-    private final Map<AppDescriptor, List<TaskDescriptor<?>>> appTaskMap = new HashMap<>();
+    private final ObservableList<TaskDescriptor<? extends Worker<?>>> taskDescriptors = FXCollections.synchronizedObservableList(FXCollections
+            .observableArrayList((td) -> new Observable[]{td.stateProperty()}));
+    private final Map<AppDescriptor, List<TaskDescriptor<?>>> appTaskMap = new ConcurrentHashMap<>();
 
     TaskManager() {
 
@@ -48,18 +49,25 @@ public final class TaskManager extends Manager {
         return taskDescriptors;
     }
 
-    public void executeSequentially(Runnable task) {
-
-        singleThreadExecutor.execute(task);
-    }
-
     public void execute(Task<?> task) {
 
-        executorService.execute(task);
+        executorService.execute(() -> {
+            // The threads in the pool are not created by the caller and thus
+            // don't inherit the access control context.
+            AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+                task.run();
+                return null;
+            });
+        });
     }
 
     public void executeSequentially(Task<?> task) {
     	singleThreadExecutor.execute(task);
+    }
+
+    public void executeSequentially(Runnable task) {
+
+        singleThreadExecutor.execute(task);
     }
 
     public ScheduledFuture<?> scheduleAtFixedRate​(Runnable task, long initialDelay, long period, TimeUnit unit) {
@@ -124,7 +132,7 @@ public final class TaskManager extends Manager {
     private <T extends Worker<?>> TaskDescriptor<T> addTask(AppDescriptor appDescriptor, T task) {
         TaskDescriptor<T> taskDescriptor = new TaskDescriptor<>(appDescriptor, task);
         taskDescriptors.add(taskDescriptor);
-        List<TaskDescriptor<?>> appTasks = appTaskMap.getOrDefault(appDescriptor, new ArrayList<>());
+        List<TaskDescriptor<?>> appTasks = appTaskMap.getOrDefault(appDescriptor, Collections.synchronizedList(new ArrayList<>()));
         appTasks.add(taskDescriptor);
         appTaskMap.put(appDescriptor, appTasks);
 

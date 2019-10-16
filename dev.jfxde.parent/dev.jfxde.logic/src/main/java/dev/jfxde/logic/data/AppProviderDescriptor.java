@@ -69,7 +69,7 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
         this.resourceManager = new ResourceManager(provider.type(), appManifest.altText(), Sys.rm());
         this.appManifest = appManifest;
         this.provider = provider;
-        this.name.bind(resourceManager.getTextBinding(appManifest.name()));
+        this.name.bind(resourceManager.getStringBinding(appManifest.name()));
         this.fqn.set(appManifest.fqn());
         this.version.set(appManifest.version());
         this.vendor.set(appManifest.vendor());
@@ -188,6 +188,10 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
         this.system = system;
     }
 
+    public String getCss() {
+        return resourceManager.getCss();
+    }
+
     public int match(Resource resource) {
 
         match = 0;
@@ -292,9 +296,9 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
         Permission permission = null;
 
         try {
-            if (entry.target().isEmpty()) {
+            if (entry.target().equals(PermissionEntry.NULL_STRING)) {
                 permission = entry.type().getDeclaredConstructor().newInstance();
-            } else if (entry.actions().isEmpty()) {
+            } else if (entry.actions().equals(PermissionEntry.NULL_STRING)) {
                 permission = entry.type().getDeclaredConstructor(String.class).newInstance(entry.target());
             } else {
                 permission = entry.type().getDeclaredConstructor(String.class, String.class).newInstance(entry.target(),

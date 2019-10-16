@@ -1,21 +1,27 @@
 package dev.jfxde.sysapps.jshell.commands;
 
-import java.util.Arrays;
-
-import org.fxmisc.richtext.CodeArea;
-
+import dev.jfxde.jfxext.control.ConsoleModel;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import jdk.jshell.JShell;
 
 public abstract class Command {
 
     private final String name;
     protected final JShell jshell;
-    protected final CodeArea outputArea;
+    protected final ConsoleModel consoleModel;
+    protected final ObservableList<String> history;
 
-    public Command(String name, JShell jshell, CodeArea outputArea) {
+
+    public Command(String name, JShell jshell, ConsoleModel consoleModel) {
+        this(name, jshell, consoleModel, FXCollections.emptyObservableList());
+    }
+
+    public Command(String name, JShell jshell, ConsoleModel consoleModel, ObservableList<String> history) {
         this.name = name;
         this.jshell = jshell;
-        this.outputArea = outputArea;
+        this.consoleModel = consoleModel;
+        this.history = history;
     }
 
     public boolean matches(String input) {
@@ -26,13 +32,7 @@ public abstract class Command {
         return name;
     }
 
-    public void execute(String input) {
-        String[] parts = input.split(" +");
-        parts = Arrays.copyOfRange(parts, 1, parts.length);
-        execute(new SnippetMatch(parts));
-    }
-
-    protected abstract void execute(SnippetMatch input);
+    public abstract void execute(String input);
 
     @Override
     public String toString() {

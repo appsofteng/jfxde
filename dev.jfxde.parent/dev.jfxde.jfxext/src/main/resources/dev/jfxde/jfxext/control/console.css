@@ -1,0 +1,12 @@
+.styled-text-area .jd-console-normal {
+    -fx-fill: inherit;
+}
+
+.styled-text-area .jd-console-error {
+    -fx-fill: red;
+}
+
+.styled-text-area .jd-console-comment {
+    -fx-fill: #666;
+    -fx-font-style: italic;
+}

@@ -65,20 +65,20 @@ public class JvmMonitorContent extends TabPane {
 	@SuppressWarnings("unchecked")
 	private Tab createPropertyTab() {
 		Tab tab = new Tab();
-		tab.textProperty().bind(context.rc().getTextBinding("properties"));
+		tab.textProperty().bind(context.rc().getStringBinding("properties"));
 		tab.setClosable(false);
 
 		TableView<PropertyDescriptor> table = new TableView<>();
 		tab.setContent(table);
 
-		table.setItems(Sys.sm().getSystemProperties());
+		table.setItems(Sys.pm().getSystemProperties());
 
 		TableColumn<PropertyDescriptor, String> keyColumn = new TableColumn<>();
-		keyColumn.textProperty().bind(context.rc().getTextBinding("key"));
+		keyColumn.textProperty().bind(context.rc().getStringBinding("key"));
 		keyColumn.setCellValueFactory(new PropertyValueFactory<>("key"));
 
 		TableColumn<PropertyDescriptor, String> valueColumn = new TableColumn<>();
-		valueColumn.textProperty().bind(context.rc().getTextBinding("value"));
+		valueColumn.textProperty().bind(context.rc().getStringBinding("value"));
 		valueColumn.setCellValueFactory(new PropertyValueFactory<>("value"));
 		valueColumn.setMaxWidth(Double.MAX_VALUE);
 
@@ -90,7 +90,7 @@ public class JvmMonitorContent extends TabPane {
 
 	private Tab createProcessTab() {
 		Tab tab = new Tab();
-		tab.textProperty().bind(context.rc().getTextBinding("process"));
+		tab.textProperty().bind(context.rc().getStringBinding("process"));
 		tab.setClosable(false);
 
 		GridPane pane = new GridPane();
@@ -122,22 +122,22 @@ public class JvmMonitorContent extends TabPane {
 		yAxis.setAnimated(false);
 		yAxis.setLabel("MiB");
 		LineChart<Long, Number> chart = new LineChart<>(memoryXAxis, yAxis);
-		chart.titleProperty().bind(context.rc().getTextBinding("memoryUsage"));
+		chart.titleProperty().bind(context.rc().getStringBinding("memoryUsage"));
 		chart.setAnimated(false);
 		chart.setCreateSymbols(false);
 		chart.prefWidthProperty().bind(prefColumnWidthBinding);
 
 		usedHeapMemorySeries = new XYChart.Series<>();
-		usedHeapMemorySeries.nameProperty().bind(context.rc().getTextBinding("heap"));
+		usedHeapMemorySeries.nameProperty().bind(context.rc().getStringBinding("heap"));
 
 		usedNonHeapMemorySeries = new XYChart.Series<>();
-		usedNonHeapMemorySeries.nameProperty().bind(context.rc().getTextBinding("nonHeap"));
+		usedNonHeapMemorySeries.nameProperty().bind(context.rc().getStringBinding("nonHeap"));
 
 		usedMemorySeries = new XYChart.Series<>();
-		usedMemorySeries.nameProperty().bind(context.rc().getTextBinding("used"));
+		usedMemorySeries.nameProperty().bind(context.rc().getStringBinding("used"));
 
 		committedMemorySeries = new XYChart.Series<>();
-		committedMemorySeries.nameProperty().bind(context.rc().getTextBinding("committed"));
+		committedMemorySeries.nameProperty().bind(context.rc().getStringBinding("committed"));
 
 		chart.getData().addAll(usedHeapMemorySeries, usedNonHeapMemorySeries, usedMemorySeries, committedMemorySeries);
 
@@ -152,13 +152,13 @@ public class JvmMonitorContent extends TabPane {
 		yAxis.setAnimated(false);
 		yAxis.setLabel("%");
 		LineChart<Long, Number> chart = new LineChart<>(cpuXAxis, yAxis);
-		chart.titleProperty().bind(context.rc().getTextBinding("cpuUsage"));
+		chart.titleProperty().bind(context.rc().getStringBinding("cpuUsage"));
 		chart.setAnimated(false);
 		chart.setCreateSymbols(false);
 		chart.prefWidthProperty().bind(prefColumnWidthBinding);
 
 		usedCpuSeries = new XYChart.Series<>();
-		usedCpuSeries.nameProperty().bind(context.rc().getTextBinding("used"));
+		usedCpuSeries.nameProperty().bind(context.rc().getStringBinding("used"));
 		chart.getData().add(usedCpuSeries);
 
 		return chart;
@@ -170,18 +170,18 @@ public class JvmMonitorContent extends TabPane {
 
 		threadYAxis = new NumberAxis(0, 50, 5);
 		threadYAxis.setAnimated(false);
-		threadYAxis.labelProperty().bind(context.rc().getTextBinding("count"));
+		threadYAxis.labelProperty().bind(context.rc().getStringBinding("count"));
 		LineChart<Long, Number> chart = new LineChart<>(threadXAxis, threadYAxis);
-		chart.titleProperty().bind(context.rc().getTextBinding("threads"));
+		chart.titleProperty().bind(context.rc().getStringBinding("threads"));
 		chart.setAnimated(false);
 		chart.setCreateSymbols(false);
 		chart.prefWidthProperty().bind(prefColumnWidthBinding);
 
 		daemonThreadSeries = new XYChart.Series<>();
-		daemonThreadSeries.nameProperty().bind(context.rc().getTextBinding("daemon"));
+		daemonThreadSeries.nameProperty().bind(context.rc().getStringBinding("daemon"));
 
 		threadSeries = new XYChart.Series<>();
-		threadSeries.nameProperty().bind(context.rc().getTextBinding("total"));
+		threadSeries.nameProperty().bind(context.rc().getStringBinding("total"));
 
 		chart.getData().addAll(daemonThreadSeries, threadSeries);
 
@@ -194,15 +194,15 @@ public class JvmMonitorContent extends TabPane {
 
 		NumberAxis classYAxis = new NumberAxis();
 		classYAxis.setAnimated(false);
-		classYAxis.labelProperty().bind(context.rc().getTextBinding("count"));
+		classYAxis.labelProperty().bind(context.rc().getStringBinding("count"));
 		LineChart<Long, Number> chart = new LineChart<>(classXAxis, classYAxis);
-		chart.titleProperty().bind(context.rc().getTextBinding("classes"));
+		chart.titleProperty().bind(context.rc().getStringBinding("classes"));
 		chart.setAnimated(false);
 		chart.setCreateSymbols(false);
 		chart.prefWidthProperty().bind(prefColumnWidthBinding);
 
 		loadedClassSeries = new XYChart.Series<>();
-		loadedClassSeries.nameProperty().bind(context.rc().getTextBinding("loaded"));
+		loadedClassSeries.nameProperty().bind(context.rc().getStringBinding("loaded"));
 
 		chart.getData().addAll(loadedClassSeries);
 

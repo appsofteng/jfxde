@@ -29,7 +29,7 @@ public class DesktopEnvironment extends Region {
 
     public DesktopEnvironment() {
         getChildren().addAll(desktopStack, menuBar, controlBar);
-        setThemeColor(Sys.sm().getThemeColor());
+        setThemeColor(Sys.pm().getThemeColor());
         getStyleClass().add("jd-desktop-environment");
         setDesktopHandlers();
         setActiveDesktop();
@@ -132,7 +132,7 @@ public class DesktopEnvironment extends Region {
                     .then(Fonts.Octicons.SCREEN_NORMAL).otherwise(Fonts.Octicons.SCREEN_FULL));
             menuBar.getRestore().getTooltip().textProperty()
                     .bind(Bindings.when(window.stateProperty().isEqualTo(State.FULL))
-                            .then(Sys.rm().getTextBinding("restore")).otherwise(Sys.rm().getTextBinding("full")));
+                            .then(Sys.rm().getStringBinding("restore")).otherwise(Sys.rm().getStringBinding("full")));
             menuBar.getRestore().setDisable(false);
         } else {
             menuBar.setActiveAppMenuBar(null);

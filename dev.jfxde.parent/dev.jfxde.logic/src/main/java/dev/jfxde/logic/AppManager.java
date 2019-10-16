@@ -18,11 +18,11 @@ import dev.jfxde.api.AppManifest;
 import dev.jfxde.api.AppRequest;
 import dev.jfxde.api.Resource;
 import dev.jfxde.data.entity.AppProviderEntity;
-import dev.jfxde.logic.conext.AppContextImpl;
+import dev.jfxde.jfxext.concurrent.CTask;
+import dev.jfxde.logic.context.AppContextImpl;
 import dev.jfxde.logic.data.AppDescriptor;
 import dev.jfxde.logic.data.AppProviderDescriptor;
 import dev.jfxde.logic.data.Window;
-import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -77,7 +77,7 @@ public final class AppManager extends Manager {
                 AppManifest appManifest = provider.type().getAnnotation(AppManifest.class);
 
                 if (appProviderDescriptorMap.containsKey(appManifest.fqn())) {
-                    new SecurityException(Sys.rm().getText("duplicateApp") + " " + appManifest.fqn());
+                    new SecurityException(Sys.rm().getString("duplicateApp") + " " + appManifest.fqn());
                 }
 
                 AppProviderDescriptor descriptor = getAppProviderDescriptor(provider);
@@ -247,18 +247,14 @@ public final class AppManager extends Manager {
         if (!appDescriptors.contains(appDescriptor)) {
 
             AppContext context = new AppContextImpl(appDescriptor, request);
+            appDescriptorMap.put(appDescriptor.getApp(), appDescriptor);
+            appDescriptors.add(appDescriptor);
+            Sys.dm().getActiveDesktop().addWindow(new Window(appDescriptor));
 
             Task<Void> task = new Task<>() {
                 @Override
                 protected Void call() throws Exception {
                     appDescriptor.start(context);
-
-                    Platform.runLater(() -> {
-                        appDescriptorMap.put(appDescriptor.getApp(), appDescriptor);
-                        appDescriptors.add(appDescriptor);
-                        Sys.dm().getActiveDesktop().addWindow(new Window(appDescriptor));
-                    });
-
                     return null;
                 }
 
@@ -287,14 +283,18 @@ public final class AppManager extends Manager {
 
     public void stop(AppDescriptor appDescriptor) {
 
-        appDescriptor.getWindow().remove();
-        appDescriptor.getAppProviderDescriptor().remove(appDescriptor);
+        CTask<Void> task = CTask.create(() -> appDescriptor.getApp().stop())
+                .onFinished(t -> {
+                    if (appDescriptors.remove(appDescriptor)) {
+                        appDescriptorMap.remove(appDescriptor.getApp());
+                        appDescriptor.getWindow().remove();
+                        appDescriptor.getAppProviderDescriptor().remove(appDescriptor);
 
-        appDescriptorMap.remove(appDescriptor.getApp());
-        appDescriptors.remove(appDescriptor);
-        Sys.tm().removeTasks(appDescriptor);
+                        Sys.tm().removeTasks(appDescriptor);
+                    }
+                });
 
-        Sys.tm().execute(appDescriptor, TaskUtils.createTask(() -> appDescriptor.getApp().stop()));
+        Sys.tm().execute(task);
     }
 
     public void activate(AppDescriptor appDescriptor) {
@@ -315,15 +315,15 @@ public final class AppManager extends Manager {
     // Request, resource, action
     public AppProviderDescriptor getAppProviderDescriptor(Resource resource) {
 
-		List<AppProviderDescriptor> descriptors = appProviderDescriptors.stream()
-		        .filter(d -> d.match(resource) > 0)
-		        .sorted(Comparator.comparing(AppProviderDescriptor::getMatch).reversed())
-		        .collect(Collectors.toList());
+        List<AppProviderDescriptor> descriptors = appProviderDescriptors.stream()
+                .filter(d -> d.match(resource) > 0)
+                .sorted(Comparator.comparing(AppProviderDescriptor::getMatch).reversed())
+                .collect(Collectors.toList());
 
-		AppProviderDescriptor descriptor = descriptors.isEmpty() ? null : descriptors.get(0);
+        AppProviderDescriptor descriptor = descriptors.isEmpty() ? null : descriptors.get(0);
 
-		return descriptor;
-	}
+        return descriptor;
+    }
 
     public void sortApp() {
         FXCollections.sort(appProviderDescriptors);

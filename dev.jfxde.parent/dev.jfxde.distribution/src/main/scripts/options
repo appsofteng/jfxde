@@ -1,0 +1,8 @@
+-Djavafx.animation.fullspeed=true
+-Djava.util.logging.config.file=conf/logging.properties
+-Dorg.jboss.logging.provider=jdk
+--add-exports javafx.base/com.sun.javafx.event=org.controlsfx.controls
+--add-exports javafx.graphics/com.sun.javafx.css=org.controlsfx.controls
+-p lib/mp${pathSeparator}modules${pathSeparator}apps${pathSeparator}${osHomeDir}/${homeDir}/apps
+-cp lib/cp/*
+-m dev.jfxde.ui

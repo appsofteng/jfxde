@@ -1,0 +1,53 @@
+.jd-frame-content {
+	-fx-background-color: black;
+}
+
+/* Rich text FX */
+.styled-text-area {
+    -fx-background-color: black;
+}
+
+.styled-text-area .caret {
+    -fx-stroke: white;
+}
+
+/* Not working unless directly on text area*/
+.styled-text-area .selection {
+    -fx-fill: rgba(30,144,255,0.3);
+}
+
+.styled-text-area .text {
+    -fx-font-smoothing-type: lcd;
+    -fx-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 1.2em;
+}
+
+.list-cell .text {
+	-fx-text-fill: -fx-text-background-color;
+	-fx-fill: -fx-text-background-color;
+}
+
+.context-menu .text {
+	-fx-text-fill: -fx-text-background-color;
+	-fx-fill: -fx-text-background-color;
+}
+
+/* Console */
+
+.styled-text-area .jd-console-normal {
+    -fx-fill: white;
+}
+
+.styled-text-area .jd-console-error {
+    -fx-fill: red;
+}
+
+.styled-text-area .jd-console-comment {
+    -fx-font-style: italic;
+    -fx-fill: lime;
+}
+
+.styled-text-area .jd-console-help {
+    -fx-fill: white;
+}

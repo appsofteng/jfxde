@@ -14,6 +14,10 @@
 				<exclude>*:c3p0:*</exclude>
 				<exclude>*:mchange-commons-java:*</exclude>
 				<exclude>org.slf4j:*:*</exclude>
+				<exclude>com.google.guava:guava:*</exclude>
+				<exclude>com.google.guava:failureaccess:*</exclude>
+				<exclude>com.github.javaparser:javaparser-symbol-solver-core:*</exclude>
+				<exclude>com.github.javaparser:javaparser-symbol-solver-model:*</exclude>
 				<exclude>*:*:linux</exclude>
 				<exclude>*:*:win</exclude>
 			</excludes>
@@ -28,6 +32,10 @@
 				<include>*:c3p0:*</include>
 				<include>*:mchange-commons-java:*</include>
 				<include>org.slf4j:*:*</include>
+				<include>com.google.guava:guava:*</include>
+				<include>com.google.guava:failureaccess:*</include>
+				<include>com.github.javaparser:javaparser-symbol-solver-core:*</include>
+				<include>com.github.javaparser:javaparser-symbol-solver-model:*</include>
 			</includes>
 		</dependencySet>
 	</dependencySets>
@@ -40,6 +48,7 @@
 				<include>dev.jfxde:dev.jfxde.api</include>
 				<include>dev.jfxde:dev.jfxde.logic</include>
 				<include>dev.jfxde:dev.jfxde.fonts</include>
+				<include>dev.jfxde:dev.jfxde.jfxext</include>
 				<include>dev.jfxde:dev.jfxde.ui</include>
 				<include>dev.jfxde:dev.jfxde.data</include>
 				<include>dev.jfxde:dev.jfxde.sysapps</include>
@@ -82,8 +91,12 @@
 			<filtered>true</filtered>
 		</file>
 		<file>
-			<source>src/main/conf/settings.properties</source>
+			<source>src/main/conf/preferences.properties</source>
 			<outputDirectory>conf</outputDirectory>
+			<filtered>true</filtered>
+		</file>
+		<file>
+			<source>src/main/scripts/options</source>
 			<filtered>true</filtered>
 		</file>
 	</files>

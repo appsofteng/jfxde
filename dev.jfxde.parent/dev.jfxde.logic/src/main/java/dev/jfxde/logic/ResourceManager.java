@@ -5,10 +5,9 @@ import static javafx.scene.layout.Region.USE_PREF_SIZE;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -19,11 +18,9 @@ import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
 import dev.jfxde.api.ResourceController;
-import javafx.beans.binding.Bindings;
+import dev.jfxde.jfxext.util.FXResourceBundle;
 import javafx.beans.binding.StringBinding;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -32,39 +29,46 @@ import javafx.scene.layout.Region;
 
 public final class ResourceManager extends Manager implements ResourceController {
 
-    public static final double SMALL_ICON_SIZE = 16;
-    public static final double MEDIUM_ICON_SIZE = 32;
-
     private static final String BUNDLE_DIR_NAME = "bundles";
-    private static final String BUNDLE_FILE_NAME = "messages";
+    private static final String BUNDLE_FILE_NAME = "strings";
+
     private final String bundleDir;
     private final String bundleBaseName;
 
-    private static ObjectProperty<Locale> locale = new SimpleObjectProperty<>();
-    private Class<?> caller;
+    public static final double SMALL_ICON_SIZE = 16;
+    public static final double MEDIUM_ICON_SIZE = 32;
+    private static final String SMALL_ICON_NAME = "small";
+    private static final String MEDIUM_ICON_NAME = "medium";
+    private static final String ICON_DIR_NAME = "icons";
     private Map<String, Image> iconImages = new HashMap<>();
     private String iconAltText = "";
+
+    private static final String CSS_DIR_NAME = "css";
+    private static final String CSS_FILE_NAME = "style";
+
+    private Class<?> caller;
     private ResourceManager parent;
 
     public ResourceManager(Class<?> caller) {
         this(caller, "", null);
     }
 
-    public ResourceManager(Class<?> caller, String iconAltText, ResourceManager parent) {
+    public ResourceManager(Class<?> caller, String iconAltText, ResourceManager parentCaller) {
         this.caller = caller;
         this.iconAltText = iconAltText;
-        this.parent = parent;
+        this.parent = parentCaller;
 
-        this.bundleDir = caller.getPackageName().replace(".", "/") + "/" + BUNDLE_DIR_NAME + "/";
+        String path = caller.getPackageName().replace(".", "/");
+        this.bundleDir = path + "/" + BUNDLE_DIR_NAME + "/";
         this.bundleBaseName = caller.getPackageName() + "." + BUNDLE_DIR_NAME + "." + BUNDLE_FILE_NAME;
     }
 
     public static Locale getLocale() {
-        return locale.get();
+        return FXResourceBundle.getLocale();
     }
 
     public static void setLocale(String locale) {
-        ResourceManager.locale.set(Locale.forLanguageTag(locale));
+        FXResourceBundle.setLocale(locale);
     }
 
     public Set<String> getLocales() {
@@ -96,80 +100,91 @@ public final class ResourceManager extends Manager implements ResourceController
         return locales;
     }
 
-    private String getString(String key) {
-        String value = key;
+    private FXResourceBundle getBundle() {
 
-        try {
+        FXResourceBundle parentBundle = null;
 
-            value = AccessController.doPrivileged((PrivilegedAction<String>) () -> {
-                String res = ResourceBundle
-                        .getBundle(bundleBaseName, getLocale(), caller.getModule())
-                        .getString(key);
-                return res;
-            });
-
-        } catch (MissingResourceException e) {
-            if (parent != null) {
-                value = parent.getString(key);
-            }
+        if (parent != null) {
+            parentBundle = parent.getBundle();
         }
 
-        return value;
-    }
+        FXResourceBundle resourceBundle = parentBundle;
 
-    public String getText(String key, Object... args) {
-        return MessageFormat.format(getString(key), args);
-    }
-
-    public String getTextOrDefault(String key, String defaultValue, Object... args) {
-        String value = defaultValue;
         try {
-            value = getString(key);
+            resourceBundle = FXResourceBundle.getBundle​(bundleBaseName, caller.getModule(), parentBundle);
         } catch (MissingResourceException e) {
 
         }
 
-        return MessageFormat.format(value, args);
+        return resourceBundle;
     }
 
-    public String getTextMaxWidth(String key, String arg, int maxWidth) {
-        arg = arg.replaceAll("[\\n\\r]+", " ");
-        String text = String.format("%." + maxWidth + "s%s", arg, arg.length() > maxWidth ? "..." : "");
-
-        return MessageFormat.format(getString(key), text);
+    @Override
+    public ResourceBundle getStringBundle() {
+        return getBundle().getResourceBundle();
     }
 
-    public StringBinding getTextBinding(String key, Object... args) {
-        return Bindings.createStringBinding(() -> MessageFormat.format(getString(key), args), locale);
+    @Override
+    public String getString(String key, Object... args) {
+        return getBundle().getString​(key, args);
     }
 
-    public StringBinding getTextBinding(ReadOnlyObjectProperty<?> key, Object... args) {
-        return Bindings.createStringBinding(
-                () -> MessageFormat.format(getString(key.getValue().toString().toLowerCase()), args), key, locale);
+    @Override
+    public String getStringOrDefault(String key, String defaultValue, Object... args) {
+        return getBundle().getStringOrDefault(key, defaultValue, args);
     }
 
+    @Override
+    public String getStringMaxWidth(String key, String arg, int maxWidth) {
+        return getBundle().getStringtMaxWidth(key, arg, maxWidth);
+    }
+
+    @Override
+    public StringBinding getStringBinding(String key, Object... args) {
+        return getBundle().getStringBinding(key, args);
+    }
+
+    @Override
+    public StringBinding getStringBinding(ReadOnlyObjectProperty<?> key, Object... args) {
+        return getBundle().getStringBinding(key, args);
+    }
+
+    @Override
+    public Map<String, String> getStrings(Set<String> keys) {
+        return keys.stream().collect(Collectors.toMap(k -> k, k -> getString(k)));
+    }
+
+    @Override
     public String getCss(String name) {
-    	URL url = caller.getResource("css/" + name + ".css");
+        String css = null;
+        URL url = caller.getResource(CSS_DIR_NAME + "/" + name + ".css");
 
-    	String result = null;
+        if (url == null) {
+            if (parent != null) {
+                css = parent.getCss(name);
+            }
+        } else {
+            css = url.toExternalForm();
+        }
+        return css;
+    }
 
-    	if (url != null) {
-    		result = url.toExternalForm();
-    	} else {
-    		result = parent.getCss(name);
-    	}
+    public String getCss() {
+        return getCss(CSS_FILE_NAME);
+    }
 
-        return result;
+    public List<String> getCss(String[] names) {
+        return Arrays.stream(names).map(n -> getCss(n)).filter(s -> s != null).collect(Collectors.toList());
     }
 
     public Region getMediumIcon(String style) {
 
-        return getIcon("medium", iconAltText, MEDIUM_ICON_SIZE, style);
+        return getIcon(MEDIUM_ICON_NAME, iconAltText, MEDIUM_ICON_SIZE, style);
     }
 
     public Region getSmallIcon(String style) {
 
-        return getIcon("small", iconAltText, SMALL_ICON_SIZE, style);
+        return getIcon(SMALL_ICON_NAME, iconAltText, SMALL_ICON_SIZE, style);
     }
 
     private Region getIcon(String name, String iconAltText, double size, String style) {
@@ -198,7 +213,7 @@ public final class ResourceManager extends Manager implements ResourceController
         Image image = null;
 
         if (!iconImages.containsKey(name)) {
-            String imgPath = "icons/" + name + ".png";
+            String imgPath = ICON_DIR_NAME + "/" + name + ".png";
             InputStream is = caller.getResourceAsStream(imgPath);
 
             if (is != null) {
