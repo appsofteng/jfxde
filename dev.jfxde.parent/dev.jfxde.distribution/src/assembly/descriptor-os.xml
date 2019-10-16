@@ -13,17 +13,6 @@
 		<componentDescriptor>src/assembly/descriptor.xml</componentDescriptor>
 	</componentDescriptors>
 
-	<dependencySets>
-		<dependencySet>
-			<outputDirectory>lib/mp</outputDirectory>
-			<unpack>false</unpack>
-			<scope>runtime</scope>
-			<includes>
-				<include>*:*:${javafx.platform}</include>
-			</includes>
-		</dependencySet>
-	</dependencySets>
-
 	<files>
 		<file>
 			<source>src/main/scripts/start.${scriptExtension}</source>
