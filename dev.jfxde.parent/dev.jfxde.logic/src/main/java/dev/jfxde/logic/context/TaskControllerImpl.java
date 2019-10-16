@@ -2,7 +2,7 @@ package dev.jfxde.logic.context;
 
 import dev.jfxde.api.TRunnable;
 import dev.jfxde.api.TaskController;
-import dev.jfxde.jfxext.util.CTask;
+import dev.jfxde.jfxext.concurrent.CTask;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.AppDescriptor;
 import javafx.concurrent.Task;

@@ -20,9 +20,11 @@ module dev.jfxde.jfxext {
 
     exports dev.jfxde.jfxext.animation to dev.jfxde.ui;
     exports dev.jfxde.jfxext.control to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
+    exports dev.jfxde.jfxext.control.cell to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
     exports dev.jfxde.jfxext.richtextfx.features to dev.jfxde.sysapps;
     exports dev.jfxde.jfxext.richtextfx to dev.jfxde.sysapps, dev.jfxde.logic;
     exports dev.jfxde.jfxext.util to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
+    exports dev.jfxde.jfxext.concurrent to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
     exports dev.jfxde.jfxext.util.prefs to dev.jfxde.logic;
 
     opens dev.jfxde.jfxext.util.prefs to java.prefs;

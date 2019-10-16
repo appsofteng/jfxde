@@ -15,7 +15,7 @@ import dev.jfxde.data.dao.ShortcutDao;
 import dev.jfxde.data.entity.AppProviderEntity;
 import dev.jfxde.data.entity.DesktopEntity;
 import dev.jfxde.data.entity.ShortcutEntity;
-import dev.jfxde.jfxext.util.CTask;
+import dev.jfxde.jfxext.concurrent.CTask;
 import dev.jfxde.logic.data.AppProviderDescriptor;
 import dev.jfxde.logic.data.DataConvertor;
 import dev.jfxde.logic.data.Desktop;

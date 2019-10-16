@@ -1,4 +1,4 @@
-package dev.jfxde.jfxext.control;
+package dev.jfxde.jfxext.control.cell;
 
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;

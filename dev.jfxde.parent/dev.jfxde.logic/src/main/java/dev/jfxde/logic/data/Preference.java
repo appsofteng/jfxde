@@ -5,7 +5,7 @@ import java.util.prefs.Preferences;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class Preference implements Treeable {
+public class Preference {
 
     private StringProperty key;
     private StringProperty value;
@@ -71,7 +71,6 @@ public class Preference implements Treeable {
         return value;
     }
 
-    @Override
     public boolean isLeaf() {
         return leaf;
     }

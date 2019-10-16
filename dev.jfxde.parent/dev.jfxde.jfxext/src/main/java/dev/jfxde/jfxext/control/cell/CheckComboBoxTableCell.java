@@ -1,4 +1,4 @@
-package dev.jfxde.jfxext.control;
+package dev.jfxde.jfxext.control.cell;
 
 import java.util.Collection;
 

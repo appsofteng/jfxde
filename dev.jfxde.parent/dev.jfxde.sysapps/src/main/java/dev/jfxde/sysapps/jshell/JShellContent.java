@@ -7,6 +7,7 @@ import java.util.List;
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jfxde.api.AppContext;
+import dev.jfxde.jfxext.concurrent.CTask;
 import dev.jfxde.jfxext.control.SplitConsoleView;
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import dev.jfxde.jfxext.richtextfx.features.AreaFeatures;
@@ -17,7 +18,6 @@ import dev.jfxde.jfxext.richtextfx.features.HighlightBlockDelimiterFeature;
 import dev.jfxde.jfxext.richtextfx.features.IndentationFeature;
 import dev.jfxde.jfxext.richtextfx.features.Lexer;
 import dev.jfxde.jfxext.richtextfx.features.LexerFeature;
-import dev.jfxde.jfxext.util.CTask;
 import dev.jfxde.logic.JsonUtils;
 import javafx.collections.ListChangeListener.Change;
 import javafx.scene.layout.BorderPane;
