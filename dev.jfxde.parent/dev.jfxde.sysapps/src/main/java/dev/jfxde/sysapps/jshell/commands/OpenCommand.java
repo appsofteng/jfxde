@@ -41,7 +41,7 @@ public class OpenCommand extends BaseCommand {
                 if (file != null) {
                     try {
                         String spippets = Files.readString(file.toPath());
-                        commandProcessor.getSession().processAsync(spippets);
+                        commandProcessor.getSession().processBatch(spippets);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

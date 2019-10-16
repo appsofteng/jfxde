@@ -8,10 +8,10 @@ import jdk.jshell.Snippet;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
-@Command(name = RerunCommand.RERUN_NAME)
+@Command(name = RerunCommand.RERUN_COMMAND)
 public class RerunCommand extends BaseCommand {
 
-    static final String RERUN_NAME = "/rerun";
+    static final String RERUN_COMMAND = "/rerun";
 
     @Parameters(arity = "1..*", paramLabel = "{name|id|startID-endID}[ {name|id|startID-endID}...]")
     private ArrayList<String> parameters;
@@ -26,7 +26,7 @@ public class RerunCommand extends BaseCommand {
         if (args[0].matches("/(\\d+|\\d+-\\d+)( (\\d+|\\d+-\\d+|\\w+))*")) {
             newArgs = new String[args.length + 1];
             System.arraycopy(args, 0, newArgs, 1, args.length);
-            newArgs[0] = RERUN_NAME;
+            newArgs[0] = RERUN_COMMAND;
             newArgs[1] = args[0].substring(1);
         }
 

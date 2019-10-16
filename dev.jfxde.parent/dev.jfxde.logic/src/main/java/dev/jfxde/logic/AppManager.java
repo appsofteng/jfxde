@@ -285,12 +285,13 @@ public final class AppManager extends Manager {
 
         CTask<Void> task = CTask.create(() -> appDescriptor.getApp().stop())
                 .onFinished(t -> {
-                    appDescriptor.getWindow().remove();
-                    appDescriptor.getAppProviderDescriptor().remove(appDescriptor);
+                    if (appDescriptors.remove(appDescriptor)) {
+                        appDescriptorMap.remove(appDescriptor.getApp());
+                        appDescriptor.getWindow().remove();
+                        appDescriptor.getAppProviderDescriptor().remove(appDescriptor);
 
-                    appDescriptorMap.remove(appDescriptor.getApp());
-                    appDescriptors.remove(appDescriptor);
-                    Sys.tm().removeTasks(appDescriptor);
+                        Sys.tm().removeTasks(appDescriptor);
+                    }
                 });
 
         Sys.tm().execute(task);

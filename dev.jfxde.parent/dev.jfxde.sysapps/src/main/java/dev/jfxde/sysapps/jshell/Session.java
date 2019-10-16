@@ -25,6 +25,7 @@ import jdk.jshell.SnippetEvent;
 
 public class Session {
 
+    public static final String PRIVILEDGED_TASK_QUEUE = "priviledged-task-queue";
     private static final String ENV_FILE_NAME = "env.json";
     private static final String SETTINGS_FILE_NAME = "sessings.json";
 
@@ -134,14 +135,13 @@ public class Session {
         reload(Mode.SILENT);
     }
 
-
     public Settings loadSettings() {
         return JsonUtils.fromJson(context.fc().getAppDataDir().resolve(SETTINGS_FILE_NAME), Settings.class, new Settings());
     }
 
     public void setSettings(Settings settings) {
         this.settings = settings;
-        JsonUtils.toJson(settings, context.fc().getAppDataDir().resolve(SETTINGS_FILE_NAME));
+        context.tc().executeSequentially(PRIVILEDGED_TASK_QUEUE, () -> JsonUtils.toJson(settings, context.fc().getAppDataDir().resolve(SETTINGS_FILE_NAME)));
     }
 
     private void setListener() {
@@ -228,6 +228,10 @@ public class Session {
         }
     }
 
+    public void stop() {
+        jshell.stop();
+    }
+
     void close() {
 
         if (jshell != null) {
@@ -272,15 +276,13 @@ public class Session {
         }
     }
 
-    public void processAsync(String input) {
-        context.tc().executeSequentially(() -> {
-            feedback.setCached(true);
-            process(input);
-            feedback.flush();
-        });
+    public void processBatch(String input) {
+        feedback.setCached(true);
+        process(input);
+        feedback.flush();
     }
 
-    public void process(String input) {
+    private void process(String input) {
 
         if (input.isBlank()) {
             return;

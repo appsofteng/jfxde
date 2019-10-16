@@ -27,7 +27,8 @@ public class SnippetProcessor extends Processor {
 
     @Override
     public void process(String input) {
-        getSnippetEvents(input);
+        getSession().getContext().tc().executeSequentially(() ->  getSnippetEvents(input));
+
     }
 
     public List<SnippetEvent> getSnippetEvents(String input) {

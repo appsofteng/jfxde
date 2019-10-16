@@ -58,7 +58,7 @@ public class JShellContent extends BorderPane {
                 if (c.wasAdded()) {
                     List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
                     for (TextStyleSpans span : added) {
-                        session.processAsync(span.getText());
+                        session.processBatch(span.getText());
                     }
                 }
             }
@@ -70,7 +70,7 @@ public class JShellContent extends BorderPane {
 
                 if (c.wasAdded() || c.wasRemoved()) {
                     List<? extends String> history = new ArrayList<>(consoleView.getHistory());
-                    context.tc().executeSequentially(CTask
+                    context.tc().executeSequentially(Session.PRIVILEDGED_TASK_QUEUE, CTask
                             .create(() -> JsonUtils.toJson(history, context.fc().getAppDataDir().resolve(HISTORY_FILE_NAME))));
                 }
             }
@@ -98,13 +98,13 @@ public class JShellContent extends BorderPane {
         CTask<Collection<CompletionItem>> task = CTask.create(() -> completion.getCompletionItems(behavior.getArea()))
                 .onSucceeded(behavior::showCompletionItems);
 
-        context.tc().executeSequentially(task);
+        context.tc().executeSequentially(Session.PRIVILEDGED_TASK_QUEUE, task);
     }
 
     public void stop() {
         var task = CTask.create(() -> session.close())
                 .onFinished(t -> consoleView.dispose());
 
-        context.tc().executeSequentially(task);
+        context.tc().executeSequentially(Session.PRIVILEDGED_TASK_QUEUE, task);
     }
 }

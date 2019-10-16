@@ -30,6 +30,7 @@ import dev.jfxde.sysapps.jshell.commands.RerunCommand;
 import dev.jfxde.sysapps.jshell.commands.ResetCommand;
 import dev.jfxde.sysapps.jshell.commands.SaveCommand;
 import dev.jfxde.sysapps.jshell.commands.SetCommand;
+import dev.jfxde.sysapps.jshell.commands.StopCommand;
 import dev.jfxde.sysapps.jshell.commands.TypeCommand;
 import dev.jfxde.sysapps.jshell.commands.VarCommand;
 import jdk.jshell.Snippet;
@@ -37,6 +38,7 @@ import picocli.CommandLine;
 
 public class CommandProcessor extends Processor {
 
+    private static final List<String> PRIVILEGED_COMMANDS = List.of(ExitCommand.EXIT_COMMAND, StopCommand.STOP_COMMAND);
     static final String COMMAND_PATTERN = "^/[\\w!?\\-]*( .*)*$";
     private CommandLine commandLine;
     private PrintWriter out;
@@ -68,6 +70,7 @@ public class CommandProcessor extends Processor {
                     .addSubcommand(new CachingCommandLine(new ResetCommand(this)))
                     .addSubcommand(new CachingCommandLine(new SaveCommand(this)))
                     .addSubcommand(new CachingCommandLine(new SetCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new StopCommand(this)))
                     .addSubcommand(new CachingCommandLine(new TypeCommand(this)))
                     .addSubcommand(new CachingCommandLine(new VarCommand(this)))
                     .setOut(out)
@@ -149,7 +152,13 @@ public class CommandProcessor extends Processor {
             args = RerunCommand.setIfMatches(args);
         }
 
-        getCommandLine().execute(args);
+        String[] arguments = args;
+
+        if (PRIVILEGED_COMMANDS.stream().anyMatch(c -> input.startsWith(c))) {
+            getSession().getContext().tc().executeSequentially(Session.PRIVILEDGED_TASK_QUEUE, () -> getCommandLine().execute(arguments));
+        } else {
+            getSession().getContext().tc().executeSequentially(() -> getCommandLine().execute(arguments));
+        }
     }
 
     static boolean isCommand(String input) {

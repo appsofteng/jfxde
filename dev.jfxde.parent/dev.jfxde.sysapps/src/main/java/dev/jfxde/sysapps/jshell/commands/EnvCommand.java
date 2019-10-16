@@ -10,6 +10,7 @@ import dev.jfxde.logic.JsonUtils;
 import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.Env;
 import dev.jfxde.sysapps.jshell.EnvBox;
+import dev.jfxde.sysapps.jshell.Session;
 import dev.jfxde.ui.InternalDialog;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -68,14 +69,14 @@ public class EnvCommand extends BaseCommand {
     }
 
     private void resetEnvs(Env env, ObservableList<Env> envs) {
-        commandProcessor.getSession().getContext().tc().executeSequentially(() -> {
+        commandProcessor.getSession().getContext().tc().executeSequentially(Session.PRIVILEDGED_TASK_QUEUE, () -> {
             commandProcessor.getSession().resetEnv(env);
             saveEnvs(env, envs);
         });
     }
 
     private void reloadEnvs(Env env, ObservableList<Env> envs) {
-        commandProcessor.getSession().getContext().tc().executeSequentially(() -> {
+        commandProcessor.getSession().getContext().tc().executeSequentially(Session.PRIVILEDGED_TASK_QUEUE, () -> {
             commandProcessor.getSession().reloadEnv(env);
             saveEnvs(env, envs);
         });
