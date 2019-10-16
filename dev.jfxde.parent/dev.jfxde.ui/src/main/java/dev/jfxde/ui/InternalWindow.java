@@ -183,7 +183,7 @@ public class InternalWindow extends InternalFrame {
         closeAll.setOnAction(e -> window.getDesktop().closeAll());
 
         ContextMenu titleContextMenu = new ContextMenu(minimizeOthers, minimizeAll, closeOthers, closeAll);
-        title.setContextMenu(titleContextMenu);
+        titleLabel.setContextMenu(titleContextMenu);
     }
 
     private void setMoveable() {
@@ -230,7 +230,7 @@ public class InternalWindow extends InternalFrame {
             }
         });
 
-        title.setOnMouseClicked(e -> {
+        titleLabel.setOnMouseClicked(e -> {
 
             if (modalDialogs.isEmpty()) {
                 if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {

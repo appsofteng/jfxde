@@ -34,7 +34,8 @@ public class EnvCommand extends BaseCommand {
 
         Platform.runLater(() -> {
 
-            InternalDialog d = InternalDialog.create(commandProcessor.getSession().getContent(), true);
+            InternalDialog dialog = InternalDialog.create(commandProcessor.getSession().getContent(), true);
+            dialog.setTitle(commandProcessor.getSession().getContext().rc().getString("environment"));
             EnvBox envBox = new EnvBox(commandProcessor.getSession().getContext(), getEnvs());
             DialogPane dialogPane = new DialogPane();
             dialogPane.setContent(envBox);
@@ -43,11 +44,11 @@ public class EnvCommand extends BaseCommand {
                   ButtonData.CANCEL_CLOSE);
             dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
             final Button btOk = (Button) dialogPane.lookupButton(okButtonType);
-            btOk.setOnAction(e -> {d.close(); saveEnvs(envBox.getEnv(), envBox.getEnvs());});
+            btOk.setOnAction(e -> {dialog.close(); saveEnvs(envBox.getEnv(), envBox.getEnvs());});
             final Button cancel = (Button) dialogPane.lookupButton(cancelButtonType);
-            cancel.setOnAction(e -> d.close());
+            cancel.setOnAction(e -> dialog.close());
 
-            d.show(dialogPane);
+            dialog.show(dialogPane);
 
         });
     }

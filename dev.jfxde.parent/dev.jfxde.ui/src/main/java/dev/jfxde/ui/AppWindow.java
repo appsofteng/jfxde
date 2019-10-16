@@ -16,8 +16,8 @@ public class AppWindow extends InternalWindow {
         super(window, pane);
         this.appDescriptor = window.getAppDescriptor();
 
-        title.textProperty().bind(appDescriptor.displayProperty());
-        title.setGraphic(appDescriptor.getAppProviderDescriptor().getSmallIcon());
+        titleLabel.textProperty().bind(appDescriptor.displayProperty());
+        titleLabel.setGraphic(appDescriptor.getAppProviderDescriptor().getSmallIcon());
         newWindow.setDisable(appDescriptor.isSingleton());
 
         setCss(appDescriptor.getAppProviderDescriptor().getCss());

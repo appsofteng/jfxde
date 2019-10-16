@@ -29,7 +29,7 @@ public abstract class InternalFrame extends Region {
     protected ObservableList<InternalDialog> subdialogs = FXCollections.observableArrayList();
     protected WindowPane windowPane;
     protected InternalFrame parent;
-    protected Label title = new Label();
+    protected Label titleLabel = new Label();
     protected HBox buttonBox = new HBox();
     protected BorderPane titleBar = new BorderPane();
     protected BorderPane payload = new BorderPane();
@@ -71,12 +71,12 @@ public abstract class InternalFrame extends Region {
     }
 
     protected void buildLayout(double width, double height) {
-        title.setPrefWidth(Double.MAX_VALUE);
+        titleLabel.setPrefWidth(Double.MAX_VALUE);
 
         buttonBox.setMinWidth(USE_PREF_SIZE);
         buttonBox.setMinHeight(USE_PREF_SIZE);
 
-        titleBar.setLeft(title);
+        titleBar.setLeft(titleLabel);
         titleBar.setRight(buttonBox);
         titleBar.minWidthProperty().bind(buttonBox.widthProperty().add(10));
 
@@ -109,6 +109,10 @@ public abstract class InternalFrame extends Region {
         setEffect(shadow);
         setCache(true);
         setCacheHint(CacheHint.SPEED);
+    }
+
+    public void setTitle(String value) {
+        titleLabel.setText(value);
     }
 
     WindowPane getWindowPane() {

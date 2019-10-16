@@ -21,7 +21,8 @@ public class SetCommand extends BaseCommand {
     public void run() {
         Platform.runLater(() -> {
 
-            InternalDialog d = InternalDialog.create(commandProcessor.getSession().getContent(), true);
+            InternalDialog dialog = InternalDialog.create(commandProcessor.getSession().getContent(), true);
+            dialog.setTitle(commandProcessor.getSession().getContext().rc().getString("settings"));
             SetBox setBox = new SetBox(commandProcessor.getSession().getContext(), commandProcessor.getSession().loadSettings());
             DialogPane dialogPane = new DialogPane();
             dialogPane.setContent(setBox);
@@ -31,13 +32,13 @@ public class SetCommand extends BaseCommand {
             dialogPane.getButtonTypes().addAll(okButtonType, cancelButtonType);
             final Button btOk = (Button) dialogPane.lookupButton(okButtonType);
             btOk.setOnAction(e -> {
-                d.close();
+                dialog.close();
                 commandProcessor.getSession().setSettings(setBox.getSettings());
             });
             final Button cancel = (Button) dialogPane.lookupButton(cancelButtonType);
-            cancel.setOnAction(e -> d.close());
+            cancel.setOnAction(e -> dialog.close());
 
-            d.show(dialogPane);
+            dialog.show(dialogPane);
         });
     }
 }
