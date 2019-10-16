@@ -24,7 +24,8 @@ public class SetBox extends VBox {
     private Settings settings;
     private CheckBox defaultCheck;
     private CheckBox printingCheck;
-    private ListView<String> filesView;
+    private CheckBox scriptsCheck;
+    private ListView<String> scriptsView;
 
     public SetBox(AppContext context, Settings settings) {
         this.context = context;
@@ -45,36 +46,42 @@ public class SetBox extends VBox {
         printingCheck.getTooltip().setText(context.rc().getString("/open.printing"));
         printingCheck.setSelected(settings.isLoadPrinting());
 
-        Label filesLabel = new Label(context.rc().getString("loadFiles"));
-        filesLabel.setPadding(new Insets(5,0,0,0));
-        filesView = new ListView<>(FXCollections.observableList(settings.getLoadFiles()));
-        filesView.setPrefSize(500, 300);
-        filesView.setMinHeight(300);
-        filesView.setMaxHeight(300);
 
-        getChildren().addAll(defaultCheck, printingCheck, filesLabel, filesView);
+        scriptsCheck = new CheckBox(context.rc().getString("loadScripts"));
+        scriptsCheck.setTooltip(new Tooltip());
+        scriptsCheck.getTooltip().setText(context.rc().getString("/open.loadScripts"));
+        scriptsCheck.setSelected(settings.isLoadScripts());
+        scriptsCheck.setPadding(new Insets(5,0,0,0));
+
+        scriptsView = new ListView<>(FXCollections.observableList(settings.getStartupScripts()));
+        scriptsView.setPrefSize(500, 300);
+        scriptsView.setMinHeight(300);
+        scriptsView.setMaxHeight(300);
+
+        getChildren().addAll(defaultCheck, printingCheck, scriptsCheck, scriptsView);
     }
 
     private void setBehavior() {
         defaultCheck.setOnAction(e -> settings.setLoadDefault(defaultCheck.isSelected()));
         printingCheck.setOnAction(e -> settings.setLoadPrinting(printingCheck.isSelected()));
+        scriptsCheck.setOnAction(e -> settings.setLoadScripts(scriptsCheck.isSelected()));
     }
 
     private void setContextMenu() {
-        MenuItem addFiles = new MenuItem(context.rc().getString("addFiles"));
+        MenuItem addFiles = new MenuItem(context.rc().getString("addScripts"));
         addFiles.setOnAction(e -> {
-            filesView.getItems().addAll(getFiles(settings.getLoadFiles()));
+            scriptsView.getItems().addAll(getFiles(settings.getStartupScripts()));
         });
 
 
         MenuItem removeSelection = new MenuItem(context.rc().getString("removeSelection"));
-        removeSelection.disableProperty().bind(filesView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
+        removeSelection.disableProperty().bind(scriptsView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
         removeSelection.setOnAction(e -> {
-            filesView.getItems().removeAll(filesView.getSelectionModel().getSelectedItems());
+            scriptsView.getItems().removeAll(scriptsView.getSelectionModel().getSelectedItems());
         });
 
         ContextMenu menu = new ContextMenu(addFiles, removeSelection);
-        filesView.setContextMenu(menu);
+        scriptsView.setContextMenu(menu);
     }
 
     private List<String> getFiles(List<String> current) {

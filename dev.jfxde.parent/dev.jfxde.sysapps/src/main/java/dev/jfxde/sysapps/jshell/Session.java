@@ -163,7 +163,10 @@ public class Session {
             loadPrinting();
         }
 
-        loadFiles();
+        if (settings.isLoadScripts()) {
+            loadStartupScripts();
+        }
+
         startSnippetMaxIndex = idGenerator.getMaxId();
         feedback.setMode(Mode.NORMAL);
     }
@@ -236,9 +239,9 @@ public class Session {
         }
     }
 
-    private void loadFiles() {
+    private void loadStartupScripts() {
 
-        for (String file : settings.getLoadFiles()) {
+        for (String file : settings.getStartupScripts()) {
             Path path = Paths.get(file);
             if (Files.exists(path)) {
                 try {
