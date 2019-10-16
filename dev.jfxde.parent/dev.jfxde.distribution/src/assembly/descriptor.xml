@@ -38,6 +38,14 @@
 				<include>com.github.javaparser:javaparser-symbol-solver-model:*</include>
 			</includes>
 		</dependencySet>
+		<dependencySet>
+			<outputDirectory>lib/mp</outputDirectory>
+			<unpack>false</unpack>
+			<scope>runtime</scope>
+			<includes>
+				<include>*:*:${javafx.platform}</include>
+			</includes>
+		</dependencySet>
 	</dependencySets>
 
 	<moduleSets>
