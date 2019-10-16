@@ -16,4 +16,9 @@ public class AppControllerImpl implements AppController {
 	public void start(String uri) {
 		Sys.am().start(appDescriptor, uri);
 	}
+
+	@Override
+	public void stop() {
+	    Sys.am().stop(appDescriptor);
+	}
 }

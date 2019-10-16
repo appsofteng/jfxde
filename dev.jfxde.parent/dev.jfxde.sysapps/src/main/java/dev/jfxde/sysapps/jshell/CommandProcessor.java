@@ -18,6 +18,7 @@ import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.sysapps.jshell.commands.Commands;
 import dev.jfxde.sysapps.jshell.commands.DropCommand;
 import dev.jfxde.sysapps.jshell.commands.EnvCommand;
+import dev.jfxde.sysapps.jshell.commands.ExitCommand;
 import dev.jfxde.sysapps.jshell.commands.HelpCommand;
 import dev.jfxde.sysapps.jshell.commands.HistoryCommand;
 import dev.jfxde.sysapps.jshell.commands.ImportCommand;
@@ -55,6 +56,7 @@ public class CommandProcessor extends Processor {
             CommandLine commandLine = new CachingCommandLine(new Commands())
                     .addSubcommand(new CachingCommandLine(dropCommand = new DropCommand(this)))
                     .addSubcommand(new CachingCommandLine(new EnvCommand(this)))
+                    .addSubcommand(new CachingCommandLine(new ExitCommand(this)))
                     .addSubcommand(new CachingCommandLine(new HelpCommand(this)))
                     .addSubcommand(new CachingCommandLine(new HistoryCommand(this)))
                     .addSubcommand(new CachingCommandLine(new ImportCommand(this)))

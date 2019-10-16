@@ -19,7 +19,6 @@ import dev.jfxde.jfxext.richtextfx.features.Lexer;
 import dev.jfxde.jfxext.richtextfx.features.LexerFeature;
 import dev.jfxde.jfxext.util.CTask;
 import dev.jfxde.logic.JsonUtils;
-import javafx.application.Platform;
 import javafx.collections.ListChangeListener.Change;
 import javafx.scene.layout.BorderPane;
 
@@ -103,7 +102,9 @@ public class JShellContent extends BorderPane {
     }
 
     public void stop() {
-        session.close();
-        Platform.runLater(() -> consoleView.dispose());
+        var task = CTask.create(() -> session.close())
+                .onFinished(t -> consoleView.dispose());
+
+        context.tc().executeSequentially(task);
     }
 }
