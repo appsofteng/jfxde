@@ -37,7 +37,6 @@
 							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>
 								<descriptor>src/assembly/descriptor-os.xml</descriptor>
-								-
 								<descriptor>src/assembly/descriptor-os-image.xml</descriptor>
 							</descriptors>
 						</configuration>

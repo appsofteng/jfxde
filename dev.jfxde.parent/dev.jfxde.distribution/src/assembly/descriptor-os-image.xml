@@ -8,6 +8,10 @@
 		<format>zip</format>
 	</formats>
 	<includeBaseDirectory>true</includeBaseDirectory>
+	<baseDirectory>${sysName}/${distName}</baseDirectory>
+	<componentDescriptors>
+		<componentDescriptor>src/assembly/descriptor.xml</componentDescriptor>
+	</componentDescriptors>
 
 	<fileSets>
 		<fileSet>
