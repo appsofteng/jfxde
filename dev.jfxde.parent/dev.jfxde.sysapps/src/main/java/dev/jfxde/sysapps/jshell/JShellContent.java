@@ -37,6 +37,7 @@ public class JShellContent extends BorderPane {
         setCenter(consoleView);
         session = new Session(this);
         completion = new Completion(session);
+        getProperties().put(getClass(), consoleView.getInputArea());
         setBehavior();
     }
 

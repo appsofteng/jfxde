@@ -117,7 +117,8 @@ public abstract class InternalFrame extends Region {
 
     void setContent(Node node) {
         contentRegion.setContent(node);
-        focusOwner = node;
+        Object owner = node.getProperties().get(node.getClass());
+        focusOwner = owner != null ? (Node) owner : node;
     }
 
     void removeContent() {

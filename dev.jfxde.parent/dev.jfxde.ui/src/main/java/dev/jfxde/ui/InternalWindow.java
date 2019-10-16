@@ -281,6 +281,7 @@ public class InternalWindow extends InternalFrame {
     void activate() {
         active.set(true);
         deactivateDialogs();
+        requestFocus();
         focusOwner.requestFocus();
     }
 
