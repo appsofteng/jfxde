@@ -13,11 +13,15 @@
 		<componentDescriptor>src/assembly/descriptor.xml</componentDescriptor>
 	</componentDescriptors>
 
-	<files>
-		<file>
-			<source>src/main/scripts/start.${scriptExtension}</source>
+	<fileSets>
+		<fileSet>
+			<directory>src/main/scripts</directory>
+			<outputDirectory>.</outputDirectory>
+			<includes>
+				<include>**/start*.${scriptExtension}</include>
+			</includes>
 			<filtered>true</filtered>
 			<fileMode>0711</fileMode>
-		</file>
-	</files>
+		</fileSet>
+	</fileSets>
 </assembly>
