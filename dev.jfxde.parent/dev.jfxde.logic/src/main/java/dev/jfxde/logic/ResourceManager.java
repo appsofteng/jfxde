@@ -21,6 +21,7 @@ import dev.jfxde.api.ResourceController;
 import dev.jfxde.jfxext.util.FXResourceBundle;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -137,6 +138,11 @@ public final class ResourceManager extends Manager implements ResourceController
     @Override
     public String getStringMaxWidth(String key, String arg, int maxWidth) {
         return getBundle().getStringtMaxWidth(key, arg, maxWidth);
+    }
+
+    @Override
+    public void put(StringProperty property, String key, Object... args) {
+        getBundle().put(property, key, args);
     }
 
     @Override

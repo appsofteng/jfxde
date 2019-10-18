@@ -3,10 +3,12 @@ package dev.jfxde.jfxext.util;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,6 +18,7 @@ import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.StringProperty;
 
 public class FXResourceBundle {
     private static ObjectProperty<Locale> locale = new SimpleObjectProperty<>();
@@ -26,9 +29,11 @@ public class FXResourceBundle {
     private Module module;
     private FXResourceBundle parent;
 
-    private static Map<String,FXResourceBundle> cache = new ConcurrentHashMap<>();
+    private static Map<String, FXResourceBundle> cache = new ConcurrentHashMap<>();
 
     private static final Logger LOGGER = Logger.getLogger(FXResourceBundle.class.getName());
+
+    private Map<StringProperty, List<Object>> stringProperties = new WeakHashMap<>();
 
     private FXResourceBundle(String baseName, Module module, FXResourceBundle parent) {
         this.baseName = baseName;
@@ -36,6 +41,15 @@ public class FXResourceBundle {
         this.parent = parent;
 
         cache.put(baseName, this);
+
+        locale.addListener((v, o, n) -> {
+            if (n != null) {
+                stringProperties.keySet().forEach(k -> {
+                    var s = stringProperties.get(k);
+                    k.set(getString​(s.get(0).toString(), (Object[])s.get(1)));
+                });
+            }
+        });
     }
 
     public static Locale getLocale() {
@@ -61,7 +75,7 @@ public class FXResourceBundle {
 
     public static FXResourceBundle getBundle​(String baseName, Module module, FXResourceBundle parent) {
 
-        FXResourceBundle bundle = cache.merge(baseName, new FXResourceBundle(baseName, module, parent), (o,n) -> o);
+        FXResourceBundle bundle = cache.merge(baseName, new FXResourceBundle(baseName, module, parent), (o, n) -> o);
 
         return bundle;
     }
@@ -101,6 +115,11 @@ public class FXResourceBundle {
     public String getString​(String key, Object... args) {
 
         return getStringOrDefault(key, key, args);
+    }
+
+    public void put(StringProperty property, String key, Object... args) {
+        property.set(getString​(key, args));
+        stringProperties.put(property, List.of(key, args));
     }
 
     public StringBinding getStringBinding(String key, Object... args) {
