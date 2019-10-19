@@ -18,6 +18,7 @@ public class ContentRegion extends Region {
 
     public void setContent(Node content) {
         this.content = content;
+        getChildren().remove(content);
         getChildren().add(content);
     }
 

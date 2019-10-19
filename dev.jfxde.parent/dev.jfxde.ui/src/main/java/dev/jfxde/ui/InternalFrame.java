@@ -29,6 +29,7 @@ public abstract class InternalFrame extends Region {
     protected ObservableList<InternalDialog> subdialogs = FXCollections.observableArrayList();
     protected WindowPane windowPane;
     protected InternalFrame parent;
+    protected InternalWindow window;
     protected Label titleLabel = new Label();
     protected HBox buttonBox = new HBox();
     protected BorderPane titleBar = new BorderPane();

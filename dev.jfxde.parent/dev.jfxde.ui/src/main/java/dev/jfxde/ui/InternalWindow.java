@@ -29,7 +29,7 @@ public class InternalWindow extends InternalFrame {
     private static final PseudoClass FULL_PSEUDO_CLASS = PseudoClass.getPseudoClass("full");
     private static final Duration MINIMALIZATION_DURATION = Duration.millis(300);
 
-    private Window window;
+    private Window windowModel;
 
     protected Button newWindow = new Button(Fonts.Unicode.TWO_JOINED_SQUARES);
     private Button tile = new Button(Fonts.FontAwesome.TH_LARGE);
@@ -72,9 +72,10 @@ public class InternalWindow extends InternalFrame {
         }
     };
 
-    public InternalWindow(Window window, WindowPane windowPane) {
+    public InternalWindow(Window windowModel, WindowPane windowPane) {
         super(windowPane);
-        this.window = window;
+        this.windowModel = windowModel;
+        this.window = this;
 
         addButtons();
         buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
@@ -91,7 +92,6 @@ public class InternalWindow extends InternalFrame {
 
     void add(InternalDialog dialog) {
         dialogs.add(dialog);
-        subdialogs.add(dialog);
         if (dialog.isModal()) {
             modalDialogs.add(dialog);
         }
@@ -99,7 +99,6 @@ public class InternalWindow extends InternalFrame {
 
     void remove(InternalDialog dialog) {
         dialogs.remove(dialog);
-        subdialogs.remove(dialog);
         modalDialogs.remove(dialog);
     }
 
@@ -113,16 +112,16 @@ public class InternalWindow extends InternalFrame {
 
     @Override
     public boolean isResizable() {
-        return window.isRestored();
+        return windowModel.isRestored();
     }
 
     public Window getWindow() {
-        return window;
+        return windowModel;
     }
 
     protected void buildLayout(double width, double height) {
         super.buildLayout(width, height);
-        titleBar.visibleProperty().bind(window.stateProperty().isNotEqualTo(State.FULL));
+        titleBar.visibleProperty().bind(windowModel.stateProperty().isNotEqualTo(State.FULL));
         titleBar.managedProperty().bind(titleBar.visibleProperty());
     }
 
@@ -146,11 +145,11 @@ public class InternalWindow extends InternalFrame {
         maximize.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         maximize.setFocusTraversable(false);
         maximize.textProperty()
-                .bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
+                .bind(Bindings.when(windowModel.stateProperty().isEqualTo(State.MAXIMIZED))
                         .then(Fonts.Unicode.UPPER_RIGHT_DROP_SHADOWED_WHITE_SQUARE)
                         .otherwise(Fonts.Unicode.WHITE_LARGE_SQUARE));
         maximize.setTooltip(new Tooltip());
-        maximize.getTooltip().textProperty().bind(Bindings.when(window.stateProperty().isEqualTo(State.MAXIMIZED))
+        maximize.getTooltip().textProperty().bind(Bindings.when(windowModel.stateProperty().isEqualTo(State.MAXIMIZED))
                 .then(Sys.rm().getStringBinding("restore")).otherwise(Sys.rm().getStringBinding("maximize")));
 
         full.getStyleClass().addAll("jd-frame-button", "jd-octicons");
@@ -165,22 +164,22 @@ public class InternalWindow extends InternalFrame {
         MenuItem minimizeOthers = new MenuItem();
         minimizeOthers.textProperty().bind(Sys.rm().getStringBinding("minimizeOthers"));
         minimizeOthers.disableProperty().bind(Bindings.size(windowPane.getVisibleWindows()).isEqualTo(1));
-        minimizeOthers.setOnAction(e -> window.getDesktop().minimizeOthers());
+        minimizeOthers.setOnAction(e -> windowModel.getDesktop().minimizeOthers());
 
         MenuItem minimizeAll = new MenuItem();
         minimizeAll.textProperty().bind(Sys.rm().getStringBinding("minimizeAll"));
-        minimizeAll.setOnAction(e -> window.getDesktop().minimizeAll());
+        minimizeAll.setOnAction(e -> windowModel.getDesktop().minimizeAll());
 
         MenuItem closeOthers = new MenuItem();
         closeOthers.textProperty().bind(Sys.rm().getStringBinding("closeOthers"));
         closeOthers.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows())
                 .or(Bindings.size(windowPane.getClosableWindows()).lessThan(2)));
-        closeOthers.setOnAction(e -> window.getDesktop().closeOthers());
+        closeOthers.setOnAction(e -> windowModel.getDesktop().closeOthers());
 
         MenuItem closeAll = new MenuItem();
         closeAll.textProperty().bind(Sys.rm().getStringBinding("closeAll"));
         closeAll.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows()));
-        closeAll.setOnAction(e -> window.getDesktop().closeAll());
+        closeAll.setOnAction(e -> windowModel.getDesktop().closeAll());
 
         ContextMenu titleContextMenu = new ContextMenu(minimizeOthers, minimizeAll, closeOthers, closeAll);
         titleLabel.setContextMenu(titleContextMenu);
@@ -188,7 +187,7 @@ public class InternalWindow extends InternalFrame {
 
     private void setMoveable() {
         LayoutUtils.makeDragable(this, titleBar, e -> {
-            if (window.isMaximized() || window.isTiled()) {
+            if (windowModel.isMaximized() || windowModel.isTiled()) {
                 Point2D localClickPoint = windowPane.screenToLocal(e.getScreenX(), e.getScreenY());
                 double restoreX = localClickPoint.getX() - restoreBounds.getWidth() / 2;
                 restoreX = Math.max(0, restoreX);
@@ -202,10 +201,10 @@ public class InternalWindow extends InternalFrame {
             return pressDragPoint;
         }, () -> {
 
-            if (window.isMaximized() || window.isTiled()) {
+            if (windowModel.isMaximized() || windowModel.isTiled()) {
                 restoreBounds = new BoundingBox(pressDragPoint.getX(), 0, restoreBounds.getWidth(),
                         restoreBounds.getHeight());
-                window.restore();
+                windowModel.restore();
             }
         });
 
@@ -221,12 +220,12 @@ public class InternalWindow extends InternalFrame {
                 dialog.doModalEffect();
             }
 
-            if (window.isActive()) {
+            if (windowModel.isActive()) {
                 if (modalDialogs.isEmpty()) {
                     activate();
                 }
             } else {
-                window.activate();
+                windowModel.activate();
             }
         });
 
@@ -234,7 +233,7 @@ public class InternalWindow extends InternalFrame {
 
             if (modalDialogs.isEmpty()) {
                 if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
-                    window.maximizeRestore();
+                    windowModel.maximizeRestore();
                 }
             } else {
                 e.consume();
@@ -246,15 +245,15 @@ public class InternalWindow extends InternalFrame {
         tile.setOnAction(e -> {
             windowPane.tile();
         });
-        minimize.setOnAction(e -> window.minimizeActivate());
-        maximize.setOnAction(e -> window.maximizeRestore());
-        full.setOnAction(e -> window.full());
+        minimize.setOnAction(e -> windowModel.minimizeActivate());
+        maximize.setOnAction(e -> windowModel.maximizeRestore());
+        full.setOnAction(e -> windowModel.full());
 
-        close.setOnAction(e -> window.close());
+        close.setOnAction(e -> windowModel.close());
 
-        window.activeProperty().addListener(activateListener);
+        windowModel.activeProperty().addListener(activateListener);
 
-        window.stateProperty().addListener(stateListener);
+        windowModel.stateProperty().addListener(stateListener);
     }
 
     protected void onNewWindow() {
@@ -275,7 +274,7 @@ public class InternalWindow extends InternalFrame {
     }
 
     void activateWindow() {
-        window.activate();
+        windowModel.activate();
     }
 
     void activate() {
@@ -294,7 +293,7 @@ public class InternalWindow extends InternalFrame {
 
             active.set(true);
 
-            if (window.isMinimized()) {
+            if (windowModel.isMinimized()) {
                 restoreTransition(MINIMALIZATION_DURATION);
             }
 
@@ -441,7 +440,7 @@ public class InternalWindow extends InternalFrame {
     }
 
     public void dispose() {
-        window.activeProperty().removeListener(activateListener);
-        window.stateProperty().removeListener(stateListener);
+        windowModel.activeProperty().removeListener(activateListener);
+        windowModel.stateProperty().removeListener(stateListener);
     }
 }

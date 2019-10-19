@@ -20,6 +20,7 @@ import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.cell.AutoCompleteTextFieldTableCell;
 import dev.jfxde.jfxext.control.cell.CheckComboBoxTableCell;
 import dev.jfxde.jfxext.util.CollectionStringConverter;
+import dev.jfxde.ui.FileSelector;
 import io.vavr.control.Try;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder;
@@ -245,14 +246,9 @@ public class EnvBox extends VBox {
     }
 
     private void setClassPathContextMenu() {
-        MenuItem addFiles = new MenuItem(context.rc().getString("addFiles"));
-        addFiles.setOnAction(e -> {
-            classpathView.getItems().addAll(getFiles(env.getClassPath()));
-        });
-
-        MenuItem addDirectory = new MenuItem(context.rc().getString("addDirectory"));
-        addDirectory.setOnAction(e -> {
-            classpathView.getItems().addAll(getDirectory(env.getClassPath()));
+        MenuItem add = new MenuItem(context.rc().getString("add"));
+        add.setOnAction(e -> {
+           new FileSelector(this).show();
         });
 
         MenuItem removeSelection = new MenuItem(context.rc().getString("removeSelection"));
@@ -270,7 +266,7 @@ public class EnvBox extends VBox {
             clipboard.setContent(content);
         });
 
-        ContextMenu menu = new ContextMenu(addFiles, addDirectory, removeSelection, copySelection);
+        ContextMenu menu = new ContextMenu(add, removeSelection, copySelection);
         classpathView.setContextMenu(menu);
     }
 

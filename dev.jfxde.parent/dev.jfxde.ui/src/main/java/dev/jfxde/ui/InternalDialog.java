@@ -5,25 +5,31 @@ import javafx.geometry.BoundingBox;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 public class InternalDialog extends InternalFrame {
 
-    private InternalWindow window;
     private boolean modal;
 
-    private InternalDialog(InternalWindow window) {
-        this(window, false);
+    public InternalDialog(Node node) {
+        this(node, false);
     }
 
-    private InternalDialog(InternalWindow window, boolean modal) {
-        super(window.getWindowPane());
-        this.window = window;
-        this.parent = window;
+    public InternalDialog(Node node, boolean modal) {
+        this(findParent(node), modal);
+    }
+
+    private InternalDialog(InternalFrame frame, boolean modal) {
+        super(frame.getWindowPane());
+        this.window = frame.window;
+        this.parent = frame;
         this.modal = modal;
         if (modal) {
             parent.freez();
         }
+        parent.subdialogs.add(this);
         window.add(this);
         addButtons();
         buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
@@ -31,8 +37,24 @@ public class InternalDialog extends InternalFrame {
         setHandlers();
     }
 
+    private static InternalFrame findParent(Node node) {
+
+        InternalFrame frame = null;
+        Parent parent = node.getParent();
+
+        while (parent != null && !(parent instanceof InternalFrame)) {
+            parent = parent.getParent();
+        }
+
+        if (parent instanceof InternalFrame) {
+            frame = (InternalFrame) parent;
+        }
+
+        return frame;
+    }
+
     protected void addButtons() {
-       super.addButtons();
+        super.addButtons();
 
         buttonBox.getChildren().addAll(close);
     }
@@ -78,6 +100,13 @@ public class InternalDialog extends InternalFrame {
             }
         });
 
+        addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+
+            if (e.getCode() == KeyCode.ESCAPE) {
+                close();
+            }
+        });
+
         close.setOnAction(e -> close());
     }
 
@@ -97,30 +126,12 @@ public class InternalDialog extends InternalFrame {
 
     }
 
-    public static InternalDialog create(Node node) {
-        return create(node, false);
-    }
-
-    public static InternalDialog create(Node node, boolean modal) {
-        InternalDialog dialog = null;
-        Parent parent = node.getParent();
-
-        while (parent != null && !(parent instanceof InternalWindow)) {
-            parent = parent.getParent();
-        }
-
-        if (parent instanceof InternalWindow) {
-            dialog = new InternalDialog((InternalWindow) parent, modal);
-        }
-        return dialog;
-    }
-
     public void show(Node node) {
         setContent(node);
         payload.setPrefWidth(windowPane.getWidth() / 2);
         payload.setPrefHeight(USE_COMPUTED_SIZE);
 
-        payload.heightProperty().addListener((v,o,n) -> {
+        payload.heightProperty().addListener((v, o, n) -> {
             if (payload.getPrefHeight() == USE_COMPUTED_SIZE) {
                 payload.setPrefHeight(Math.min(n.doubleValue(), windowPane.getHeight() - 20));
                 center();
@@ -134,10 +145,10 @@ public class InternalDialog extends InternalFrame {
     }
 
     public void close() {
+        parent.subdialogs.remove(this);
         window.remove(this);
-        window.getDialogs().removeAll(subdialogs);
         window.getWindowPane().getChildren().remove(this);
-        window.getWindowPane().getChildren().removeAll(subdialogs);
+        subdialogs.forEach(InternalDialog::close);
         if (modal) {
             parent.unfreez();
         }

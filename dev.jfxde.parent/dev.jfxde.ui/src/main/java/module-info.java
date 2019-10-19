@@ -1,7 +1,11 @@
 module dev.jfxde.ui {
+    requires java.desktop;
     requires javafx.graphics;
     requires transitive javafx.controls;
     requires transitive javafx.base;
+    requires javafx.swing;
+
+    requires io.vavr;
 
     requires dev.jfxde.api;
     requires dev.jfxde.jfxext;

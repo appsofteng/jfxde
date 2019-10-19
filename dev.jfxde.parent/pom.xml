@@ -77,6 +77,12 @@
 				<classifier>${javafx.platform}</classifier>
 			</dependency>
 			<dependency>
+				<groupId>org.openjfx</groupId>
+				<artifactId>javafx-swing</artifactId>
+				<version>${ojfxVersion}</version>
+				<classifier>${javafx.platform}</classifier>
+			</dependency>
+			<dependency>
 				<groupId>org.controlsfx</groupId>
 				<artifactId>controlsfx</artifactId>
 				<version>12.0.0-SNAPSHOT</version>
