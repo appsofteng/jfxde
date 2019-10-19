@@ -49,10 +49,6 @@
 			<artifactId>controlsfx</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.vavr</groupId>
-			<artifactId>vavr</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>

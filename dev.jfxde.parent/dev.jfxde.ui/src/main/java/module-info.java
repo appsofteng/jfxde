@@ -5,7 +5,7 @@ module dev.jfxde.ui {
     requires transitive javafx.base;
     requires javafx.swing;
 
-    requires io.vavr;
+    requires org.controlsfx.controls;
 
     requires dev.jfxde.api;
     requires dev.jfxde.jfxext;

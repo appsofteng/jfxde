@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import dev.jfxde.api.AppContext;
@@ -15,7 +16,7 @@ import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.control.SplitConsoleView;
 import dev.jfxde.logic.JsonUtils;
 import dev.jfxde.sysapps.jshell.Feedback.Mode;
-import io.vavr.Tuple2;
+import java.util.AbstractMap.SimpleEntry;
 import javafx.stage.Window;
 import jdk.jshell.JShell;
 import jdk.jshell.JShell.Subscription;
@@ -188,15 +189,15 @@ public class Session {
     private void reload(Mode mode) {
 
         feedback.setMode(mode);
-        List<Tuple2<Snippet, Status>> snippets = jshell.snippets()
+        List<Entry<Snippet, Status>> snippets = jshell.snippets()
                 .filter(s -> jshell.status(s) == Status.VALID || jshell.status(s) == Status.DROPPED)
-                .map(s -> new Tuple2<>(s, jshell.status(s)))
+                .map(s -> new SimpleEntry<>(s, jshell.status(s)))
                 .collect(Collectors.toList());
         reset();
 
         snippets.forEach(s -> {
-            var newSnippets = snippetProcessor.getSnippetEvents(s._1().source()).stream().map(SnippetEvent::snippet).collect(Collectors.toList());
-            if (s._2() == Status.DROPPED) {
+            var newSnippets = snippetProcessor.getSnippetEvents(s.getKey().source()).stream().map(SnippetEvent::snippet).collect(Collectors.toList());
+            if (s.getValue() == Status.DROPPED) {
                 commandProcessor.drop(newSnippets);
             }
         });

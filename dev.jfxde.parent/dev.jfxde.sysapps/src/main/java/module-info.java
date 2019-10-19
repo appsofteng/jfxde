@@ -18,7 +18,6 @@ module dev.jfxde.sysapps {
     requires dev.jfxde.ui;
     requires dev.jfxde.jfxext;
     requires gson;
-    requires io.vavr;
 
     provides dev.jfxde.api.App with dev.jfxde.sysapps.appmanager.AppManagerApp,
             dev.jfxde.sysapps.console.ConsoleApp, dev.jfxde.sysapps.exceptionlog.ExceptionLogApp,

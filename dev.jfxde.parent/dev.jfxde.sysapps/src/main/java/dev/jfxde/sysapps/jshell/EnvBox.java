@@ -20,8 +20,8 @@ import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.cell.AutoCompleteTextFieldTableCell;
 import dev.jfxde.jfxext.control.cell.CheckComboBoxTableCell;
 import dev.jfxde.jfxext.util.CollectionStringConverter;
-import dev.jfxde.ui.FileSelector;
-import io.vavr.control.Try;
+import dev.jfxde.jfxext.util.LU;
+import dev.jfxde.ui.FileDialog;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder;
 import javafx.beans.property.adapter.JavaBeanStringPropertyBuilder;
@@ -45,7 +45,6 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
 
@@ -131,7 +130,7 @@ public class EnvBox extends VBox {
         TableColumn<ExportItem, String> sourceColumn = new TableColumn<>();
         sourceColumn.textProperty().bind(context.rc().getStringBinding("sourceModule"));
         sourceColumn.setCellValueFactory(
-                f -> Try.of(() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("sourceModule").build()).getOrNull());
+                f -> LU.of((() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("sourceModule").build())));
         sourceColumn.setCellFactory(f -> {
             TextFieldTableCell<ExportItem, String> cell = new AutoCompleteTextFieldTableCell<>(new DefaultStringConverter(), exportModules) {
 
@@ -154,7 +153,7 @@ public class EnvBox extends VBox {
         TableColumn<ExportItem, String> packageColumn = new TableColumn<>();
         packageColumn.textProperty().bind(context.rc().getStringBinding("package"));
         packageColumn.setCellValueFactory(
-                f -> Try.of(() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("packageName").build()).getOrNull());
+                f -> LU.of(() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("packageName").build()));
         packageColumn.setCellFactory(c -> {
 
             ChoiceBoxTableCell<ExportItem, String> cell = new ChoiceBoxTableCell<>() {
@@ -173,7 +172,7 @@ public class EnvBox extends VBox {
         TableColumn<ExportItem, Collection<String>> targetColumn = new TableColumn<>();
         targetColumn.textProperty().bind(context.rc().getStringBinding("targetModules"));
         targetColumn.setCellValueFactory(
-                f -> Try.of(() -> JavaBeanObjectPropertyBuilder.create().bean(f.getValue()).name("targetModules").build()).getOrNull());
+                f -> LU.of(() -> JavaBeanObjectPropertyBuilder.create().bean(f.getValue()).name("targetModules").build()));
         targetColumn.setCellFactory(CheckComboBoxTableCell.forTableColumn(new CollectionStringConverter(), exportModules));
 
         exportView.getColumns().addAll(sourceColumn, packageColumn, targetColumn);
@@ -248,7 +247,8 @@ public class EnvBox extends VBox {
     private void setClassPathContextMenu() {
         MenuItem add = new MenuItem(context.rc().getString("add"));
         add.setOnAction(e -> {
-           new FileSelector(this).show();
+            new FileDialog(this).showOpenDialog(paths -> classpathView.getItems()
+                    .addAll(paths.stream().map(f -> f.toString()).filter(p -> !env.getClassPath().contains(p)).collect(Collectors.toList())));
         });
 
         MenuItem removeSelection = new MenuItem(context.rc().getString("removeSelection"));
@@ -314,16 +314,6 @@ public class EnvBox extends VBox {
 
         ContextMenu menu = new ContextMenu(add, removeSelection);
         exportView.setContextMenu(menu);
-    }
-
-    private List<String> getFiles(List<String> current) {
-        FileChooser chooser = new FileChooser();
-        List<File> files = chooser.showOpenMultipleDialog(getScene().getWindow());
-
-        List<String> paths = files == null ? List.of()
-                : files.stream().map(f -> f.toString()).filter(p -> !current.contains(p)).collect(Collectors.toList());
-
-        return paths;
     }
 
     private List<String> getDirectory(List<String> current) {

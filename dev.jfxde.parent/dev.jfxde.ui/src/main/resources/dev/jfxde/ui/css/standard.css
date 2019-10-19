@@ -303,3 +303,7 @@
 .jd-table-view .column-header .label {
     -fx-alignment:CENTER_LEFT
 }
+
+.jd-table-column-numerical {
+  -fx-alignment: CENTER-RIGHT;
+}
