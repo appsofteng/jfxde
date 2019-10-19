@@ -135,11 +135,10 @@ public class FileDialog extends InternalDialog {
         splitPane.setDividerPositions(0.2f);
 
         buttonBar.getButtons().addAll(okButton, cancelButton);
-        buttonBar.setPadding(new Insets(5, 0, 0, 0));
 
         GridPane gridpane = new GridPane();
         gridpane.setPadding(new Insets(5, 10, 10, 10));
-        GridPane.setMargin(selectionView, new Insets(0, 5, 0, 5));
+        GridPane.setMargin(selectionView, new Insets(5, 0, 5, 0));
         ColumnConstraints column0 = new ColumnConstraints();
         column0.setHgrow(Priority.ALWAYS);
         gridpane.getColumnConstraints().addAll(column0);
