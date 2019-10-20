@@ -1,6 +1,7 @@
 package dev.jfxde.logic.data;
 
 import java.io.File;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,10 +9,10 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.StreamSupport;
 
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
@@ -31,23 +32,30 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     private LongProperty size;
     private ObjectProperty<FileTime> created;
     private ObjectProperty<FileTime> modified;
+    private boolean directory;
 
     public PathDescriptor() {
         this.path = Paths.get(ROOT_NAME);
         setName(ROOT_NAME);
+        this.directory = true;
     }
 
     public PathDescriptor(Path path) {
+        this(path, Files.isDirectory(path));
+    }
+
+    public PathDescriptor(Path path, boolean dir) {
         this.path = path;
         Path fileName = path.getFileName();
         setName(fileName == null ? path.toString() : fileName.toString());
+        this.directory = dir;
 
         try {
             var fileAttributes = Files.getFileAttributeView(path, BasicFileAttributeView.class);
             setCreated(fileAttributes.readAttributes().creationTime());
             setModified(fileAttributes.readAttributes().lastModifiedTime());
 
-            if (!Files.isDirectory(path)) {
+            if (!dir) {
                 setSize(Files.size(path));
             }
         } catch (Exception e) {
@@ -101,7 +109,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
 
                 @Override
                 public String toString() {
-                    return Files.isDirectory(path) ? "" : NumberFormat.getInstance().format(Math.ceil(get() / 1024.0)) + " KiB";
+                    return directory ? "" : NumberFormat.getInstance().format(Math.ceil(get() / 1024.0)) + " KiB";
                 }
             };
         }
@@ -164,7 +172,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     }
 
     public boolean isDirectory() {
-        return Files.isDirectory(path);
+        return directory;
     }
 
     public boolean isReadable() {
@@ -172,14 +180,20 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     }
 
     public boolean isLeaf() {
-        boolean result = !Files.isDirectory(path) || !Files.isReadable(path);
 
-        try {
-            result = result || !isRoot()
-                    && !Files.list(path)
-                            .filter(p -> Files.isDirectory(p))
-                            .filter(p -> Files.isReadable(p))
-                            .findAny().isPresent();
+        boolean result = !directory || !Files.isReadable(path) || !isRoot() && !hasSubDirs();
+
+        return result;
+    }
+
+    private boolean hasSubDirs() {
+        boolean result = false;
+
+        try (var stream = Files.list(path)) {
+
+            result = stream.filter(p -> Files.isDirectory(p))
+                    .filter(p -> Files.isReadable(p))
+                    .findAny().isPresent();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -196,45 +210,59 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         if (!Files.isReadable(path)) {
             return;
         }
+        if (isRoot()) {
+            listRoots(mapper, consumer);
+        } else {
 
-        try {
-
-            if (isRoot()) {
-                Arrays.stream(File.listRoots())
-                        .map(File::toPath)
-                        .filter(p -> Files.isDirectory(p))
-                        .map(PathDescriptor::new)
-                        .sorted()
-                        .map(mapper)
-                        .forEach(consumer);
-            } else {
-
-                Files.list(path)
-                        .filter(p -> Files.isDirectory(p))
-                        .map(PathDescriptor::new)
-                        .sorted()
-                        .map(mapper)
-                        .forEach(consumer);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            list(mapper, consumer, false);
         }
     }
 
     public <T> void getFiles(Function<PathDescriptor, T> mapper, Consumer<T> consumer) {
+        if (!isRoot()) {
 
-        try {
-            if (!isRoot()) {
-               Files.list(path)
-                        .filter(p -> !Files.isDirectory(p))
-                        .map(PathDescriptor::new)
-                        .sorted()
-                        .map(mapper)
-                        .forEach(consumer);
+            list(mapper, consumer, true);
+        }
+    }
+
+    private <T> void listRoots(Function<PathDescriptor, T> mapper, Consumer<T> consumer) {
+        try (var stream = StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false)) {
+            stream.map(p -> new PathDescriptor(p, true))
+                    // .sorted()
+                    .map(mapper)
+                    .forEach(consumer);
+            consumer.accept(null);
+        }
+    }
+
+    private <T> void list(Function<PathDescriptor, T> mapper, Consumer<T> consumer, boolean file) {
+        try (var stream = Files.newDirectoryStream(path)) {
+            var iterator = stream.iterator();
+
+            while (iterator.hasNext()) {
+                var p = iterator.next();
+                boolean directory = Files.isDirectory(p);
+                if (directory ^ file) {
+                    var pd = new PathDescriptor(p, directory);
+                    consumer.accept(mapper.apply(pd));
+                }
             }
+
+            consumer.accept(null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+//      try (var stream = Files.list(path)) {
+//      stream.filter(p -> file ^ Files.isDirectory(p))
+//              .map(PathDescriptor::new)
+//              // .sorted()
+//              .map(mapper)
+//              .forEach(consumer);
+//      consumer.accept(null);
+//  }  catch (Exception e) {
+//        throw new RuntimeException(e);
+//    }
     }
 
     @Override
@@ -244,7 +272,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
 
     @Override
     public int compareTo(PathDescriptor o) {
-        int result = Boolean.compare(!Files.isDirectory(path), !Files.isDirectory(o.path));
+        int result = Boolean.compare(!directory, !o.directory);
 
         if (result == 0) {
             result = name.get().compareToIgnoreCase(o.name.get());
@@ -260,7 +288,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
             PathDescriptor desc1 = (PathDescriptor) o1.getBean();
             PathDescriptor desc2 = (PathDescriptor) o2.getBean();
 
-            int result = Boolean.compare(!Files.isDirectory(desc1.getPath()), !Files.isDirectory(desc2.getPath()));
+            int result = Boolean.compare(!desc1.directory, !desc2.directory);
 
             if (result == 0) {
                 result = o1.getValue().compareToIgnoreCase(o2.getValue());
@@ -286,7 +314,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
             PathDescriptor desc1 = (PathDescriptor) o1.getBean();
             PathDescriptor desc2 = (PathDescriptor) o2.getBean();
 
-            int result = Boolean.compare(!Files.isDirectory(desc1.getPath()), !Files.isDirectory(desc2.getPath()));
+            int result = Boolean.compare(!desc1.directory, !desc2.directory);
 
             if (result == 0) {
                 result = o1.asObject().get().compareTo(o2.asObject().get());

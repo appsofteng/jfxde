@@ -71,8 +71,8 @@ public class FileDialog extends InternalDialog {
         double height = windowPane.getHeight() * 0.8;
         var root = new LazyTreeItem<>(new PathDescriptor())
                 .leaf(i -> i.getValue().isLeaf())
-                .childrenGetter(i -> i.getValue().getDirectories(p -> new LazyTreeItem<>(p, i), c -> i.add(c)))
-                .filteredChildrenGetter(i -> i.getValue().getFiles(p -> new LazyTreeItem<>(p, i), c -> i.addFiltered(c)))
+                .childrenGetter(i -> i.getValue().getDirectories(p -> new LazyTreeItem<>(p, i), c -> i.addCached(c)))
+                .filteredChildrenGetter(i -> i.getValue().getFiles(p -> new LazyTreeItem<>(p, i), c -> i.addFilteredCached(c)))
                 .toString(i -> i.getValue().getPath().toString())
                 .graphic(i -> getIcon(i.getValue().getPath()));
 
@@ -99,7 +99,8 @@ public class FileDialog extends InternalDialog {
                     } else {
                         setText(item.get());
 
-                        var treeItem = getTableRow().getItem();
+                        var row = getTableRow();
+                        var treeItem = row == null ? null : row.getItem();
                         if (treeItem != null) {
                             setGraphic(new ImageView(((ImageView) treeItem.getGraphic()).getImage()));
                         }
@@ -186,8 +187,8 @@ public class FileDialog extends InternalDialog {
             }
         });
 
-        PauseTransition mousePause = new PauseTransition(Duration.millis(700));
-        mousePause.setOnFinished(e -> {
+        PauseTransition singlePressPause = new PauseTransition(Duration.millis(500));
+        singlePressPause.setOnFinished(e -> {
             selectionView.getItems().setAll(fileTable.getSelectionModel().getSelectedItems());
             selectionView.getItems().addAll(selection);
             FXCollections.sort(selectionView.getItems(), Comparator.comparing(i -> i.getValue().getPath()));
@@ -195,9 +196,12 @@ public class FileDialog extends InternalDialog {
 
         fileTable.setOnMousePressed(e -> {
 
+            if (e.isPrimaryButtonDown() && e.getClickCount() == 1) {
+                singlePressPause.play();
+            }
+
             if (e.isPrimaryButtonDown() && e.getClickCount() == 2) {
-                mousePause.stop();
-                e.consume();
+                singlePressPause.stop();
                 var treeItem = fileTable.getSelectionModel().getSelectedItem();
 
                 if (treeItem != null && treeItem.getValue().isDirectory() && treeItem.getValue().isReadable()) {
@@ -205,10 +209,6 @@ public class FileDialog extends InternalDialog {
                     fileTable.setItems(treeItem.getAllChildren());
                     breadCrumbBar.setSelectedCrumb(treeItem);
                 }
-            }
-
-            if (e.isPrimaryButtonDown() && e.getClickCount() == 1) {
-                mousePause.play();
             }
         });
 

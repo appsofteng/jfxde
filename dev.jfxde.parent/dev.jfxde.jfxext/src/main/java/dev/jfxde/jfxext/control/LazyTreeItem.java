@@ -1,5 +1,7 @@
 package dev.jfxde.jfxext.control;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
@@ -15,14 +17,19 @@ import javafx.scene.control.TreeItem;
 public class LazyTreeItem<T> extends TreeItem<T> {
 
     private Function<LazyTreeItem<T>, Boolean> leaf;
-    private Consumer<LazyTreeItem<T>> childrenGetter = i -> {};
-    private Consumer<LazyTreeItem<T>> filteredChildrenGetter = i -> {};
+    private Consumer<LazyTreeItem<T>> childrenGetter = i -> {
+    };
+    private Consumer<LazyTreeItem<T>> filteredChildrenGetter = i -> {
+    };
     private Function<LazyTreeItem<T>, Node> graphic = i -> null;
     private Function<LazyTreeItem<T>, String> toString = i -> i.toString();
     private ForkJoinTask<Void> loaded;
     private boolean allLoaded;
     private Boolean isLeaf;
     private ObservableList<LazyTreeItem<T>> allChildren = FXCollections.observableArrayList();
+    private List<LazyTreeItem<T>> cache = new ArrayList<>();
+    private List<LazyTreeItem<T>> filteredCache = new ArrayList<>();
+    private static final int CACHE_SIZE = 20;
 
     public LazyTreeItem(T value) {
         super(value);
@@ -94,6 +101,7 @@ public class LazyTreeItem<T> extends TreeItem<T> {
     }
 
     private void load() {
+        cache.clear();
         var task = Executors.<Void>privilegedCallable(() -> {
 
             childrenGetter.accept(this);
@@ -103,8 +111,36 @@ public class LazyTreeItem<T> extends TreeItem<T> {
         loaded = ForkJoinPool.commonPool().submit(task);
     }
 
-    public void add(LazyTreeItem<T> child) {
+    public void addCached(LazyTreeItem<T> child) {
 
+        if (cache.size() < CACHE_SIZE && child != null) {
+            cache.add(child);
+        } else {
+            if (!cache.isEmpty()) {
+                Platform.runLater(() -> {
+                    super.getChildren().addAll(cache);
+                    allChildren.addAll(cache);
+                    cache.clear();
+                });
+            }
+        }
+    }
+
+    public void addFilteredCached(LazyTreeItem<T> child) {
+
+        if (filteredCache.size() < CACHE_SIZE && child != null) {
+            filteredCache.add(child);
+        } else {
+            if (!filteredCache.isEmpty()) {
+                Platform.runLater(() -> {
+                    allChildren.addAll(filteredCache);
+                    filteredCache.clear();
+                });
+            }
+        }
+    }
+
+    public void add(LazyTreeItem<T> child) {
         Platform.runLater(() -> {
             super.getChildren().add(child);
             allChildren.add(child);
@@ -112,7 +148,6 @@ public class LazyTreeItem<T> extends TreeItem<T> {
     }
 
     public void addFiltered(LazyTreeItem<T> child) {
-
         Platform.runLater(() -> {
             allChildren.add(child);
         });
@@ -121,6 +156,7 @@ public class LazyTreeItem<T> extends TreeItem<T> {
     public ObservableList<LazyTreeItem<T>> getAllChildren() {
         if (!allLoaded) {
             allLoaded = true;
+            filteredCache.clear();
 
             if (loaded == null) {
                 load();
