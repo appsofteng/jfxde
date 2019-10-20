@@ -1,9 +1,9 @@
 package dev.jfxde.jfxext.control;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javafx.application.Platform;
@@ -15,8 +15,8 @@ import javafx.scene.control.TreeItem;
 public class LazyTreeItem<T> extends TreeItem<T> {
 
     private Function<LazyTreeItem<T>, Boolean> leaf;
-    private Function<LazyTreeItem<T>, List<LazyTreeItem<T>>> childrenGetter = i -> List.of();
-    private Function<LazyTreeItem<T>, List<LazyTreeItem<T>>> filteredChildrenGetter = i -> List.of();
+    private Consumer<LazyTreeItem<T>> childrenGetter = i -> {};
+    private Consumer<LazyTreeItem<T>> filteredChildrenGetter = i -> {};
     private Function<LazyTreeItem<T>, Node> graphic = i -> null;
     private Function<LazyTreeItem<T>, String> toString = i -> i.toString();
     private ForkJoinTask<Void> loaded;
@@ -43,13 +43,13 @@ public class LazyTreeItem<T> extends TreeItem<T> {
         return this;
     }
 
-    public LazyTreeItem<T> childrenGetter(Function<LazyTreeItem<T>, List<LazyTreeItem<T>>> childrenGetter) {
+    public LazyTreeItem<T> childrenGetter(Consumer<LazyTreeItem<T>> childrenGetter) {
         this.childrenGetter = childrenGetter;
 
         return this;
     }
 
-    public LazyTreeItem<T> filteredChildrenGetter(Function<LazyTreeItem<T>, List<LazyTreeItem<T>>> filteredChildrenGetter) {
+    public LazyTreeItem<T> filteredChildrenGetter(Consumer<LazyTreeItem<T>> filteredChildrenGetter) {
         this.filteredChildrenGetter = filteredChildrenGetter;
 
         return this;
@@ -96,16 +96,26 @@ public class LazyTreeItem<T> extends TreeItem<T> {
     private void load() {
         var task = Executors.<Void>privilegedCallable(() -> {
 
-            List<LazyTreeItem<T>> children = childrenGetter.apply(this);
-            Platform.runLater(() -> {
-                super.getChildren().setAll(children);
-                allChildren.setAll(children);
-            });
-
+            childrenGetter.accept(this);
             return null;
         });
 
         loaded = ForkJoinPool.commonPool().submit(task);
+    }
+
+    public void add(LazyTreeItem<T> child) {
+
+        Platform.runLater(() -> {
+            super.getChildren().add(child);
+            allChildren.add(child);
+        });
+    }
+
+    public void addFiltered(LazyTreeItem<T> child) {
+
+        Platform.runLater(() -> {
+            allChildren.add(child);
+        });
     }
 
     public ObservableList<LazyTreeItem<T>> getAllChildren() {
@@ -119,12 +129,7 @@ public class LazyTreeItem<T> extends TreeItem<T> {
             var task = Executors.privilegedCallable(() -> {
 
                 loaded.join();
-                List<LazyTreeItem<T>> filteredChidren = filteredChildrenGetter.apply(this);
-
-                Platform.runLater(() -> {
-
-                    allChildren.addAll(filteredChidren);
-                });
+                filteredChildrenGetter.accept(this);
 
                 return null;
             });

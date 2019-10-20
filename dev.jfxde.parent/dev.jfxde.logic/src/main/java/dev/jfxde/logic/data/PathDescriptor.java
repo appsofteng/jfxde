@@ -10,9 +10,8 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
@@ -192,56 +191,50 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         return ROOT_NAME.equals(path.toString());
     }
 
-    public <T> List<T> getDirectories(Function<PathDescriptor, T> mapper) {
-        List<T> result = List.of();
+    public <T> void getDirectories(Function<PathDescriptor, T> mapper, Consumer<T> consumer) {
 
         if (!Files.isReadable(path)) {
-            return result;
+            return;
         }
 
         try {
 
             if (isRoot()) {
-                result = Arrays.stream(File.listRoots())
+                Arrays.stream(File.listRoots())
                         .map(File::toPath)
                         .filter(p -> Files.isDirectory(p))
                         .map(PathDescriptor::new)
                         .sorted()
                         .map(mapper)
-                        .collect(Collectors.toList());
+                        .forEach(consumer);
             } else {
 
-                result = Files.list(path)
+                Files.list(path)
                         .filter(p -> Files.isDirectory(p))
                         .map(PathDescriptor::new)
                         .sorted()
                         .map(mapper)
-                        .collect(Collectors.toList());
+                        .forEach(consumer);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        return result;
     }
 
-    public <T> List<T> getFiles(Function<PathDescriptor, T> mapper) {
-        List<T> result = List.of();
+    public <T> void getFiles(Function<PathDescriptor, T> mapper, Consumer<T> consumer) {
 
         try {
             if (!isRoot()) {
-                result = Files.list(path)
+               Files.list(path)
                         .filter(p -> !Files.isDirectory(p))
                         .map(PathDescriptor::new)
                         .sorted()
                         .map(mapper)
-                        .collect(Collectors.toList());
+                        .forEach(consumer);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
-        return result;
     }
 
     @Override

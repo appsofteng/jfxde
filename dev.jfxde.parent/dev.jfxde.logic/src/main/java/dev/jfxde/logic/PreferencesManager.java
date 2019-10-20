@@ -1,8 +1,7 @@
 package dev.jfxde.logic;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -34,7 +33,6 @@ public final class PreferencesManager extends Manager {
         ResourceManager.setLocale(getLocale());
     }
 
-
     public void setLocale(String locale) {
 
         ResourceManager.setLocale(locale);
@@ -59,42 +57,35 @@ public final class PreferencesManager extends Manager {
         return properties;
     }
 
-    public <T> List<T> getPreferences(Preference parent, Function<Preference, T> mapper) {
-        List<T> preferences = new ArrayList<>();
+    public <T> void getPreferences(Preference parent, Function<Preference, T> mapper, Consumer<T> consumer) {
 
         if (parent.getKey() == null) {
-            preferences.add(mapper.apply(new Preference("system", false)));
-            preferences.add(mapper.apply(new Preference("user", false)));
+            consumer.accept(mapper.apply(new Preference("system", false)));
+            consumer.accept(mapper.apply(new Preference("user", false)));
         } else if ("system".equals(parent.getKey())) {
-            preferences = getChildPreferences(Preferences.systemRoot(), mapper);
+            getChildPreferences(Preferences.systemRoot(), mapper, consumer);
         } else if ("user".equals(parent.getKey())) {
-            preferences = getChildPreferences(Preferences.userRoot(), mapper);
+            getChildPreferences(Preferences.userRoot(), mapper, consumer);
         } else {
             Preferences child = parent.getPreferences().node(parent.getKey());
-            preferences = getChildPreferences(child, mapper);
+            getChildPreferences(child, mapper, consumer);
         }
-
-        return preferences;
     }
 
-    private <T> List<T> getChildPreferences(Preferences child, Function<Preference, T> mapper) {
-        List<T> preferences = new ArrayList<>();
+    private <T> void getChildPreferences(Preferences child, Function<Preference, T> mapper, Consumer<T> consumer) {
 
         try {
             String[] chlidrenNames = child.childrenNames();
-            preferences.addAll(
-                    Arrays.stream(chlidrenNames).map(n -> mapper.apply(new Preference(child, n, false)))
-                            .collect(Collectors.toList()));
+
+            Arrays.stream(chlidrenNames).map(n -> mapper.apply(new Preference(child, n, false)))
+                    .forEach(consumer);
             String[] keys = child.keys();
 
-            preferences.addAll(
-                    Arrays.stream(keys).map(n -> mapper.apply(new Preference(child, n, true)))
-                            .collect(Collectors.toList()));
+            Arrays.stream(keys).map(n -> mapper.apply(new Preference(child, n, true)))
+                    .forEach(consumer);
 
         } catch (BackingStoreException e) {
             new RuntimeException(e);
         }
-
-        return preferences;
     }
 }

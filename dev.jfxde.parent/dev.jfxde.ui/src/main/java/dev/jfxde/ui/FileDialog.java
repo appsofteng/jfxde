@@ -71,8 +71,8 @@ public class FileDialog extends InternalDialog {
         double height = windowPane.getHeight() * 0.8;
         var root = new LazyTreeItem<>(new PathDescriptor())
                 .leaf(i -> i.getValue().isLeaf())
-                .childrenGetter(i -> i.getValue().getDirectories(p -> new LazyTreeItem<>(p, i)))
-                .filteredChildrenGetter(i -> i.getValue().getFiles(p -> new LazyTreeItem<>(p, i)))
+                .childrenGetter(i -> i.getValue().getDirectories(p -> new LazyTreeItem<>(p, i), c -> i.add(c)))
+                .filteredChildrenGetter(i -> i.getValue().getFiles(p -> new LazyTreeItem<>(p, i), c -> i.addFiltered(c)))
                 .toString(i -> i.getValue().getPath().toString())
                 .graphic(i -> getIcon(i.getValue().getPath()));
 
@@ -186,7 +186,7 @@ public class FileDialog extends InternalDialog {
             }
         });
 
-        PauseTransition mousePause = new PauseTransition(Duration.millis(800));
+        PauseTransition mousePause = new PauseTransition(Duration.millis(700));
         mousePause.setOnFinished(e -> {
             selectionView.getItems().setAll(fileTable.getSelectionModel().getSelectedItems());
             selectionView.getItems().addAll(selection);
