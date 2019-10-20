@@ -86,6 +86,7 @@ public class FileDialog extends InternalDialog {
         nameColumn.setText("Name");
         nameColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().nameProperty()));
         nameColumn.setComparator(new PathDescriptor.StringComparator());
+        nameColumn.setPrefWidth(200);
         nameColumn.setCellFactory(c -> {
 
             var cell = new TableCell<LazyTreeItem<PathDescriptor>, StringProperty>() {
@@ -98,9 +99,9 @@ public class FileDialog extends InternalDialog {
                         setGraphic(null);
                     } else {
                         setText(item.get());
-
                         var row = getTableRow();
                         var treeItem = row == null ? null : row.getItem();
+
                         if (treeItem != null) {
                             setGraphic(new ImageView(((ImageView) treeItem.getGraphic()).getImage()));
                         }
@@ -115,17 +116,20 @@ public class FileDialog extends InternalDialog {
         createdColumn.setText("Created");
         createdColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().createdProperty()));
         createdColumn.setComparator(new PathDescriptor.ObjectComparator<>());
+        createdColumn.setPrefWidth(120);
 
         TableColumn<LazyTreeItem<PathDescriptor>, ReadOnlyObjectProperty<FileTime>> modifiedColumn = new TableColumn<>();
         modifiedColumn.setText("Modified");
         modifiedColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().modifiedProperty()));
         modifiedColumn.setComparator(new PathDescriptor.ObjectComparator<>());
+        modifiedColumn.setPrefWidth(120);
 
         TableColumn<LazyTreeItem<PathDescriptor>, ReadOnlyLongProperty> sizeColumn = new TableColumn<>();
         sizeColumn.setText("Size");
         sizeColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().sizeProperty()));
         sizeColumn.setComparator(new PathDescriptor.LongComparator());
         sizeColumn.getStyleClass().add("jd-table-column-numerical");
+        sizeColumn.setPrefWidth(100);
 
         fileTable.getColumns().addAll(nameColumn, createdColumn, modifiedColumn, sizeColumn);
         fileTable.setPrefHeight(height);
@@ -190,7 +194,7 @@ public class FileDialog extends InternalDialog {
         PauseTransition singlePressPause = new PauseTransition(Duration.millis(500));
         singlePressPause.setOnFinished(e -> {
             selectionView.getItems().setAll(fileTable.getSelectionModel().getSelectedItems());
-            selectionView.getItems().addAll(selection);
+            selectionView.getItems().addAll(selection.stream().filter(i -> !selectionView.getItems().contains(i)).collect(Collectors.toList()));
             FXCollections.sort(selectionView.getItems(), Comparator.comparing(i -> i.getValue().getPath()));
         });
 
