@@ -112,8 +112,10 @@ public abstract class InternalFrame extends Region {
         setCacheHint(CacheHint.SPEED);
     }
 
-    public void setTitle(String value) {
+    public InternalFrame title(String value) {
         titleLabel.setText(value);
+
+        return this;
     }
 
     WindowPane getWindowPane() {

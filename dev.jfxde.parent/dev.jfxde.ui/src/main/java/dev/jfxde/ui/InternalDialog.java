@@ -21,6 +21,12 @@ public class InternalDialog extends InternalFrame {
         this(findParent(node), modal);
     }
 
+    @Override
+    public InternalDialog title(String value) {
+        super.title(value);
+        return this;
+    }
+
     private InternalDialog(InternalFrame frame, boolean modal) {
         super(frame.getWindowPane());
         this.window = frame.window;

@@ -36,7 +36,7 @@ public class EnvCommand extends BaseCommand {
         Platform.runLater(() -> {
 
             InternalDialog dialog = new InternalDialog(commandProcessor.getSession().getContent(), true);
-            dialog.setTitle(commandProcessor.getSession().getContext().rc().getString("environment"));
+            dialog.title(commandProcessor.getSession().getContext().rc().getString("environment"));
             EnvBox envBox = new EnvBox(commandProcessor.getSession().getContext(), getEnvs());
             DialogPane dialogPane = new DialogPane();
             dialogPane.setContent(envBox);

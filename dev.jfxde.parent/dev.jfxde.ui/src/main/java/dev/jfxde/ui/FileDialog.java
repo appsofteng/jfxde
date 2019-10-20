@@ -59,6 +59,10 @@ public class FileDialog extends InternalDialog {
     private Set<LazyTreeItem<PathDescriptor>> selection = new HashSet<>();
     private Consumer<List<Path>> selectionConsumer;
 
+    private LazyTreeItem<PathDescriptor> root;
+    private Consumer<LazyTreeItem<PathDescriptor>> filesGetter = i -> i.getValue().getFiles(p -> new LazyTreeItem<>(p, i), c -> i.addFilteredCached(c));
+    private boolean allPaths = true;
+
     public FileDialog(Node node) {
         super(node, true);
 
@@ -67,12 +71,18 @@ public class FileDialog extends InternalDialog {
         setBehavior();
     }
 
+    @Override
+    public FileDialog title(String value) {
+        super.title(value);
+        return this;
+    }
+
     private void setGraphics() {
         double height = windowPane.getHeight() * 0.8;
-        var root = new LazyTreeItem<>(new PathDescriptor())
+        root = new LazyTreeItem<>(new PathDescriptor())
                 .leaf(i -> i.getValue().isLeaf())
                 .childrenGetter(i -> i.getValue().getDirectories(p -> new LazyTreeItem<>(p, i), c -> i.addCached(c)))
-                .filteredChildrenGetter(i -> i.getValue().getFiles(p -> new LazyTreeItem<>(p, i), c -> i.addFilteredCached(c)))
+                .filteredChildrenGetter(filesGetter)
                 .toString(i -> i.getValue().getPath().toString())
                 .graphic(i -> getIcon(i.getValue().getPath()));
 
@@ -193,7 +203,7 @@ public class FileDialog extends InternalDialog {
 
         PauseTransition singlePressPause = new PauseTransition(Duration.millis(500));
         singlePressPause.setOnFinished(e -> {
-            selectionView.getItems().setAll(fileTable.getSelectionModel().getSelectedItems());
+            selectionView.getItems().setAll(fileTable.getSelectionModel().getSelectedItems().stream().filter(i -> i.getValue().isFile() || allPaths).collect(Collectors.toList()));
             selectionView.getItems().addAll(selection.stream().filter(i -> !selectionView.getItems().contains(i)).collect(Collectors.toList()));
             FXCollections.sort(selectionView.getItems(), Comparator.comparing(i -> i.getValue().getPath()));
         });
@@ -232,6 +242,19 @@ public class FileDialog extends InternalDialog {
         ImageView imageView = (new ImageView(fxIcon));
 
         return imageView;
+    }
+
+    public FileDialog directoriesOnly() {
+        root.filteredChildrenGetter(i -> {});
+        allPaths = true;
+        return this;
+    }
+
+    public FileDialog filesOnly() {
+        root.filteredChildrenGetter(filesGetter);
+        allPaths = false;
+
+        return this;
     }
 
     public void showOpenDialog(Consumer<List<Path>> consumer) {

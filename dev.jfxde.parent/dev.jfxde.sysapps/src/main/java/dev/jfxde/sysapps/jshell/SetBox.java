@@ -2,21 +2,18 @@ package dev.jfxde.sysapps.jshell;
 
 
 
-import java.io.File;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.jfxde.api.AppContext;
+import dev.jfxde.ui.FileDialog;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 
 public class SetBox extends VBox {
 
@@ -70,7 +67,11 @@ public class SetBox extends VBox {
     private void setContextMenu() {
         MenuItem addFiles = new MenuItem(context.rc().getString("addScripts"));
         addFiles.setOnAction(e -> {
-            scriptsView.getItems().addAll(getFiles(settings.getStartupScripts()));
+            new FileDialog(this)
+            .title(context.rc().getString("startupScripts"))
+            .filesOnly()
+            .showOpenDialog(paths -> scriptsView.getItems()
+                    .addAll(paths.stream().map(f -> f.toString()).filter(p -> !settings.getStartupScripts().contains(p)).collect(Collectors.toList())));
         });
 
 
@@ -82,16 +83,6 @@ public class SetBox extends VBox {
 
         ContextMenu menu = new ContextMenu(addFiles, removeSelection);
         scriptsView.setContextMenu(menu);
-    }
-
-    private List<String> getFiles(List<String> current) {
-        FileChooser chooser = new FileChooser();
-        List<File> files = chooser.showOpenMultipleDialog(getScene().getWindow());
-
-        List<String> paths = files == null ? List.of()
-                : files.stream().map(f -> f.toString()).filter(p -> !current.contains(p)).collect(Collectors.toList());
-
-        return paths;
     }
 
     public Settings getSettings() {

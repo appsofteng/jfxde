@@ -175,6 +175,10 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         return directory;
     }
 
+    public boolean isFile() {
+        return !directory;
+    }
+
     public boolean isReadable() {
         return Files.isReadable(path);
     }

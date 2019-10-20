@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.controlsfx.control.ListSelectionView;
 
@@ -44,7 +43,6 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.DirectoryChooser;
 import javafx.util.StringConverter;
 import javafx.util.converter.DefaultStringConverter;
 
@@ -247,8 +245,10 @@ public class EnvBox extends VBox {
     private void setClassPathContextMenu() {
         MenuItem add = new MenuItem(context.rc().getString("add"));
         add.setOnAction(e -> {
-            new FileDialog(this).showOpenDialog(paths -> classpathView.getItems()
-                    .addAll(paths.stream().map(f -> f.toString()).filter(p -> !env.getClassPath().contains(p)).collect(Collectors.toList())));
+            new FileDialog(this)
+            .title(context.rc().getString("classpath"))
+                    .showOpenDialog(paths -> classpathView.getItems()
+                            .addAll(paths.stream().map(f -> f.toString()).filter(p -> !env.getClassPath().contains(p)).collect(Collectors.toList())));
         });
 
         MenuItem removeSelection = new MenuItem(context.rc().getString("removeSelection"));
@@ -274,7 +274,12 @@ public class EnvBox extends VBox {
 
         MenuItem addDirectory = new MenuItem(context.rc().getString("addDirectory"));
         addDirectory.setOnAction(e -> {
-            modulepathView.getItems().addAll(getDirectory(env.getModulePath()));
+            new FileDialog(this)
+            .title(context.rc().getString("modulepath"))
+                    .directoriesOnly()
+                    .showOpenDialog(paths -> modulepathView.getItems()
+                            .addAll(paths.stream().map(f -> f.toString()).filter(p -> !env.getModulePath().contains(p))
+                                    .collect(Collectors.toList())));
         });
 
         MenuItem removeSelection = new MenuItem(context.rc().getString("removeSelection"));
@@ -314,16 +319,6 @@ public class EnvBox extends VBox {
 
         ContextMenu menu = new ContextMenu(add, removeSelection);
         exportView.setContextMenu(menu);
-    }
-
-    private List<String> getDirectory(List<String> current) {
-        DirectoryChooser chooser = new DirectoryChooser();
-        File dir = chooser.showDialog(getScene().getWindow());
-
-        List<String> paths = Stream.of(dir).filter(d -> d != null).map(d -> d.toString()).filter(p -> !current.contains(p))
-                .collect(Collectors.toList());
-
-        return paths;
     }
 
     private void setEnv() {
