@@ -4,39 +4,38 @@ import dev.jfxde.jfxext.util.LayoutUtils;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 
 public class InternalDialog extends InternalFrame {
 
-    private boolean modal;
-
     public InternalDialog(Node node) {
-        this(node, false);
+        this(node, Modality.NONE);
     }
 
-    public InternalDialog(Node node, boolean modal) {
-        this(findParent(node), modal);
+    public InternalDialog(Node node, Modality modality) {
+        this(findParent(node), modality);
     }
 
-    @Override
-    public InternalDialog title(String value) {
-        super.title(value);
-        return this;
+    private InternalDialog(InternalFrame parent, Modality modality) {
+        super(parent.windowPane);
+        this.parent = parent;
+        this.modality = modality;
+
+        parent.subframes.add(this);
+        addButtons();
+        buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
+        setMoveable();
+        setHandlers();
     }
 
-    private InternalDialog(InternalFrame frame, boolean modal) {
-        super(frame.getWindowPane());
-        this.window = frame.window;
-        this.parent = frame;
-        this.modal = modal;
-        if (modal) {
-            parent.freez();
-        }
-        parent.subdialogs.add(this);
-        window.add(this);
+    public InternalDialog(Pane windowPane) {
+        super(windowPane);
+        this.modality = Modality.APPLICATION_MODAL;
+
         addButtons();
         buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
         setMoveable();
@@ -46,7 +45,7 @@ public class InternalDialog extends InternalFrame {
     private static InternalFrame findParent(Node node) {
 
         InternalFrame frame = null;
-        Parent parent = node.getParent();
+        Node parent = node;
 
         while (parent != null && !(parent instanceof InternalFrame)) {
             parent = parent.getParent();
@@ -57,6 +56,12 @@ public class InternalDialog extends InternalFrame {
         }
 
         return frame;
+    }
+
+    @Override
+    public InternalDialog title(String value) {
+        super.title(value);
+        return this;
     }
 
     protected void addButtons() {
@@ -94,12 +99,6 @@ public class InternalDialog extends InternalFrame {
     private void setHandlers() {
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
 
-            InternalDialog dialog = window.getModalDialog();
-
-            if (dialog != null && dialog != this) {
-                dialog.doModalEffect();
-            }
-
             if (!isActive()) {
 
                 activateAll();
@@ -124,15 +123,12 @@ public class InternalDialog extends InternalFrame {
 
     }
 
-    public boolean isModal() {
-        return modal;
-    }
-
     void disableOthers() {
 
     }
 
     public void show(Node node) {
+        applyModality();
         setContent(node);
         payload.setPrefWidth(windowPane.getWidth() / 2);
         payload.setPrefHeight(USE_COMPUTED_SIZE);
@@ -146,31 +142,34 @@ public class InternalDialog extends InternalFrame {
         });
 
         setVisible(false);
+        deactivateFront();
         windowPane.getChildren().add(this);
         activateAll();
     }
 
     public void close() {
-        parent.subdialogs.remove(this);
-        window.remove(this);
-        window.getWindowPane().getChildren().remove(this);
-        subdialogs.forEach(InternalDialog::close);
-        if (modal) {
-            parent.unfreez();
-        }
-        parent.activate();
+        super.close();
+        windowPane.getChildren().remove(this);
     }
 
     void activateAll() {
-        window.activateWindow();
-        var modalDialog = window.getModalDialog();
 
-        if (modalDialog == null || modalDialog == this) {
-            window.deactivate();
-            window.deactivateDialogs();
+        var root = getRoot();
+        if (root != null) {
+            root.activateRoot();
+        }
+        var modalFrame = getModalFrame(this);
+
+        if (modalFrame == null || modalFrame == this) {
+            if (root != null) {
+                root.deactivate();
+            }
+            deactivateFront();
             active.set(true);
             toFront();
             focusOwner.requestFocus();
+        } else {
+            modalFrame.doModalEffect();
         }
     }
 

@@ -11,8 +11,6 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point2D;
@@ -29,6 +27,7 @@ public class InternalWindow extends InternalFrame {
     private static final PseudoClass FULL_PSEUDO_CLASS = PseudoClass.getPseudoClass("full");
     private static final Duration MINIMALIZATION_DURATION = Duration.millis(300);
 
+    private WindowPane windowPane;
     private Window windowModel;
 
     protected Button newWindow = new Button(Fonts.Unicode.TWO_JOINED_SQUARES);
@@ -37,15 +36,11 @@ public class InternalWindow extends InternalFrame {
     private Button maximize = new Button(Fonts.Unicode.WHITE_LARGE_SQUARE);
     private Button full = new Button(Fonts.Octicons.SCREEN_FULL);
 
-    private ObservableList<InternalDialog> dialogs = FXCollections.observableArrayList();
-    private ObservableList<InternalDialog> modalDialogs = FXCollections.observableArrayList();;
-
     private ChangeListener<Boolean> activateListener = (v, o, n) -> {
         if (n) {
             activateAll();
         } else {
-            deactivate();
-            dialogs.forEach(InternalDialog::deactivate);
+            deactivateAll();
         }
     };
 
@@ -72,10 +67,10 @@ public class InternalWindow extends InternalFrame {
         }
     };
 
-    public InternalWindow(Window windowModel, WindowPane windowPane) {
+    public InternalWindow(WindowPane windowPane, Window windowModel) {
         super(windowPane);
+        this.windowPane = windowPane;
         this.windowModel = windowModel;
-        this.window = this;
 
         addButtons();
         buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
@@ -88,26 +83,6 @@ public class InternalWindow extends InternalFrame {
         if (css != null) {
             contentRegion.getStylesheets().addAll(css);
         }
-    }
-
-    void add(InternalDialog dialog) {
-        dialogs.add(dialog);
-        if (dialog.isModal()) {
-            modalDialogs.add(dialog);
-        }
-    }
-
-    void remove(InternalDialog dialog) {
-        dialogs.remove(dialog);
-        modalDialogs.remove(dialog);
-    }
-
-    public ObservableList<InternalDialog> getDialogs() {
-        return dialogs;
-    }
-
-    public ObservableList<InternalDialog> getModalDialogs() {
-        return modalDialogs;
     }
 
     @Override
@@ -214,24 +189,26 @@ public class InternalWindow extends InternalFrame {
     private void setHandlers() {
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
 
-            InternalDialog dialog = getModalDialog();
-
-            if (dialog != null) {
-                dialog.doModalEffect();
-            }
+            InternalFrame modalFrame = getModalFrame(this);
 
             if (windowModel.isActive()) {
-                if (modalDialogs.isEmpty()) {
+
+                if (modalFrame != null) {
+                    modalFrame.doModalEffect();
+                } else {
                     activate();
                 }
             } else {
                 windowModel.activate();
+                if (modalFrame != null) {
+                    modalFrame.doModalEffect();
+                }
             }
         });
 
         titleLabel.setOnMouseClicked(e -> {
-
-            if (modalDialogs.isEmpty()) {
+            InternalFrame modalFrame = getModalFrame(this);
+            if (modalFrame == null) {
                 if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
                     windowModel.maximizeRestore();
                 }
@@ -260,35 +237,30 @@ public class InternalWindow extends InternalFrame {
 
     }
 
-    private void close() {
-        windowPane.getChildren().removeAll(dialogs);
+    void close() {
+        super.close();
         onClose();
     }
 
     protected void onClose() {
     }
 
-    InternalDialog getModalDialog() {
-        var modalDialog = modalDialogs.isEmpty() ? null : modalDialogs.get(modalDialogs.size() - 1);
-        return modalDialog;
-    }
-
-    void activateWindow() {
+    void activateRoot() {
         windowModel.activate();
     }
 
     void activate() {
         active.set(true);
-        deactivateDialogs();
+        subframes.forEach(InternalFrame::deactivateAll);
         requestFocus();
         focusOwner.requestFocus();
     }
 
     void activateAll() {
         toFront();
-
-        if (!modalDialogs.isEmpty()) {
-            getModalDialog().activate();
+        InternalFrame modalFrame = getModalFrame(this);
+        if (modalFrame != null) {
+            modalFrame.activate();
         } else {
 
             active.set(true);
@@ -301,12 +273,8 @@ public class InternalWindow extends InternalFrame {
         }
     }
 
-    void deactivateDialogs() {
-        dialogs.forEach(InternalDialog::deactivate);
-    }
-
     void minimize(State old) {
-        dialogs.forEach(d -> d.setVisible(false));
+        setSubFramesVisible(false);
         if (old == State.RESTORED) {
             restoreBounds = getBoundsInParent();
         }
@@ -434,7 +402,7 @@ public class InternalWindow extends InternalFrame {
         fadeTransition.setToValue(1);
 
         parallelTransition.getChildren().addAll(translateTransition, scaleTransition, fadeTransition);
-        parallelTransition.setOnFinished(e -> dialogs.forEach(d -> d.setVisible(true)));
+        parallelTransition.setOnFinished(e -> setSubFramesVisible(true));
 
         parallelTransition.play();
     }

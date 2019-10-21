@@ -43,6 +43,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.stage.Modality;
 import javafx.util.Duration;
 
 public class FileDialog extends InternalDialog {
@@ -64,7 +65,7 @@ public class FileDialog extends InternalDialog {
     private boolean allPaths = true;
 
     public FileDialog(Node node) {
-        super(node, true);
+        super(node, Modality.WINDOW_MODAL);
 
         setGraphics();
         setSelectionContextMenu();

@@ -18,18 +18,21 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 
 public abstract class InternalFrame extends Region {
 
     protected static final double CURSOR_BORDER_WIDTH = 5;
     private static final PseudoClass ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("active");
 
-    protected ObservableList<InternalDialog> subdialogs = FXCollections.observableArrayList();
-    protected WindowPane windowPane;
+    protected Modality modality = Modality.NONE;
+
+    protected ObservableList<InternalFrame> subframes = FXCollections.observableArrayList();
+    protected Pane windowPane;
     protected InternalFrame parent;
-    protected InternalWindow window;
     protected Label titleLabel = new Label();
     protected HBox buttonBox = new HBox();
     protected BorderPane titleBar = new BorderPane();
@@ -59,7 +62,7 @@ public abstract class InternalFrame extends Region {
         }
     };
 
-    public InternalFrame(WindowPane windowPane) {
+    public InternalFrame(Pane windowPane) {
         this.windowPane = windowPane;
         setEffect();
     }
@@ -118,10 +121,6 @@ public abstract class InternalFrame extends Region {
         return this;
     }
 
-    WindowPane getWindowPane() {
-        return windowPane;
-    }
-
     void setContent(Node node) {
         contentRegion.setContent(node);
         Object owner = node.getProperties().get(node.getClass());
@@ -132,16 +131,55 @@ public abstract class InternalFrame extends Region {
         contentRegion.removeContent();
     }
 
-    abstract void activate();
+    InternalFrame getRoot() {
+        InternalFrame root = parent;
 
-    void freez() {
-        payload.setDisable(true);
-        subdialogs.stream().forEach(InternalDialog::freez);
+        if (root == null) {
+            return root;
+        }
+
+        while (root.parent != null) {
+            root = root.parent;
+        }
+
+        return root;
     }
 
-    void unfreez() {
-        payload.setDisable(false);
-        subdialogs.stream().forEach(InternalDialog::unfreez);
+    abstract void activate();
+
+    void activateRoot() {
+
+    }
+
+    void setFreeze(boolean value) {
+        if (value) {
+            if (!payload.isDisabled()) {
+                payload.setDisable(value);
+                subframes.stream().filter(s -> s.modality == Modality.NONE).forEach(f -> f.setFreeze(value));
+            }
+        } else {
+            if (payload.isDisabled()) {
+                payload.setDisable(value);
+                subframes.stream().forEach(f -> f.setFreeze(value));
+            }
+        }
+    }
+
+    boolean isFrozen() {
+        return payload.isDisabled();
+    }
+
+    void deactivateFront() {
+
+        if (windowPane.getChildren().isEmpty()) {
+            return;
+        }
+
+        var frame = windowPane.getChildren().get(windowPane.getChildren().size() - 1);
+
+        if (frame instanceof InternalFrame) {
+            ((InternalFrame) frame).deactivate();
+        }
     }
 
     void deactivate() {
@@ -152,6 +190,30 @@ public abstract class InternalFrame extends Region {
         }
     }
 
+    void deactivateAll() {
+        deactivate();
+
+        subframes.forEach(InternalFrame::deactivateAll);
+    }
+
+    void setSubFramesVisible(boolean value) {
+        subframes.forEach(s -> s.setSubFramesVisible(value));
+    }
+
+    void close() {
+        subframes.forEach(InternalFrame::close);
+
+        if (parent != null) {
+            parent.subframes.remove(this);
+            parent.setFreeze(false);
+            parent.activate();
+        }
+
+        if (modality == Modality.APPLICATION_MODAL) {
+            windowPane.toBack();
+        }
+    }
+
     boolean isActive() {
         return active.get();
     }
@@ -159,7 +221,7 @@ public abstract class InternalFrame extends Region {
     @Override
     public void toFront() {
         super.toFront();
-        subdialogs.forEach(InternalFrame::toFront);
+        subframes.forEach(InternalFrame::toFront);
     }
 
     boolean isInFront() {
@@ -168,6 +230,38 @@ public abstract class InternalFrame extends Region {
 
     void center() {
         relocate((windowPane.getWidth() - payload.getPrefWidth()) / 2, (windowPane.getHeight() - payload.getPrefHeight()) / 2);
+    }
+
+    void applyModality() {
+        if (modality == Modality.WINDOW_MODAL) {
+            if (parent != null) {
+                parent.setFreeze(true);
+            }
+        } else if (modality == Modality.APPLICATION_MODAL) {
+            windowPane.toFront();
+        }
+    }
+
+    InternalFrame getModalFrame(InternalFrame frame) {
+        InternalFrame modalFrame = null;
+        if (frame.isFrozen()) {
+            var tmp = subframes.stream().filter(s -> s.modality != Modality.NONE).findFirst().orElse(null);
+            while (tmp != null) {
+                modalFrame = tmp;
+                tmp = tmp.subframes.stream().filter(s -> s.modality != Modality.NONE).findFirst().orElse(null);
+            }
+        }
+
+        return modalFrame;
+    }
+
+    boolean isAncestor(InternalFrame frame) {
+        var ancestor = parent;
+        while (ancestor != frame && ancestor != null) {
+            ancestor = ancestor.parent;
+        }
+
+        return ancestor == frame;
     }
 
     void doModalEffect() {

@@ -60,7 +60,7 @@ public class DesktopEnvironment extends Region {
     private void setDialogListener() {
         Sys.am().toBeStartedApp().addListener((v, o, n) -> {
             if (n != null) {
-                DialogDisplayer.start(getScene().getWindow(), n);
+                DialogDisplayer.start(activeDesktopPane.getModalPane(), n);
             }
         });
     }

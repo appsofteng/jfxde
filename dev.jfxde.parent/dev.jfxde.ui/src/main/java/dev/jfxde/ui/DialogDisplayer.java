@@ -6,9 +6,11 @@ import dev.jfxde.logic.data.PermissionDescriptor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
 import javafx.stage.Window;
 
 public final class DialogDisplayer {
@@ -17,17 +19,20 @@ public final class DialogDisplayer {
 
 	}
 
-	public static void start(Window owner, AppProviderDescriptor descriptor) {
+	public static void start(Pane owner, AppProviderDescriptor descriptor) {
 
-		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.initOwner(owner);
-		alert.setTitle(Sys.rm().getString("confirmation"));
-		alert.setHeaderText(Sys.rm().getString("appPermissions", descriptor.getName()));
-		alert.setContentText(Sys.rm().getString("appPermissionConfirmation"));
-		alert.getDialogPane().setExpandableContent(getAppPermissionTable(descriptor));
+	    var dialog = new InternalDialog(owner);
+	    dialog.show(new Label("Test"));
 
-		alert.showAndWait().filter(response -> response == ButtonType.OK)
-				.ifPresent(response -> Sys.am().allowAndStart(descriptor));
+//		Alert alert = new Alert(AlertType.CONFIRMATION);
+//		alert.initOwner(owner);
+//		alert.setTitle(Sys.rm().getString("confirmation"));
+//		alert.setHeaderText(Sys.rm().getString("appPermissions", descriptor.getName()));
+//		alert.setContentText(Sys.rm().getString("appPermissionConfirmation"));
+//		alert.getDialogPane().setExpandableContent(getAppPermissionTable(descriptor));
+//
+//		alert.showAndWait().filter(response -> response == ButtonType.OK)
+//				.ifPresent(response -> Sys.am().allowAndStart(descriptor));
 	}
 
 	@SuppressWarnings("unchecked")

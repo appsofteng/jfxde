@@ -19,6 +19,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
+import javafx.stage.Modality;
 import picocli.CommandLine.Command;
 
 @Command(name = "/env")
@@ -35,7 +36,7 @@ public class EnvCommand extends BaseCommand {
 
         Platform.runLater(() -> {
 
-            InternalDialog dialog = new InternalDialog(commandProcessor.getSession().getContent(), true);
+            InternalDialog dialog = new InternalDialog(commandProcessor.getSession().getContent(), Modality.WINDOW_MODAL);
             dialog.title(commandProcessor.getSession().getContext().rc().getString("environment"));
             EnvBox envBox = new EnvBox(commandProcessor.getSession().getContext(), getEnvs());
             DialogPane dialogPane = new DialogPane();
