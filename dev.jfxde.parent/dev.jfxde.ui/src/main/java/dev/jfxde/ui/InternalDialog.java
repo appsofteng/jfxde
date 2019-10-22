@@ -1,6 +1,7 @@
 package dev.jfxde.ui;
 
 import dev.jfxde.jfxext.util.LayoutUtils;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
@@ -127,21 +128,27 @@ public class InternalDialog extends InternalFrame {
 
     }
 
-    public void show(Node node) {
+    private ChangeListener<Number> prefSizeListener;
+
+    public void show() {
         applyModality();
-        setContent(node);
-        payload.setPrefWidth(windowPane.getWidth() / 2);
-        payload.setPrefHeight(USE_COMPUTED_SIZE);
 
-        payload.heightProperty().addListener((v, o, n) -> {
-            if (payload.getPrefHeight() == USE_COMPUTED_SIZE) {
-                payload.setPrefHeight(Math.min(n.doubleValue(), windowPane.getHeight() - 20));
-                center();
-                setVisible(true);
-            }
-        });
+        if (isResizable()) {
+            payload.setPrefWidth(windowPane.getWidth() / 2);
+            payload.setPrefHeight(USE_COMPUTED_SIZE);
 
-        setVisible(false);
+            prefSizeListener = (v, o, n) -> {
+                if (payload.getPrefHeight() == USE_COMPUTED_SIZE) {
+                    payload.setPrefHeight(Math.min(n.doubleValue(), windowPane.getHeight() - 20));
+                    center();
+                    payload.heightProperty().removeListener(prefSizeListener);
+                    prefSizeListener = null;
+                }
+            };
+
+            payload.heightProperty().addListener(prefSizeListener);
+        }
+
         deactivateFront();
         windowPane.getChildren().add(this);
         activateAll();

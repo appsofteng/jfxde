@@ -1,6 +1,10 @@
 package dev.jfxde.ui;
 
+
 import dev.jfxde.logic.data.Desktop;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
@@ -10,6 +14,7 @@ public class DesktopPane extends StackPane {
 	private WindowPane windowPane;
 	private ShortcutPane shortcutPane;
 	private ModalPane modalPane;
+	private BooleanProperty frozen = new SimpleBooleanProperty();
 
 	public DesktopPane(Desktop desktop) {
 		this.desktop = desktop;
@@ -21,17 +26,20 @@ public class DesktopPane extends StackPane {
         getChildren().addAll(modalPane, shortcutPane, windowPane);
 	}
 
+	ReadOnlyBooleanProperty frozenProperty() {
+	    return frozen;
+	}
+
+	void setFreeze(boolean value) {
+        shortcutPane.setDisable(value);
+        windowPane.setDisable(value);
+        modalPane.setVisible(value);
+        frozen.set(value);
+	}
+
 	public Desktop getDesktop() {
 		return desktop;
 	}
-
-	ShortcutPane getShortcutPane() {
-        return shortcutPane;
-    }
-
-	WindowPane getWindowPane() {
-        return windowPane;
-    }
 
 	Pane getModalPane() {
         return modalPane;

@@ -39,7 +39,7 @@ public class SetCommand extends BaseCommand {
             final Button cancel = (Button) dialogPane.lookupButton(cancelButtonType);
             cancel.setOnAction(e -> dialog.close());
 
-            dialog.show(dialogPane);
+            dialog.setContent(dialogPane).show();
         });
     }
 }

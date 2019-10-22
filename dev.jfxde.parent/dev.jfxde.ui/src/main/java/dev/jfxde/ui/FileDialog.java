@@ -260,6 +260,7 @@ public class FileDialog extends InternalDialog {
 
     public void showOpenDialog(Consumer<List<Path>> consumer) {
         this.selectionConsumer = consumer;
-        show(borderPane);
+        setContent(borderPane);
+        show();
     }
 }

@@ -19,17 +19,13 @@ public class ModalPane extends Pane {
 
     @Override
     public void toFront() {
-        desktopPane.getShortcutPane().setDisable(true);
-        desktopPane.getWindowPane().setDisable(true);
-        setVisible(true);
+        desktopPane.setFreeze(true);
         super.toFront();
     }
 
     @Override
     public void toBack() {
-        desktopPane.getShortcutPane().setDisable(false);
-        desktopPane.getWindowPane().setDisable(false);
-        setVisible(false);
+        desktopPane.setFreeze(false);
         super.toBack();
     }
 }

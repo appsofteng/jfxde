@@ -45,6 +45,8 @@ public abstract class InternalFrame extends Region {
     protected Bounds restoreBounds;
     protected Point2D pressDragPoint;
 
+    private boolean resizable = true;
+
     protected BooleanProperty active = new BooleanPropertyBase() {
         @Override
         protected void invalidated() {
@@ -115,17 +117,33 @@ public abstract class InternalFrame extends Region {
         setCacheHint(CacheHint.SPEED);
     }
 
+    @Override
+    public boolean isResizable() {
+        return resizable;
+    }
+
+    public void setResizable(boolean resizable) {
+  //      this.resizable = resizable;
+
+        if (!resizable) {
+            payload.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
+        }
+    }
+
     public InternalFrame title(String value) {
         titleLabel.setText(value);
 
         return this;
     }
 
-    void setContent(Node node) {
+    public InternalFrame setContent(Node node) {
         contentRegion.setContent(node);
         Object owner = node.getProperties().get(node.getClass());
         focusOwner = owner != null ? (Node) owner : node;
+        return this;
     }
+
+    public void show() {}
 
     void removeContent() {
         contentRegion.removeContent();

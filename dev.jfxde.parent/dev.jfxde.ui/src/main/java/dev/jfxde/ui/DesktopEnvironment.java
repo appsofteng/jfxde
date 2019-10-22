@@ -40,7 +40,7 @@ public class DesktopEnvironment extends Region {
 
         String style = "-jd-base-color: " + color + ";";
         for (int i = 4; i < 8; i++) {
-            style += "-jd-base-color-alpha" + i + ": " + Color.web(color, i/10.0).toString().replace("0x", "#") + ";";
+            style += "-jd-base-color-alpha" + i + ": " + Color.web(color, i / 10.0).toString().replace("0x", "#") + ";";
         }
 
         setStyle(style);
@@ -122,6 +122,8 @@ public class DesktopEnvironment extends Region {
             activeDesktopPane = new DesktopPane(activeDesktop);
             desktopStack.getChildren().add(activeDesktopPane);
         }
+
+        controlBar.bindDesktop(activeDesktopPane);
 
         activeDesktopPane.toFront();
     }

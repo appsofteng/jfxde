@@ -101,7 +101,7 @@ public class WindowPane extends Pane {
 
     void addWindow(Window window) {
 
-        InternalWindow appWindow = new AppWindow(window, this);
+        InternalWindow appWindow = new AppWindow(this, window);
 
         getChildren().add(appWindow);
         windows.add(appWindow);
