@@ -12,8 +12,8 @@ public class AppWindow extends InternalWindow {
     private AppDescriptor appDescriptor;
     private ProgressIndicator progressIndicator;
 
-    public AppWindow(Window window, WindowPane pane) {
-        super(window, pane);
+    public AppWindow(WindowPane pane, Window window) {
+        super(pane, window);
         this.appDescriptor = window.getAppDescriptor();
 
         titleLabel.textProperty().bind(appDescriptor.displayProperty());

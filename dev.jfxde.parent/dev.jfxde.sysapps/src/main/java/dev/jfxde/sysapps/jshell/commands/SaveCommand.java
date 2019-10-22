@@ -5,9 +5,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
+import dev.jfxde.jfxext.util.LU;
 import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.Session;
-import io.vavr.control.Try;
 import javafx.application.Platform;
 import javafx.stage.FileChooser;
 import jdk.jshell.Snippet;
@@ -69,7 +69,7 @@ public class SaveCommand extends BaseCommand {
             if (file != null) {
                 commandProcessor.getSession().getContext().tc().executeSequentially(Session.PRIVILEDGED_TASK_QUEUE, () -> {
                     try (var f = Files.newBufferedWriter(file.toPath())) {
-                        snippets.forEach(s -> Try.run(() -> { f.append(s.strip()); f.newLine();}));
+                        snippets.forEach(s -> LU.of(() -> { f.append(s.strip()); f.newLine();}));
                     }
                 });
             }

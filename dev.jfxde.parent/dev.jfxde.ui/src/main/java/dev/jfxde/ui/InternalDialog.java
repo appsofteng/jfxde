@@ -1,38 +1,72 @@
 package dev.jfxde.ui;
 
 import dev.jfxde.jfxext.util.LayoutUtils;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.Parent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 
 public class InternalDialog extends InternalFrame {
 
-    private InternalWindow window;
-    private boolean modal;
-
-    private InternalDialog(InternalWindow window) {
-        this(window, false);
+    public InternalDialog(Node node) {
+        this(node, Modality.NONE);
     }
 
-    private InternalDialog(InternalWindow window, boolean modal) {
-        super(window.getWindowPane());
-        this.window = window;
-        this.parent = window;
-        this.modal = modal;
-        if (modal) {
-            parent.freez();
-        }
-        window.add(this);
+    public InternalDialog(Node node, Modality modality) {
+        this(findParent(node), modality);
+    }
+
+    private InternalDialog(InternalFrame parent, Modality modality) {
+        super(parent.windowPane);
+        this.parent = parent;
+        this.modality = modality;
+
+        parent.subframes.add(this);
         addButtons();
         buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
         setMoveable();
         setHandlers();
     }
 
+    public InternalDialog(Pane windowPane) {
+        super(windowPane);
+        this.modality = Modality.APPLICATION_MODAL;
+
+        addButtons();
+        buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
+        setMoveable();
+        setHandlers();
+    }
+
+    private static InternalFrame findParent(Node node) {
+
+        InternalFrame frame = null;
+        Node parent = node;
+
+        while (parent != null && !(parent instanceof InternalFrame)) {
+            parent = parent.getParent();
+        }
+
+        if (parent instanceof InternalFrame) {
+            frame = (InternalFrame) parent;
+        }
+
+        return frame;
+    }
+
+    @Override
+    public InternalDialog setTitle(String value) {
+        super.setTitle(value);
+        return this;
+    }
+
     protected void addButtons() {
-       super.addButtons();
+        super.addButtons();
 
         buttonBox.getChildren().addAll(close);
     }
@@ -66,15 +100,16 @@ public class InternalDialog extends InternalFrame {
     private void setHandlers() {
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
 
-            InternalDialog dialog = window.getModalDialog();
-
-            if (dialog != null && dialog != this) {
-                dialog.doModalEffect();
-            }
-
             if (!isActive()) {
 
                 activateAll();
+            }
+        });
+
+        addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+
+            if (e.getCode() == KeyCode.ESCAPE) {
+                close();
             }
         });
 
@@ -89,71 +124,61 @@ public class InternalDialog extends InternalFrame {
 
     }
 
-    public boolean isModal() {
-        return modal;
-    }
-
     void disableOthers() {
 
     }
 
-    public static InternalDialog create(Node node) {
-        return create(node, false);
-    }
+    private ChangeListener<Number> prefSizeListener;
 
-    public static InternalDialog create(Node node, boolean modal) {
-        InternalDialog dialog = null;
-        Parent parent = node.getParent();
+    public void show() {
+        applyModality();
 
-        while (parent != null && !(parent instanceof InternalWindow)) {
-            parent = parent.getParent();
+        if (!isUseComputedSize()) {
+            payload.setPrefWidth(windowPane.getWidth() / 2);
+            payload.setPrefHeight(USE_COMPUTED_SIZE);
         }
 
-        if (parent instanceof InternalWindow) {
-            dialog = new InternalDialog((InternalWindow) parent, modal);
-        }
-        return dialog;
-    }
-
-    public void show(Node node) {
-        setContent(node);
-        payload.setPrefWidth(windowPane.getWidth() / 2);
-        payload.setPrefHeight(USE_COMPUTED_SIZE);
-
-        payload.heightProperty().addListener((v,o,n) -> {
+        prefSizeListener = (v, o, n) -> {
             if (payload.getPrefHeight() == USE_COMPUTED_SIZE) {
-                payload.setPrefHeight(Math.min(n.doubleValue(), windowPane.getHeight() - 20));
+                if (payload.getPrefWidth() != USE_COMPUTED_SIZE) {
+                    payload.setPrefHeight(Math.min(n.doubleValue(), windowPane.getHeight() - 20));
+                }
                 center();
-                setVisible(true);
+                payload.heightProperty().removeListener(prefSizeListener);
+                prefSizeListener = null;
             }
-        });
+        };
 
-        setVisible(false);
+        payload.heightProperty().addListener(prefSizeListener);
+
+        deactivateFront();
         windowPane.getChildren().add(this);
         activateAll();
     }
 
     public void close() {
-        window.remove(this);
-        window.getDialogs().removeAll(subdialogs);
-        window.getWindowPane().getChildren().remove(this);
-        window.getWindowPane().getChildren().removeAll(subdialogs);
-        if (modal) {
-            parent.unfreez();
-        }
-        parent.activate();
+        super.close();
+        windowPane.getChildren().remove(this);
     }
 
     void activateAll() {
-        window.activateWindow();
-        var modalDialog = window.getModalDialog();
 
-        if (modalDialog == null || modalDialog == this) {
-            window.deactivate();
-            window.deactivateDialogs();
+        var root = getRoot();
+        if (root != null) {
+            root.activateRoot();
+        }
+        var modalFrame = getModalFrame(this);
+
+        if (modalFrame == null || modalFrame == this) {
+            if (root != null) {
+                root.deactivate();
+            }
+            deactivateFront();
             active.set(true);
             toFront();
             focusOwner.requestFocus();
+        } else {
+            modalFrame.doModalEffect();
         }
     }
 

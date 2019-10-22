@@ -1,0 +1,10 @@
+-Djavafx.pulseLogger=true
+-Djavafx.debug=true
+-Djavafx.verbose=true
+-Dprism.pooldebug=true
+-Dprism.debug=true
+-Dprism.trace=true
+-Dprism.verbose=true
+-Dquantum.debug=true
+-Dquantum.pulsedebug=true
+-Dquantum.verbose=true

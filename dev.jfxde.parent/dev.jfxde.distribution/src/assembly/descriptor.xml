@@ -92,20 +92,23 @@
 			</binaries>
 		</moduleSet>
 	</moduleSets>
-	<files>
-		<file>
-			<source>src/main/conf/logging.properties</source>
+
+	<fileSets>
+		<fileSet>
+			<directory>src/main/conf</directory>
 			<outputDirectory>conf</outputDirectory>
+			<includes>
+				<include>**/*.properties</include>
+			</includes>
 			<filtered>true</filtered>
-		</file>
-		<file>
-			<source>src/main/conf/preferences.properties</source>
-			<outputDirectory>conf</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>src/main/scripts</directory>
+			<outputDirectory>.</outputDirectory>
+			<includes>
+				<include>**/options*</include>
+			</includes>
 			<filtered>true</filtered>
-		</file>
-		<file>
-			<source>src/main/scripts/options</source>
-			<filtered>true</filtered>
-		</file>
-	</files>
+		</fileSet>
+	</fileSets>
 </component>

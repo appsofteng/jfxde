@@ -30,11 +30,14 @@ public class ControlBar extends VBox {
 			this);
 	private static final PseudoClass ACTIVE_PSEUDOCLASS_STATE = PseudoClass.getPseudoClass("active");
 
+	private TitledPane appPane;
+	private TitledPane startedAppPane;
+
 	public ControlBar() {
 
 		Accordion accordion = new Accordion();
-		accordion.getPanes().add(createAppPane());
-		accordion.getPanes().add(createStartedAppPane());
+		accordion.getPanes().add(appPane = createAppPane());
+		accordion.getPanes().add(startedAppPane = createStartedAppPane());
 		accordion.getPanes().add(createDesktopPane());
 
 		getChildren().add(accordion);
@@ -57,6 +60,14 @@ public class ControlBar extends VBox {
 			controlBarTransition.setByX(-getTranslateX());
 			controlBarTransition.play();
 		}
+	}
+
+	void bindDesktop(DesktopPane desktopPane) {
+	    appPane.disableProperty().unbind();
+	    startedAppPane.disableProperty().unbind();
+
+	    appPane.disableProperty().bind(desktopPane.frozenProperty());
+	    startedAppPane.disableProperty().bind(desktopPane.frozenProperty());
 	}
 
 	private TitledPane createAppPane() {

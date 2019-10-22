@@ -19,7 +19,9 @@ public class PreferencesContent extends StackPane {
         // sometimes. When run later
         // the exception does not appear.
         Platform.runLater(() -> {
-            LazyTreeItem<Preference> root = new LazyTreeItem<>(new Preference(), Preference::isLeaf, i -> Sys.pm().getPreferences(i));
+            LazyTreeItem<Preference> root = new LazyTreeItem<>(new Preference())
+                    .leaf(i -> i.getValue().isLeaf())
+                    .childrenGetter(i -> Sys.pm().getPreferences(i.getValue(), p -> new LazyTreeItem<>(p, i), c -> i.add(c)));
             TreeTableView<Preference> table = new TreeTableView<>(root);
             table.setShowRoot(false);
 

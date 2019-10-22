@@ -8,6 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
+import javafx.stage.Modality;
 import picocli.CommandLine.Command;
 
 @Command(name = "/set")
@@ -21,7 +22,7 @@ public class SetCommand extends BaseCommand {
     public void run() {
         Platform.runLater(() -> {
 
-            InternalDialog dialog = InternalDialog.create(commandProcessor.getSession().getContent(), true);
+            InternalDialog dialog = new InternalDialog(commandProcessor.getSession().getContent(), Modality.WINDOW_MODAL);
             dialog.setTitle(commandProcessor.getSession().getContext().rc().getString("settings"));
             SetBox setBox = new SetBox(commandProcessor.getSession().getContext(), commandProcessor.getSession().loadSettings());
             DialogPane dialogPane = new DialogPane();
@@ -38,7 +39,7 @@ public class SetCommand extends BaseCommand {
             final Button cancel = (Button) dialogPane.lookupButton(cancelButtonType);
             cancel.setOnAction(e -> dialog.close());
 
-            dialog.show(dialogPane);
+            dialog.setContent(dialogPane).show();
         });
     }
 }
