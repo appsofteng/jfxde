@@ -45,8 +45,6 @@ public abstract class InternalFrame extends Region {
     protected Bounds restoreBounds;
     protected Point2D pressDragPoint;
 
-    private boolean resizable = true;
-
     protected BooleanProperty active = new BooleanPropertyBase() {
         @Override
         protected void invalidated() {
@@ -77,8 +75,6 @@ public abstract class InternalFrame extends Region {
     }
 
     protected void buildLayout(double width, double height) {
-        titleLabel.setPrefWidth(Double.MAX_VALUE);
-
         buttonBox.setMinWidth(USE_PREF_SIZE);
         buttonBox.setMinHeight(USE_PREF_SIZE);
 
@@ -117,20 +113,16 @@ public abstract class InternalFrame extends Region {
         setCacheHint(CacheHint.SPEED);
     }
 
-    @Override
-    public boolean isResizable() {
-        return resizable;
+    boolean isUseComputedSize() {
+        return payload.getPrefWidth() == Region.USE_COMPUTED_SIZE || payload.getPrefHeight() == Region.USE_COMPUTED_SIZE;
     }
 
-    public void setResizable(boolean resizable) {
-  //      this.resizable = resizable;
+    void setUseComputedSize() {
 
-        if (!resizable) {
-            payload.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
-        }
+        payload.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
     }
 
-    public InternalFrame title(String value) {
+    public InternalFrame setTitle(String value) {
         titleLabel.setText(value);
 
         return this;
@@ -143,7 +135,8 @@ public abstract class InternalFrame extends Region {
         return this;
     }
 
-    public void show() {}
+    public void show() {
+    }
 
     void removeContent() {
         contentRegion.removeContent();
@@ -247,7 +240,11 @@ public abstract class InternalFrame extends Region {
     }
 
     void center() {
-        relocate((windowPane.getWidth() - payload.getPrefWidth()) / 2, (windowPane.getHeight() - payload.getPrefHeight()) / 2);
+        if (isUseComputedSize()) {
+            relocate((windowPane.getWidth() - payload.getWidth()) / 2, (windowPane.getHeight() - payload.getHeight()) / 2);
+        } else {
+            relocate((windowPane.getWidth() - payload.getPrefWidth()) / 2, (windowPane.getHeight() - payload.getPrefHeight()) / 2);
+        }
     }
 
     void applyModality() {

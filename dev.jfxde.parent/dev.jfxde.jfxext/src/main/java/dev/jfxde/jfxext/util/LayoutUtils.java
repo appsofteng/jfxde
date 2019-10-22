@@ -54,6 +54,10 @@ public final class LayoutUtils {
         return result;
     }
 
+    private static boolean isUseComputedSize(Region region) {
+        return region.getPrefWidth() == Region.USE_COMPUTED_SIZE || region.getPrefHeight() == Region.USE_COMPUTED_SIZE;
+    }
+
     public static void makeDragable(Node node, Node childNodeToDrag, Callback<MouseEvent, Point2D> pressHandler,
             Runnable dragHandler) {
         final double[] dragDiff = new double[2];
@@ -79,14 +83,14 @@ public final class LayoutUtils {
     public static void makeResizable(Node resizableNode, Region preferredSizeNode, double cursorDetectionBorderWidth) {
 
         resizableNode.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
-            if (!preferredSizeNode.isDisabled()) {
+            if (resizableNode.isResizable() && !isUseComputedSize(preferredSizeNode) && !preferredSizeNode.isDisabled()) {
                 addResizeCursors(resizableNode, cursorDetectionBorderWidth, new Point2D(e.getX(), e.getY()));
             }
         });
 
         resizableNode.addEventFilter(MouseEvent.MOUSE_DRAGGED, e -> {
 
-            if (!resizableNode.isResizable() || preferredSizeNode.isDisabled()
+            if (!resizableNode.isResizable() || isUseComputedSize(preferredSizeNode) || preferredSizeNode.isDisabled()
                     || !isInScene(resizableNode.getScene(), e.getSceneX(), e.getSceneY())) {
                 return;
             }

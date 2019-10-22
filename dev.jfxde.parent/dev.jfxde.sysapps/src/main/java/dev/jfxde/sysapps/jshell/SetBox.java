@@ -68,7 +68,7 @@ public class SetBox extends VBox {
         MenuItem addFiles = new MenuItem(context.rc().getString("addScripts"));
         addFiles.setOnAction(e -> {
             new FileDialog(this)
-            .title(context.rc().getString("startupScripts"))
+            .setTitle(context.rc().getString("startupScripts"))
             .filesOnly()
             .showOpenDialog(paths -> scriptsView.getItems()
                     .addAll(paths.stream().map(f -> f.toString()).filter(p -> !settings.getStartupScripts().contains(p)).collect(Collectors.toList())));

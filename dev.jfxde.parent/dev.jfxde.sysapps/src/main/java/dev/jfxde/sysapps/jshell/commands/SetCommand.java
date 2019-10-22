@@ -23,7 +23,7 @@ public class SetCommand extends BaseCommand {
         Platform.runLater(() -> {
 
             InternalDialog dialog = new InternalDialog(commandProcessor.getSession().getContent(), Modality.WINDOW_MODAL);
-            dialog.title(commandProcessor.getSession().getContext().rc().getString("settings"));
+            dialog.setTitle(commandProcessor.getSession().getContext().rc().getString("settings"));
             SetBox setBox = new SetBox(commandProcessor.getSession().getContext(), commandProcessor.getSession().loadSettings());
             DialogPane dialogPane = new DialogPane();
             dialogPane.setContent(setBox);

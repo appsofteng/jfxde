@@ -73,8 +73,8 @@ public class FileDialog extends InternalDialog {
     }
 
     @Override
-    public FileDialog title(String value) {
-        super.title(value);
+    public FileDialog setTitle(String value) {
+        super.setTitle(value);
         return this;
     }
 

@@ -246,7 +246,7 @@ public class EnvBox extends VBox {
         MenuItem add = new MenuItem(context.rc().getString("add"));
         add.setOnAction(e -> {
             new FileDialog(this)
-            .title(context.rc().getString("classpath"))
+            .setTitle(context.rc().getString("classpath"))
                     .showOpenDialog(paths -> classpathView.getItems()
                             .addAll(paths.stream().map(f -> f.toString()).filter(p -> !env.getClassPath().contains(p)).collect(Collectors.toList())));
         });
@@ -275,7 +275,7 @@ public class EnvBox extends VBox {
         MenuItem addDirectory = new MenuItem(context.rc().getString("addDirectory"));
         addDirectory.setOnAction(e -> {
             new FileDialog(this)
-            .title(context.rc().getString("modulepath"))
+            .setTitle(context.rc().getString("modulepath"))
                     .directoriesOnly()
                     .showOpenDialog(paths -> modulepathView.getItems()
                             .addAll(paths.stream().map(f -> f.toString()).filter(p -> !env.getModulePath().contains(p))

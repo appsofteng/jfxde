@@ -60,8 +60,8 @@ public class InternalDialog extends InternalFrame {
     }
 
     @Override
-    public InternalDialog title(String value) {
-        super.title(value);
+    public InternalDialog setTitle(String value) {
+        super.setTitle(value);
         return this;
     }
 
@@ -133,21 +133,23 @@ public class InternalDialog extends InternalFrame {
     public void show() {
         applyModality();
 
-        if (isResizable()) {
+        if (!isUseComputedSize()) {
             payload.setPrefWidth(windowPane.getWidth() / 2);
             payload.setPrefHeight(USE_COMPUTED_SIZE);
-
-            prefSizeListener = (v, o, n) -> {
-                if (payload.getPrefHeight() == USE_COMPUTED_SIZE) {
-                    payload.setPrefHeight(Math.min(n.doubleValue(), windowPane.getHeight() - 20));
-                    center();
-                    payload.heightProperty().removeListener(prefSizeListener);
-                    prefSizeListener = null;
-                }
-            };
-
-            payload.heightProperty().addListener(prefSizeListener);
         }
+
+        prefSizeListener = (v, o, n) -> {
+            if (payload.getPrefHeight() == USE_COMPUTED_SIZE) {
+                if (payload.getPrefWidth() != USE_COMPUTED_SIZE) {
+                    payload.setPrefHeight(Math.min(n.doubleValue(), windowPane.getHeight() - 20));
+                }
+                center();
+                payload.heightProperty().removeListener(prefSizeListener);
+                prefSizeListener = null;
+            }
+        };
+
+        payload.heightProperty().addListener(prefSizeListener);
 
         deactivateFront();
         windowPane.getChildren().add(this);

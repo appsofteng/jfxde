@@ -9,6 +9,7 @@ import javafx.beans.binding.Bindings;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -58,9 +59,15 @@ public class DesktopEnvironment extends Region {
     }
 
     private void setDialogListener() {
-        Sys.am().toBeStartedApp().addListener((v, o, n) -> {
-            if (n != null) {
-                DialogDisplayer.start(activeDesktopPane.getModalPane(), n);
+        Sys.am().toBeStartedApp().addListener((v, o, appProviderDescriptor) -> {
+            if (appProviderDescriptor != null) {
+                AlertBuilder.get(activeDesktopPane.getModalPane(), AlertType.CONFIRMATION)
+                        .title(Sys.rm().getString("confirmation"))
+                        .headerText(Sys.rm().getString("appPermissions", appProviderDescriptor.getName()))
+                        .contentText(Sys.rm().getString("appPermissionConfirmation"))
+                        .expandableContent(DataUtils.getAppPermissionTable(appProviderDescriptor))
+                        .action(() -> Sys.am().allowAndStart(appProviderDescriptor))
+                        .show();
             }
         });
     }
