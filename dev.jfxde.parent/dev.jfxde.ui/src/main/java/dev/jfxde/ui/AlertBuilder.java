@@ -61,6 +61,7 @@ public final class AlertBuilder {
         });
 
         var dialog = new InternalDialog(owner);
+        dialog.setTitle(alert.getTitle());
         dialog.setUseComputedSize();
 
         final Button ok = (Button) dialogPane.lookupButton(ButtonType.OK);
