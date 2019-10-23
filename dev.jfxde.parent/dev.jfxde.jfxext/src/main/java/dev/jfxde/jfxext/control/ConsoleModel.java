@@ -8,6 +8,7 @@ import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
 import javafx.collections.FXCollections;
@@ -28,7 +29,7 @@ public class ConsoleModel {
     private InputStream in;
     private PrintStream out = new PrintStream(new ConsoleOutputStream(NORMAL_STYLE), true);
     private PrintStream err = new PrintStream(new ConsoleOutputStream(ERROR_STYLE), true);
-    private boolean readFromPipe;
+    private AtomicBoolean readFromPipe= new AtomicBoolean();
 
     public ConsoleModel() {
 
@@ -49,15 +50,24 @@ public class ConsoleModel {
                 if (c.wasAdded()) {
                     List<? extends TextStyleSpans> added = new ArrayList<>(c.getAddedSubList());
 
-                    if (readFromPipe) {
+                    if (isReadFromPipe()) {
                         added.stream().map(TextStyleSpans::getText).forEach(outToInStream::print);
                     } else {
                         inputToOutput.addAll(added);
-                        output.addAll(added);
                     }
+
+                    output.addAll(added);
                 }
             }
         });
+    }
+
+    public boolean isReadFromPipe() {
+        return readFromPipe.get();
+    }
+
+    public AtomicBoolean getReadFromPipe() {
+        return readFromPipe;
     }
 
     public ObservableList<TextStyleSpans> getInput() {
@@ -141,16 +151,16 @@ public class ConsoleModel {
 
         @Override
         public int read() throws IOException {
-            readFromPipe = true;
+            readFromPipe.set(true);
             int o = super.read();
-            readFromPipe = false;
+            readFromPipe.set(false);
             return o;
         }
 
         @Override
         public synchronized int read(byte[] b, int off, int len) throws IOException {
             int o = super.read(b, off, len);
-            readFromPipe = false;
+            readFromPipe.set(false);
             return o;
         }
     }
