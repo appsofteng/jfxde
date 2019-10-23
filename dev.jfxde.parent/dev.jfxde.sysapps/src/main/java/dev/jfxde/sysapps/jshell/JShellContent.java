@@ -77,11 +77,13 @@ public class JShellContent extends BorderPane {
         });
 
         Lexer lexer = Lexer.get("file.java", CommandProcessor.COMMAND_PATTERN);
+        LexerFeature<CodeArea> lexerFeature = new LexerFeature<>(lexer);
+        lexerFeature.setDisableHighlight(consoleView.getConsoleModel().getReadFromPipe());
         AreaFeatures.decorate(consoleView.getInputArea())
                 .add(new CompletionFeature<>(this::codeCompletion, completion::loadDocumentation))
                 .add(new BlockEndFeature<>())
                 .add(new IndentationFeature<>())
-                .add(new LexerFeature<>(lexer))
+                .add(lexerFeature)
                 .add(new HighlightBlockDelimiterFeature<>())
                 .init();
         consoleView.getOutputArea().getStylesheets().add(lexer.getCss());
