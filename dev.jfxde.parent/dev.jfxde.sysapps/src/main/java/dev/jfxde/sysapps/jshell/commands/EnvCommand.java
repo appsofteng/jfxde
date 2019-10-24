@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.google.gson.reflect.TypeToken;
 
-import dev.jfxde.logic.JsonUtils;
+import dev.jfxde.jfxext.util.JsonUtils;
 import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.Env;
 import dev.jfxde.sysapps.jshell.EnvBox;

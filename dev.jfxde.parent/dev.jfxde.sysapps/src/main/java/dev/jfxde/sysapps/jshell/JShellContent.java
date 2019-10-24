@@ -18,7 +18,7 @@ import dev.jfxde.jfxext.richtextfx.features.HighlightBlockDelimiterFeature;
 import dev.jfxde.jfxext.richtextfx.features.IndentationFeature;
 import dev.jfxde.jfxext.richtextfx.features.Lexer;
 import dev.jfxde.jfxext.richtextfx.features.LexerFeature;
-import dev.jfxde.logic.JsonUtils;
+import dev.jfxde.jfxext.util.JsonUtils;
 import javafx.collections.ListChangeListener.Change;
 import javafx.scene.layout.BorderPane;
 
@@ -90,7 +90,7 @@ public class JShellContent extends BorderPane {
     }
 
     private List<String> loadHistory() {
-        @SuppressWarnings("unchecked")
+
         List<String> history = JsonUtils.fromJson(context.fc().getAppDataDir().resolve(HISTORY_FILE_NAME), List.class, List.of());
         return history;
     }

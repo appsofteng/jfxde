@@ -1,4 +1,4 @@
-package dev.jfxde.logic;
+package dev.jfxde.jfxext.util;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -27,22 +27,6 @@ public abstract class JsonUtils {
         } catch (JsonIOException | IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public static <T> T fromJson(Path file, Class<T> type, T defaultObj) {
-        T obj = defaultObj;
-
-        if (Files.exists(file)) {
-            Gson gson = getGson();
-
-            try (var f = Files.newBufferedReader(file)) {
-                obj = gson.fromJson(f, type);
-            } catch (JsonIOException | IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return obj;
     }
 
     public static <T> T fromJson(Path file, Type type, T defaultObj) {

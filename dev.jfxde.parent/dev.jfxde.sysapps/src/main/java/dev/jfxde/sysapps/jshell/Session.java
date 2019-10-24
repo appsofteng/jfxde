@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.control.SplitConsoleView;
-import dev.jfxde.logic.JsonUtils;
+import dev.jfxde.jfxext.util.JsonUtils;
 import dev.jfxde.sysapps.jshell.Feedback.Mode;
 import java.util.AbstractMap.SimpleEntry;
 import javafx.stage.Window;

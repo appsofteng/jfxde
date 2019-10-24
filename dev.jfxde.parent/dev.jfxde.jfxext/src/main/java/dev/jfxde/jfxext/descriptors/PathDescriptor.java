@@ -1,4 +1,4 @@
-package dev.jfxde.logic.data;
+package dev.jfxde.jfxext.descriptors;
 
 import java.io.File;
 import java.nio.file.FileSystems;
@@ -9,6 +9,7 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -38,6 +39,10 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         this.path = Paths.get(ROOT_NAME);
         setName(ROOT_NAME);
         this.directory = true;
+    }
+
+    public PathDescriptor(String path) {
+        this(Paths.get(path));
     }
 
     public PathDescriptor(Path path) {
@@ -218,14 +223,31 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
             listRoots(mapper, consumer);
         } else {
 
-            list(mapper, consumer, false);
+            list(p -> consumer.accept(mapper.apply(new PathDescriptor(p, true))), p -> {}, consumer);
         }
     }
 
     public <T> void getFiles(Function<PathDescriptor, T> mapper, Consumer<T> consumer) {
         if (!isRoot()) {
 
-            list(mapper, consumer, true);
+            list(p -> {}, p -> consumer.accept(mapper.apply(new PathDescriptor(p, false))), consumer);
+        }
+    }
+
+    public <T> void getAll(Function<PathDescriptor, T> mapper, Consumer<T> consumer) {
+
+        if (!Files.isReadable(path)) {
+            return;
+        }
+        if (isRoot()) {
+            listRoots(mapper, consumer);
+        } else {
+
+            var files = new ArrayList<T>();
+            list(p -> consumer.accept(mapper.apply(new PathDescriptor(p, true))),
+                    p -> files.add(mapper.apply(new PathDescriptor(p, false))), p -> {});
+            files.forEach(f -> consumer.accept(f));
+            consumer.accept(null);
         }
     }
 
@@ -239,20 +261,21 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         }
     }
 
-    private <T> void list(Function<PathDescriptor, T> mapper, Consumer<T> consumer, boolean file) {
+    private <T> void list(Consumer<Path> dirs, Consumer<Path> files, Consumer<T> end) {
         try (var stream = Files.newDirectoryStream(path)) {
             var iterator = stream.iterator();
 
             while (iterator.hasNext()) {
                 var p = iterator.next();
                 boolean directory = Files.isDirectory(p);
-                if (directory ^ file) {
-                    var pd = new PathDescriptor(p, directory);
-                    consumer.accept(mapper.apply(pd));
+                if (directory) {
+                    dirs.accept(p);
+                } else {
+                    files.accept(p);
                 }
             }
 
-            consumer.accept(null);
+            end.accept(null);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

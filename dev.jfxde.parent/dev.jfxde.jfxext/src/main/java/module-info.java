@@ -2,12 +2,14 @@ module dev.jfxde.jfxext {
 
     requires java.logging;
     requires transitive java.prefs;
+    requires java.desktop;
 
     requires javafx.base;
     requires transitive javafx.controls;
     requires javafx.graphics;
     requires transitive javafx.web;
     requires transitive jdk.jsobject;
+    requires javafx.swing;
 
     requires org.controlsfx.controls;
     requires transitive richtextfx;
@@ -15,12 +17,14 @@ module dev.jfxde.jfxext {
     requires reactfx;
     requires wellbehavedfx;
     requires undofx;
+    requires gson;
 
     requires com.github.javaparser.core;
 
     exports dev.jfxde.jfxext.animation to dev.jfxde.ui;
-    exports dev.jfxde.jfxext.control to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
+    exports dev.jfxde.jfxext.control to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps, dev.jfxde.apps;
     exports dev.jfxde.jfxext.control.cell to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
+    exports dev.jfxde.jfxext.descriptors to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
     exports dev.jfxde.jfxext.richtextfx.features to dev.jfxde.sysapps;
     exports dev.jfxde.jfxext.richtextfx to dev.jfxde.sysapps, dev.jfxde.logic;
     exports dev.jfxde.jfxext.util to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;

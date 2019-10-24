@@ -16,7 +16,8 @@ import javax.swing.filechooser.FileSystemView;
 import org.controlsfx.control.BreadCrumbBar;
 
 import dev.jfxde.jfxext.control.LazyTreeItem;
-import dev.jfxde.logic.data.PathDescriptor;
+import dev.jfxde.jfxext.descriptors.PathDescriptor;
+import dev.jfxde.jfxext.util.FXUtils;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ReadOnlyLongProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -85,7 +86,7 @@ public class FileDialog extends InternalDialog {
                 .childrenGetter(i -> i.getValue().getDirectories(p -> new LazyTreeItem<>(p, i), c -> i.addCached(c)))
                 .filteredChildrenGetter(filesGetter)
                 .toString(i -> i.getValue().getPath().toString())
-                .graphic(i -> getIcon(i.getValue().getPath()));
+                .graphic(i -> FXUtils.getIcon(i.getValue().getPath()));
 
         breadCrumbBar = new BreadCrumbBar<>(root);
 
@@ -234,15 +235,6 @@ public class FileDialog extends InternalDialog {
         });
 
         cancelButton.setOnAction(e -> close());
-    }
-
-    private ImageView getIcon(Path path) {
-        ImageIcon icon = (ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(path.toFile());
-        BufferedImage image = (BufferedImage) icon.getImage();
-        Image fxIcon = SwingFXUtils.toFXImage(image, null);
-        ImageView imageView = (new ImageView(fxIcon));
-
-        return imageView;
     }
 
     public FileDialog directoriesOnly() {
