@@ -16,6 +16,10 @@
 			<classifier>${javafx.platform}</classifier>
 		</dependency>
 		<dependency>
+			<groupId>org.eclipse</groupId>
+			<artifactId>yasson</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 		</dependency>

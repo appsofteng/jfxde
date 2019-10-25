@@ -3,7 +3,6 @@ package dev.jfxde.apps.editor;
 import java.util.List;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.util.JsonUtils;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 
@@ -16,7 +15,7 @@ public class EditorContent extends BorderPane {
 
     public EditorContent(AppContext context) {
 
-        List<String> bookmarks = JsonUtils.fromJson(context.fc().getAppDataDir().resolve(BOOKMARKS), List.class, List.of());
+        List<String> bookmarks = context.dc().fromJson(BOOKMARKS, List.class, List.of());
         fileTreePane = new FileTreePane(bookmarks);
         splitPane = new SplitPane(fileTreePane, editorPane);
         splitPane.setDividerPositions(0.2);

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.json.bind.annotation.JsonbTransient;
+
 public class Env implements Comparable<Env> {
 
     private String name;
@@ -53,6 +55,7 @@ public class Env implements Comparable<Env> {
         return addExports;
     }
 
+    @JsonbTransient
     public String[] getOptions() {
 
         List<String> options = new ArrayList<>();

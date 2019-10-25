@@ -17,7 +17,6 @@ module dev.jfxde.jfxext {
     requires reactfx;
     requires wellbehavedfx;
     requires undofx;
-    requires gson;
 
     requires com.github.javaparser.core;
 

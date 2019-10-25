@@ -18,7 +18,6 @@ import dev.jfxde.jfxext.richtextfx.features.HighlightBlockDelimiterFeature;
 import dev.jfxde.jfxext.richtextfx.features.IndentationFeature;
 import dev.jfxde.jfxext.richtextfx.features.Lexer;
 import dev.jfxde.jfxext.richtextfx.features.LexerFeature;
-import dev.jfxde.jfxext.util.JsonUtils;
 import javafx.collections.ListChangeListener.Change;
 import javafx.scene.layout.BorderPane;
 
@@ -70,8 +69,7 @@ public class JShellContent extends BorderPane {
 
                 if (c.wasAdded() || c.wasRemoved()) {
                     List<? extends String> history = new ArrayList<>(consoleView.getHistory());
-                    context.tc().executeSequentially(Session.PRIVILEDGED_TASK_QUEUE, CTask
-                            .create(() -> JsonUtils.toJson(history, context.fc().getAppDataDir().resolve(HISTORY_FILE_NAME))));
+                    context.dc().toJson(history, HISTORY_FILE_NAME);
                 }
             }
         });
@@ -91,7 +89,7 @@ public class JShellContent extends BorderPane {
 
     private List<String> loadHistory() {
 
-        List<String> history = JsonUtils.fromJson(context.fc().getAppDataDir().resolve(HISTORY_FILE_NAME), List.class, List.of());
+        List<String> history = context.dc().fromJson(HISTORY_FILE_NAME, List.class, List.of());
         return history;
     }
 

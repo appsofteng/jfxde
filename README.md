@@ -23,7 +23,7 @@ It depends on the following libraries and their dependencies:
 - [ControlsFX](https://github.com/controlsfx/controlsfx)
 - [Java Parser](https://javaparser.org)
 - [Picocli](https://picocli.info)
-- [GSON](https://github.com/google/gson)
+- [Yasson](https://github.com/eclipse-ee4j/yasson)
 
 ## App Example
 This is a simple example of a hello world app. It implements the App interface and declares the required permissions.

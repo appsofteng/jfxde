@@ -1,5 +1,6 @@
 #-Djavafx.animation.fullspeed=true
 -Djava.util.logging.config.file=conf/logging.properties
+-Djava.util.concurrent.ForkJoinPool.common.threadFactory=dev.jfxde.logic.PrivilegedForkJoinWorkerThreadFactory
 -Dorg.jboss.logging.provider=jdk
 --add-exports javafx.base/com.sun.javafx.event=org.controlsfx.controls
 --add-exports javafx.graphics/com.sun.javafx.css=org.controlsfx.controls

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +30,7 @@ public final class TaskManager extends Manager {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     private final ObservableList<TaskDescriptor<? extends Worker<?>>> taskDescriptors = FXCollections.synchronizedObservableList(FXCollections
-            .observableArrayList((td) -> new Observable[]{td.stateProperty()}));
+            .observableArrayList((td) -> new Observable[] { td.stateProperty() }));
     private final Map<AppDescriptor, List<TaskDescriptor<?>>> appTaskMap = new ConcurrentHashMap<>();
 
     TaskManager() {
@@ -49,11 +50,9 @@ public final class TaskManager extends Manager {
         return taskDescriptors;
     }
 
-    public void execute(Task<?> task) {
+    void execute(Task<?> task) {
 
         executorService.execute(() -> {
-            // The threads in the pool are not created by the caller and thus
-            // don't inherit the access control context.
             AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
                 task.run();
                 return null;
@@ -61,11 +60,11 @@ public final class TaskManager extends Manager {
         });
     }
 
-    public void executeSequentially(Task<?> task) {
-    	singleThreadExecutor.execute(task);
+    void executeSequentially(Task<?> task) {
+        singleThreadExecutor.execute(task);
     }
 
-    public void executeSequentially(Runnable task) {
+    void executeSequentially(Runnable task) {
 
         singleThreadExecutor.execute(task);
     }
@@ -79,8 +78,6 @@ public final class TaskManager extends Manager {
         addTask(appDescriptor, task);
 
         executorService.execute(() -> {
-            // The threads in the pool are not created by the caller and thus
-            // don't inherit the access control context.
             AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
                 task.run();
                 return null;
@@ -112,10 +109,22 @@ public final class TaskManager extends Manager {
         });
     }
 
+    private <T extends Worker<?>> TaskDescriptor<T> addTask(AppDescriptor appDescriptor, T task) {
+        TaskDescriptor<T> taskDescriptor = new TaskDescriptor<>(appDescriptor, task);
+        taskDescriptors.add(taskDescriptor);
+        List<TaskDescriptor<?>> appTasks = appTaskMap.getOrDefault(appDescriptor, Collections.synchronizedList(new ArrayList<>()));
+        appTasks.add(taskDescriptor);
+        appTaskMap.put(appDescriptor, appTasks);
+
+        return taskDescriptor;
+    }
+
     void stop() {
         shutdown(singleThreadExecutor);
         shutdown(executorService);
         shutdown(scheduledExecutorService);
+
+        ForkJoinPool.commonPool().awaitQuiescence(60, TimeUnit.SECONDS);
     }
 
     private void shutdown(ExecutorService executorService) {
@@ -127,15 +136,5 @@ public final class TaskManager extends Manager {
         } catch (InterruptedException e) {
             executorService.shutdownNow();
         }
-    }
-
-    private <T extends Worker<?>> TaskDescriptor<T> addTask(AppDescriptor appDescriptor, T task) {
-        TaskDescriptor<T> taskDescriptor = new TaskDescriptor<>(appDescriptor, task);
-        taskDescriptors.add(taskDescriptor);
-        List<TaskDescriptor<?>> appTasks = appTaskMap.getOrDefault(appDescriptor, Collections.synchronizedList(new ArrayList<>()));
-        appTasks.add(taskDescriptor);
-        appTaskMap.put(appDescriptor, appTasks);
-
-        return taskDescriptor;
     }
 }
