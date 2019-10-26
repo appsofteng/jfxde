@@ -19,17 +19,16 @@ import dev.jfxde.api.AppManifest;
 import dev.jfxde.api.AppScope;
 import dev.jfxde.api.PermissionEntry;
 import dev.jfxde.api.Resource;
+import dev.jfxde.data.entity.AppProviderData;
 import dev.jfxde.logic.FileManager;
 import dev.jfxde.logic.ResourceManager;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.SystemApp;
 import dev.jfxde.logic.security.CustomPolicy;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -38,39 +37,37 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 
-public class AppProviderDescriptor extends DataObj implements Comparable<AppProviderDescriptor> {
+public class AppProviderDescriptor implements Comparable<AppProviderDescriptor> {
 
     private final AppManifest appManifest;
     private final Provider<App> provider;
 
     private final CodeSource codeSource;
     private final Path codeSourceParentPath;
-    private final BooleanProperty allowed = new SimpleBooleanProperty();
-    private final StringProperty name = new SimpleStringProperty();
-    private final StringProperty fqn = new SimpleStringProperty();
     private final StringProperty version = new SimpleStringProperty();
     private final StringProperty vendor = new SimpleStringProperty();
     private final StringProperty website = new SimpleStringProperty();
     private final ObjectProperty<Label> iconName = new SimpleObjectProperty<>();
+    private AppProviderData appProviderData;
 
     private ObservableList<AppDescriptor> appDescriptors = FXCollections.observableArrayList();
 
     private final PermissionCollection permissionCollection = new Permissions();
     private final ObservableList<PermissionDescriptor> permissionDescriptors = FXCollections.observableArrayList();
-    private String permissionChecksum = "";
+
     private boolean system;
     private String appDataDir;
     private ResourceManager resourceManager;
     private Set<String> locales;
     private int match;
 
-    public AppProviderDescriptor(AppManifest appManifest, Provider<App> provider)
-            throws Exception {
+    public AppProviderDescriptor(AppManifest appManifest, Provider<App> provider) throws Exception {
         this.resourceManager = new ResourceManager(provider.type(), appManifest.altText(), Sys.rm());
         this.appManifest = appManifest;
         this.provider = provider;
-        this.name.bind(resourceManager.getStringBinding(appManifest.name()));
-        this.fqn.set(appManifest.fqn());
+        this.appProviderData = new AppProviderData(appManifest.name(), appManifest.fqn());
+        this.appProviderData.nameProperty().bind(resourceManager.getStringBinding(appManifest.name()));
+
         this.version.set(appManifest.version());
         this.vendor.set(appManifest.vendor());
         this.website.set(appManifest.website());
@@ -86,6 +83,14 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
         addPermissions();
     }
 
+    public AppProviderData getAppProviderData() {
+        return appProviderData;
+    }
+
+    public void setAppProviderData(AppProviderData appProviderData) {
+        this.appProviderData = appProviderData;
+    }
+
     public AppManifest getAppManifest() {
         return appManifest;
     }
@@ -95,31 +100,31 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
     }
 
     public ReadOnlyBooleanProperty allowedProperty() {
-        return allowed;
+        return appProviderData.allowedProperty();
     }
 
     public boolean isAllowed() {
-        return allowed.get();
+        return appProviderData.isAllowed();
     }
 
     public void setAllowed(boolean value) {
-        allowed.set(value);
+        appProviderData.setAllowed(value);
     }
 
     public ReadOnlyStringProperty nameProperty() {
-        return name;
+        return appProviderData.nameProperty();
     }
 
     public String getName() {
-        return name.get();
+        return appProviderData.getName();
     }
 
     public ReadOnlyStringProperty fqnProperty() {
-        return fqn;
+        return appProviderData.fqnProperty();
     }
 
     public String getFqn() {
-        return fqn.get();
+        return appProviderData.getFqn();
     }
 
     public CodeSource getCodeSource() {
@@ -147,7 +152,7 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
     }
 
     public String getPermissionChecksum() {
-        return permissionChecksum;
+        return appProviderData.getPermissionChecksum();
     }
 
     public ResourceManager getResourceManager() {
@@ -172,7 +177,7 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
 
         if (iconName.get() == null) {
             Label iconNameLabel = new Label();
-            iconNameLabel.textProperty().bind(name);
+            iconNameLabel.textProperty().bind(appProviderData.nameProperty());
             iconNameLabel.setGraphic(getSmallIcon());
             iconName.set(iconNameLabel);
         }
@@ -272,8 +277,9 @@ public class AppProviderDescriptor extends DataObj implements Comparable<AppProv
             add(getPermission(p));
         }
 
-        permissionChecksum = checksum.isEmpty() ? "" : Integer.toHexString(checksum.hashCode());
+        var permissionChecksum = checksum.isEmpty() ? "" : Integer.toHexString(checksum.hashCode());
         setAllowed(permissionChecksum.isEmpty());
+        appProviderData.setPermissionChecksum(permissionChecksum);
         add(new FilePermission(Paths.get(appDataDir, "-").toString(), "read,write,delete"));
         putPolicy();
     }

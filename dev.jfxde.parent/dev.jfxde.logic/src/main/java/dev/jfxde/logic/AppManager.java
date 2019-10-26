@@ -17,12 +17,12 @@ import dev.jfxde.api.AppContext;
 import dev.jfxde.api.AppManifest;
 import dev.jfxde.api.AppRequest;
 import dev.jfxde.api.Resource;
-import dev.jfxde.data.entity.AppProviderEntity;
+import dev.jfxde.data.entity.AppProviderData;
+import dev.jfxde.data.entity.Window;
 import dev.jfxde.jfxext.concurrent.CTask;
 import dev.jfxde.logic.context.AppContextImpl;
 import dev.jfxde.logic.data.AppDescriptor;
 import dev.jfxde.logic.data.AppProviderDescriptor;
-import dev.jfxde.logic.data.Window;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -114,18 +114,20 @@ public final class AppManager extends Manager {
     }
 
     private void checkIfAllowed(AppProviderDescriptor descriptor) {
-        List<AppProviderEntity> appProviderEntities = Sys.dm().getAppProviderEntity(descriptor.getFqn());
+        List<AppProviderData> appProviderDatas = Sys.dm().getAppProviderData(descriptor.getFqn());
 
-        if (appProviderEntities.size() == 1) {
-            AppProviderEntity appProviderEntity = appProviderEntities.get(0);
-            descriptor.setId(appProviderEntity.getId());
+        if (appProviderDatas.size() == 1) {
+            AppProviderData appProviderData = appProviderDatas.get(0);
+            var checksum = descriptor.getPermissionChecksum();
 
-            if (appProviderEntity.getPermissionChecksum().equals(descriptor.getPermissionChecksum())) {
-                descriptor.setAllowed(appProviderEntity.isAllowed());
+            appProviderData.setName(descriptor.getName());
+            descriptor.setAppProviderData(appProviderData);
+
+            if (checksum.equals(descriptor.getPermissionChecksum())) {
+
                 descriptor.putPolicy();
             }
         }
-
     }
 
     private void setListeners() {
@@ -136,7 +138,7 @@ public final class AppManager extends Manager {
 
                 if (c.wasUpdated()) {
                     IntStream.range(c.getFrom(), c.getTo()).mapToObj(i -> c.getList().get(i))
-                            .forEach(d -> Sys.dm().update(d));
+                            .forEach(d -> Sys.dm().update(d.getAppProviderData()));
                 }
             }
         });
@@ -249,7 +251,9 @@ public final class AppManager extends Manager {
             AppContext context = new AppContextImpl(appDescriptor, request);
             appDescriptorMap.put(appDescriptor.getApp(), appDescriptor);
             appDescriptors.add(appDescriptor);
-            Sys.dm().getActiveDesktop().addWindow(new Window(appDescriptor));
+            var window = new Window(appDescriptor);
+            appDescriptor.setWindow(window);
+            Sys.dm().getActiveDesktop().addWindow(window);
 
             Task<Void> task = new Task<>() {
                 @Override

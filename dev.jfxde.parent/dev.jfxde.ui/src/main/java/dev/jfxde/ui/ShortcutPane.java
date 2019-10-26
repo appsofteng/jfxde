@@ -1,8 +1,8 @@
 package dev.jfxde.ui;
 
+import dev.jfxde.data.entity.Desktop;
+import dev.jfxde.data.entity.Shortcut;
 import dev.jfxde.logic.Sys;
-import dev.jfxde.logic.data.Desktop;
-import dev.jfxde.logic.data.Shortcut;
 import javafx.collections.ListChangeListener.Change;
 import javafx.geometry.HPos;
 import javafx.geometry.Point2D;

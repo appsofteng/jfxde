@@ -1,7 +1,7 @@
 package dev.jfxde.ui;
 
 
-import dev.jfxde.logic.data.Desktop;
+import dev.jfxde.data.entity.Desktop;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;

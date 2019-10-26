@@ -98,25 +98,9 @@
 				<version>${picocliVersion}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.h2database</groupId>
-				<artifactId>h2</artifactId>
-				<version>1.4.199</version>
-			</dependency>
-			<dependency>
-				<groupId>org.hibernate</groupId>
-				<artifactId>hibernate-agroal</artifactId>
-				<version>6.0.0.Alpha2</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.glassfish</groupId>
-						<artifactId>javax.json</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>org.hibernate</groupId>
-				<artifactId>hibernate-c3p0</artifactId>
-				<version>6.0.0.Alpha2</version>
+				<groupId>one.microstream</groupId>
+				<artifactId>storage.embedded</artifactId>
+				<version>02.00.00-MS-GA</version>
 			</dependency>
 			<dependency>
 				<groupId>org.fxmisc.richtext</groupId>
@@ -127,16 +111,6 @@
 				<groupId>org.eclipse</groupId>
 				<artifactId>yasson</artifactId>
 				<version>1.0.5</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>1.7.28</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-jdk14</artifactId>
-				<version>1.7.28</version>
 			</dependency>
 			<dependency>
 				<groupId>dev.jfxde</groupId>
@@ -313,6 +287,10 @@
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
+		</repository>
+		<repository>
+			<id>microstream-releases</id>
+			<url>https://repo.microstream.one/repository/maven-public/</url>
 		</repository>
 	</repositories>
 

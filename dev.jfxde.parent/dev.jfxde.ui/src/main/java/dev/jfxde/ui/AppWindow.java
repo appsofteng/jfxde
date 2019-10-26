@@ -1,8 +1,8 @@
 package dev.jfxde.ui;
 
+import dev.jfxde.data.entity.Window;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.AppDescriptor;
-import dev.jfxde.logic.data.Window;
 import javafx.animation.PauseTransition;
 import javafx.scene.control.ProgressIndicator;
 import javafx.util.Duration;

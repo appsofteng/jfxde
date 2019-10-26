@@ -3,6 +3,7 @@ package dev.jfxde.logic.data;
 import dev.jfxde.api.App;
 import dev.jfxde.api.AppContext;
 import dev.jfxde.api.AppScope;
+import dev.jfxde.data.entity.Window;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;

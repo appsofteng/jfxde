@@ -146,7 +146,7 @@ public class AppManagerContent extends TabPane {
         titleColumn.textProperty().bind(context.rc().getStringBinding("title"));
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("display"));
 
-        TableColumn<AppDescriptor, Long> desktopColumn = new TableColumn<>();
+        TableColumn<AppDescriptor, Integer> desktopColumn = new TableColumn<>();
         desktopColumn.textProperty().bind(context.rc().getStringBinding("desktop"));
         desktopColumn.setCellValueFactory(c -> c.getValue().getWindow().getDesktop().idProperty().asObject());
 

@@ -1,4 +1,4 @@
-package dev.jfxde.logic.data;
+package dev.jfxde.data.entity;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -10,14 +10,13 @@ import javafx.beans.property.SimpleObjectProperty;
 public class Window {
 
     private Desktop desktop;
-    private AppDescriptor appDescriptor;
+    private Object appDescriptor;
     private final BooleanProperty active = new SimpleBooleanProperty();
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.RESTORED);
     private final ObjectProperty<State> previousState = new SimpleObjectProperty<>(State.RESTORED);
 
-    public Window(AppDescriptor appDescriptor) {
+    public Window(Object appDescriptor) {
     	this.appDescriptor = appDescriptor;
-    	appDescriptor.setWindow(this);
     	state.addListener((v, o, n) -> previousState.set(o));
 	}
 
@@ -34,8 +33,8 @@ public class Window {
 		this.desktop = desktop;
 	}
 
-	public AppDescriptor getAppDescriptor() {
-		return appDescriptor;
+	public <T> T getAppDescriptor() {
+		return (T) appDescriptor;
 	}
 
     public ReadOnlyBooleanProperty activeProperty() {
