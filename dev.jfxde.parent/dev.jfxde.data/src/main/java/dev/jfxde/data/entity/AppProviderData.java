@@ -43,12 +43,18 @@ public class AppProviderData extends DataObj {
     }
 
     public void setFqn(String value) {
-        fqnProperty().set(_fqn = value);
+        fqnProperty().set(value);
     }
 
     public StringProperty fqnProperty() {
         if (fqn == null) {
-            fqn = new SimpleStringProperty(_fqn);
+            fqn = new SimpleStringProperty(_fqn) {
+                @Override
+                public void set(String newValue) {
+                    _fqn = newValue;
+                    super.set(newValue);
+                }
+            };
         }
 
         return fqn;
@@ -59,12 +65,18 @@ public class AppProviderData extends DataObj {
     }
 
     public void setAllowed(boolean value) {
-        allowedProperty().set(_allowed = value);
+        allowedProperty().set(value);
     }
 
     public BooleanProperty allowedProperty() {
         if (allowed == null) {
-            allowed = new SimpleBooleanProperty(_allowed);
+            allowed = new SimpleBooleanProperty(_allowed) {
+                @Override
+                public void set(boolean newValue) {
+                    _allowed = newValue;
+                    super.set(newValue);
+                }
+            };
         }
 
         return allowed;

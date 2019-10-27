@@ -44,13 +44,19 @@ public class Desktop extends DataObj {
     }
 
     public void setActive(boolean value) {
-        activeProperty().set(_active = value);
+        activeProperty().set(value);
     }
 
     public BooleanProperty activeProperty() {
 
         if (active == null) {
-            active = new SimpleBooleanProperty(_active);
+            active = new SimpleBooleanProperty(_active) {
+                @Override
+                public void set(boolean newValue) {
+                    _active = newValue;
+                    super.set(newValue);
+                }
+            };
         }
 
         return active;
@@ -61,12 +67,18 @@ public class Desktop extends DataObj {
     }
 
     public void setId(int id) {
-        idProperty().set(_id = id);
+        idProperty().set(id);
     }
 
     public IntegerProperty idProperty() {
         if (id == null) {
-            id = new SimpleIntegerProperty(_id);
+            id = new SimpleIntegerProperty(_id) {
+                @Override
+                public void set(int newValue) {
+                    _id = newValue;
+                    super.set(newValue);
+                }
+            };
         }
 
         return id;

@@ -38,12 +38,18 @@ public class Shortcut extends DataObj {
     }
 
     public void setName(String value) {
-        nameProperty().set(_name = value);
+        nameProperty().set(value);
     }
 
     public StringProperty nameProperty() {
         if (name == null) {
-            name = new SimpleStringProperty(_name);
+            name = new SimpleStringProperty(_name) {
+                @Override
+                public void set(String newValue) {
+                    _name = newValue;
+                    super.set(newValue);
+                }
+            };
         }
         return name;
     }
@@ -53,13 +59,19 @@ public class Shortcut extends DataObj {
     }
 
     public void setPosition(int value) {
-        positionProperty().set(_position = value);
+        positionProperty().set(value);
     }
 
     public IntegerProperty positionProperty() {
 
         if (position == null) {
-            position = new SimpleIntegerProperty(_position);
+            position = new SimpleIntegerProperty(_position) {
+                @Override
+                public void set(int newValue) {
+                    _position = newValue;
+                    super.set(newValue);
+                }
+            };
         }
 
         return position;
