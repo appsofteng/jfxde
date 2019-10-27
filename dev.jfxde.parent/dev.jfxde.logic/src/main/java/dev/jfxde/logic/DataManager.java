@@ -99,6 +99,7 @@ public final class DataManager extends Manager {
         Shortcut shortcut = new Shortcut(descriptor.getAppProviderData());
 
         getActiveDesktop().addShortcut(shortcut);
+        storageManager.store(getActiveDesktop());
         storageManager.store(getActiveDesktop()._getShortcuts());
     }
 
