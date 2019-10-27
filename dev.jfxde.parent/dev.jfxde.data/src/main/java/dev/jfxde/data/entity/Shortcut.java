@@ -23,12 +23,12 @@ public class Shortcut extends DataObj {
     }
 
     public Shortcut(AppProviderData appProviderData) {
-        this.nameProperty().set(appProviderData.getName());
+        this.setName(appProviderData.getName());
         this._fqn = appProviderData.getFqn();
     }
 
     public Shortcut(String name, String fqn, String uri) {
-        this.nameProperty().set(name);
+        this.setName(name);
         this._fqn = fqn;
         this._uri = uri;
     }
@@ -38,18 +38,12 @@ public class Shortcut extends DataObj {
     }
 
     public void setName(String value) {
-        nameProperty().set(value);
+        nameProperty().set(_name = value);
     }
 
     public StringProperty nameProperty() {
         if (name == null) {
-            name = new SimpleStringProperty(_name) {
-                @Override
-                public void set(String newValue) {
-                    _name = newValue;
-                    super.set(newValue);
-                }
-            };
+            name = new SimpleStringProperty(_name);
         }
         return name;
     }
@@ -59,19 +53,13 @@ public class Shortcut extends DataObj {
     }
 
     public void setPosition(int value) {
-        positionProperty().set(value);
+        positionProperty().set(_position = value);
     }
 
     public IntegerProperty positionProperty() {
 
         if (position == null) {
-            position = new SimpleIntegerProperty(_position) {
-                @Override
-                public void set(int newValue) {
-                    _position = newValue;
-                    super.set(newValue);
-                }
-            };
+            position = new SimpleIntegerProperty(_position);
         }
 
         return position;

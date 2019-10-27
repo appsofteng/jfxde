@@ -36,7 +36,7 @@ public class Desktop extends DataObj {
     }
 
     public Desktop(int id) {
-        this.idProperty().set(id);
+        this.setId(id);
     }
 
     public boolean isActive() {
@@ -44,19 +44,13 @@ public class Desktop extends DataObj {
     }
 
     public void setActive(boolean value) {
-        activeProperty().set(value);
+        activeProperty().set(_active = value);
     }
 
     public BooleanProperty activeProperty() {
 
         if (active == null) {
-            active = new SimpleBooleanProperty(_active) {
-                @Override
-                public void set(boolean newValue) {
-                    _active = newValue;
-                    super.set(newValue);
-                }
-            };
+            active = new SimpleBooleanProperty(_active);
         }
 
         return active;
@@ -67,18 +61,12 @@ public class Desktop extends DataObj {
     }
 
     public void setId(int id) {
-        idProperty().set(id);
+        idProperty().set(_id = id);
     }
 
     public IntegerProperty idProperty() {
         if (id == null) {
-            id = new SimpleIntegerProperty(_id) {
-                @Override
-                public void set(int newValue) {
-                    _id = newValue;
-                    super.set(newValue);
-                }
-            };
+            id = new SimpleIntegerProperty(_id);
         }
 
         return id;
@@ -299,7 +287,7 @@ public class Desktop extends DataObj {
         shortcut.setDesktop(null);
 
         if (getActiveShortcut() == shortcut) {
-            activeShortcut.set(null);
+            activeShortcutProperty().set(null);
         }
     }
 
