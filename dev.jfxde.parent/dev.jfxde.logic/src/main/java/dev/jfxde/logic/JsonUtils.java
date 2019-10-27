@@ -4,60 +4,52 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ForkJoinPool;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
+import javax.json.bind.JsonbConfig;
+import javax.json.bind.JsonbException;
 
-public abstract class JsonUtils {
+public final class JsonUtils {
+
+    private static final Jsonb JSONB = JsonbBuilder.create(new JsonbConfig().withFormatting(true));
 
     private JsonUtils() {
     }
 
-    private static Gson getGson() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    public static void toJson(Object obj, Path path, String file) {
 
-        return gson;
+        Runnable task = () -> {
+            synchronized (file) {
+                try (var f = Files.newBufferedWriter(path.resolve(file))) {
+                    JSONB.toJson(obj, f);
+
+                } catch (JsonbException | IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+
+        ForkJoinPool.commonPool().execute(task);
     }
 
-    public static void toJson(Object obj, Path file) {
-        Gson gson = getGson();
-        try (var f = Files.newBufferedWriter(file)) {
-            gson.toJson(obj, f);
-        } catch (JsonIOException | IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public static <T> T fromJson(Path path, String file, Type type, T defaultObj) {
 
-    public static <T> T fromJson(Path file, Class<T> type, T defaultObj) {
-        T obj = defaultObj;
+        T result = defaultObj;
+        Path fullPath = path.resolve(file);
+        if (Files.exists(fullPath)) {
+            synchronized (file) {
+                try (var f = Files.newBufferedReader(fullPath)) {
 
-        if (Files.exists(file)) {
-            Gson gson = getGson();
+                    result = JSONB.fromJson(f, type);
 
-            try (var f = Files.newBufferedReader(file)) {
-                obj = gson.fromJson(f, type);
-            } catch (JsonIOException | IOException e) {
-                throw new RuntimeException(e);
+                } catch (JsonbException | IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
-        return obj;
-    }
-
-    public static <T> T fromJson(Path file, Type type, T defaultObj) {
-        T obj = defaultObj;
-
-        if (Files.exists(file)) {
-            Gson gson = getGson();
-
-            try (var f = Files.newBufferedReader(file)) {
-                obj = gson.fromJson(f, type);
-            } catch (JsonIOException | IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return obj;
+        return result;
     }
 }

@@ -1,9 +1,9 @@
 package dev.jfxde.ui;
 
+import dev.jfxde.data.entity.Shortcut;
 import dev.jfxde.logic.ResourceManager;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.AppProviderDescriptor;
-import dev.jfxde.logic.data.Shortcut;
 import javafx.animation.PauseTransition;
 import javafx.beans.binding.Bindings;
 import javafx.css.PseudoClass;

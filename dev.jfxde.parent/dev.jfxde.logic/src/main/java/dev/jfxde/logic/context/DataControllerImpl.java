@@ -1,0 +1,29 @@
+package dev.jfxde.logic.context;
+
+import java.lang.reflect.Type;
+import java.nio.file.Paths;
+
+import dev.jfxde.api.DataController;
+import dev.jfxde.logic.JsonUtils;
+import dev.jfxde.logic.data.AppDescriptor;
+
+public class DataControllerImpl implements DataController {
+
+    private AppDescriptor appDescriptor;
+
+    public DataControllerImpl(AppDescriptor appDescriptor) {
+        this.appDescriptor = appDescriptor;
+    }
+
+    @Override
+    public void toJson(Object obj, String relativeFilePath) {
+        JsonUtils.toJson(obj, Paths.get(appDescriptor.getAppProviderDescriptor().getAppDataDir()), relativeFilePath);
+
+    }
+
+    @Override
+    public <T> T fromJson(String relativeFilePath, Type type, T defaultObj) {
+        return JsonUtils.fromJson(Paths.get(appDescriptor.getAppProviderDescriptor().getAppDataDir()), relativeFilePath, type, defaultObj);
+    }
+
+}

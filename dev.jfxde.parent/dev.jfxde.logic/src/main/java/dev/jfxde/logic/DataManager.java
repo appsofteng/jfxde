@@ -1,178 +1,138 @@
 package dev.jfxde.logic;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
-import dev.jfxde.data.dao.AppProviderDao;
-import dev.jfxde.data.dao.DesktopDao;
-import dev.jfxde.data.dao.ShortcutDao;
-import dev.jfxde.data.entity.AppProviderEntity;
-import dev.jfxde.data.entity.DesktopEntity;
-import dev.jfxde.data.entity.ShortcutEntity;
-import dev.jfxde.jfxext.concurrent.CTask;
+import dev.jfxde.data.dao.StorageManager;
+import dev.jfxde.data.entity.AppProviderData;
+import dev.jfxde.data.entity.DataRoot;
+import dev.jfxde.data.entity.Desktop;
+import dev.jfxde.data.entity.Shortcut;
+import dev.jfxde.data.entity.Window;
 import dev.jfxde.logic.data.AppProviderDescriptor;
-import dev.jfxde.logic.data.DataConvertor;
-import dev.jfxde.logic.data.Desktop;
-import dev.jfxde.logic.data.Shortcut;
-import dev.jfxde.logic.data.Window;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 public final class DataManager extends Manager {
 
-	private List<Desktop> desktops = List.of();
-	private final ObjectProperty<Desktop> activeDesktop = new SimpleObjectProperty<>();
-	private ObjectProperty<Window> activeWindow = new SimpleObjectProperty<>();
-	private AppProviderDao appProviderDao;
-	private DesktopDao desktopDao;
-	private ShortcutDao shortcutDao;
-	private EntityManagerFactory emf;
-	protected DataConvertor dataConvertor = new DataConvertor();
+    private final ObjectProperty<Desktop> activeDesktop = new SimpleObjectProperty<>();
+    private ObjectProperty<Window> activeWindow = new SimpleObjectProperty<>();
+    private StorageManager storageManager;
+    private DataRoot dataRoot = new DataRoot();
 
-	DataManager() {
-	}
+    DataManager() {
+    }
 
-	@Override
-	void init() {
-		Map<String, Object> configOverrides = new HashMap<>();
-		configOverrides.put("javax.persistence.jdbc.url", FileManager.DB_URL);
+    @Override
+    void init() {
+        storageManager = new StorageManager(dataRoot, FileManager.DB_DIR.toFile());
 
-		emf = Persistence.createEntityManagerFactory("db", configOverrides);
+        initData();
+    }
 
-		appProviderDao = new AppProviderDao(emf);
-		desktopDao = new DesktopDao(emf);
-		shortcutDao = new ShortcutDao(emf);
+    private void initData() {
 
-		initData();
-	}
+        List<Desktop> desktops = dataRoot.getDesktops();
 
-	private void initData() {
-		List<DesktopEntity> desktopEntities = desktopDao.getEntities(DesktopEntity.class);
+        if (desktops.isEmpty()) {
+            desktops = IntStream.range(1, 6).mapToObj(i -> new Desktop(i)).collect(Collectors.toList());
+            desktops.get(0).setActive(true);
+            dataRoot.getDesktops().addAll(desktops);
+            storageManager.store(dataRoot.getDesktops());
+        }
 
-		if (desktopEntities.isEmpty()) {
-			desktopEntities = IntStream.range(1, 6).mapToObj(i -> new DesktopEntity(Long.valueOf(i))).collect(Collectors.toList());
-			desktopEntities.get(0).setActive(true);
-			desktopDao.create(desktopEntities);
-			desktopEntities = desktopDao.getEntities(DesktopEntity.class);
-		}
+        Desktop foundActiveDesktop = desktops.stream().filter(Desktop::isActive).findFirst().get();
 
-		desktops = desktopEntities.stream().map(de -> dataConvertor.convert(de)).collect(Collectors.toList());
-		Desktop foundActiveDesktop = desktops.stream().filter(Desktop::isActive).findFirst().get();
-		DesktopEntity fetchedDesktopEntity = desktopDao.getDesktop(foundActiveDesktop.getId());
-		dataConvertor.convertShortcuts(fetchedDesktopEntity,  foundActiveDesktop);
-		foundActiveDesktop.setFetched(true);
-		activeDesktop.set(foundActiveDesktop);
-		activeWindow.unbind();
-		activeWindow.bind( foundActiveDesktop.activeWindowProperty());
-		activeDesktop.set(foundActiveDesktop);
-	}
+        activeDesktop.set(foundActiveDesktop);
+        activeWindow.unbind();
+        activeWindow.bind(foundActiveDesktop.activeWindowProperty());
+    }
 
-	public ObjectProperty<Desktop> activeDesktopProperty() {
-		return activeDesktop;
-	}
+    public ObjectProperty<Desktop> activeDesktopProperty() {
+        return activeDesktop;
+    }
 
-	public Desktop getActiveDesktop() {
-		Desktop desktop = activeDesktop.get();
+    public Desktop getActiveDesktop() {
+        Desktop desktop = activeDesktop.get();
 
-		return desktop;
-	}
+        return desktop;
+    }
 
-	public boolean setActiveDesktop(Desktop desktop) {
+    public boolean setActiveDesktop(Desktop desktop) {
 
-		if (desktop == getActiveDesktop()) {
-			return false;
-		}
+        if (desktop == getActiveDesktop()) {
+            return false;
+        }
 
-		if (activeDesktop.get() != null) {
-			activeDesktop.get().setActive(false);
-			DesktopEntity activeDesktopEntity = dataConvertor.convert(activeDesktop.get());
-			Sys.tm().executeSequentially(() -> desktopDao.update(activeDesktopEntity));
-		}
+        if (activeDesktop.get() != null) {
+            var aDesktop = activeDesktop.get();
+            aDesktop.setActive(false);
+            storageManager.store(aDesktop);
+        }
 
-		desktop.setActive(true);
-		DesktopEntity desktopEntity = dataConvertor.convert(desktop);
-		Sys.tm().executeSequentially(() -> desktopDao.update(desktopEntity));
+        desktop.setActive(true);
+        storageManager.store(desktop);
 
-		if (!desktop.isFetched()) {
+        activeDesktop.set(desktop);
+        activeWindow.unbind();
+        activeWindow.bind(desktop.activeWindowProperty());
 
-		    CTask<DesktopEntity> task = CTask.create(() -> desktopDao.getDesktop(desktop.getId()))
-		            .onSucceeded(v -> {
-		                dataConvertor.convertShortcuts(v, desktop);
-		                desktop.setFetched(true);
-		            });
+        return true;
+    }
 
-			Sys.tm().executeSequentially(task);
-		}
+    public ReadOnlyObjectProperty<Window> activeWindowProperty() {
+        return activeWindow;
+    }
 
-		activeDesktop.set(desktop);
-		activeWindow.unbind();
-		activeWindow.bind(desktop.activeWindowProperty());
+    public Window getActiveWindow() {
+        return activeWindow.get();
+    }
 
-		return true;
-	}
+    public List<Desktop> getDesktops() {
 
-	public ReadOnlyObjectProperty<Window> activeWindowProperty() {
-		return activeWindow;
-	}
+        return dataRoot.getDesktops();
+    }
 
-	public Window getActiveWindow() {
-		return activeWindow.get();
-	}
+    public void addShortcut(AppProviderDescriptor descriptor) {
+        Shortcut shortcut = new Shortcut(descriptor.getAppProviderData());
 
-	public List<Desktop> getDesktops() {
+        getActiveDesktop().addShortcut(shortcut);
+        storageManager.store(getActiveDesktop()._getShortcuts());
+    }
 
-		return desktops;
-	}
+    public void removeShortcut(Shortcut shortcut) {
 
-	public List<AppProviderDescriptor> getAppProviderDescriptors() {
+        var desktop = shortcut.getDesktop();
+        shortcut.remove();
+        storageManager.store(desktop._getShortcuts());
+    }
 
-		return List.of();
-	}
+    public void updateShortcut(Shortcut shortcut) {
+        storageManager.store(shortcut);
+    }
 
-	public void addShortcut(AppProviderDescriptor descriptor) {
-		Shortcut shortcut = new Shortcut(descriptor);
+    public List<AppProviderData> getAppProviderData(String fqn) {
 
-		getActiveDesktop().addShortcut(shortcut);
+        List<AppProviderData> result = dataRoot.getAppProviders().stream().filter(p -> p.getFqn().equals(fqn))
+                .collect(Collectors.toList());
 
-		ShortcutEntity shortcutEntity = dataConvertor.convert(shortcut);
-		Sys.tm().executeSequentially(() -> {
-			ShortcutEntity e = shortcutDao.update(shortcutEntity);
-			shortcut.setId(e.getId());
-		});
-	}
+        return result;
+    }
 
-	public void removeShortcut(Shortcut shortcut) {
+    public void update(AppProviderData data) {
 
-		shortcut.remove();
-		Sys.tm().executeSequentially(() -> shortcutDao.delete(ShortcutEntity.class, shortcut.getId()));
-	}
+        var existing = dataRoot.getAppProviders().stream().filter(d -> d.getFqn().equals(data.getFqn())).findFirst().orElse(null);
+        if (existing == null) {
+            dataRoot.getAppProviders().add(data);
+            storageManager.store(dataRoot.getAppProviders());
+        } else {
+            storageManager.store(data);
+        }
+    }
 
-	public void updateShortcut(Shortcut shortcut) {
-		ShortcutEntity shortcutEntity = dataConvertor.convert(shortcut);
-		Sys.tm().executeSequentially(() -> shortcutDao.update(shortcutEntity));
-	}
-
-	public List<AppProviderEntity> getAppProviderEntity(String fqn) {
-
-		List<AppProviderEntity> result = appProviderDao.getAppProviderEntity(fqn);
-
-		return result;
-	}
-
-	public void update(AppProviderDescriptor descriptor) {
-
-		AppProviderEntity appEntity = dataConvertor.convert(descriptor);
-		Sys.tm().executeSequentially(() -> appProviderDao.update(appEntity));
-	}
-
-	void stop() {
-		emf.close();
-	}
+    void stop() {
+        storageManager.shutdown();
+    }
 }

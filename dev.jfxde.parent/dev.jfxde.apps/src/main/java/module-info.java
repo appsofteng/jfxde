@@ -13,7 +13,7 @@ module dev.jfxde.apps {
     requires dev.jfxde.fonts;
     requires dev.jfxde.jfxext;
 
-    provides dev.jfxde.api.App with dev.jfxde.apps.webbrowser.WebBrowserApp;
+    provides dev.jfxde.api.App with dev.jfxde.apps.webbrowser.WebBrowserApp, dev.jfxde.apps.editor.EditorApp;
 
     opens dev.jfxde.apps.webbrowser.bundles;
     opens dev.jfxde.apps.webbrowser.css;

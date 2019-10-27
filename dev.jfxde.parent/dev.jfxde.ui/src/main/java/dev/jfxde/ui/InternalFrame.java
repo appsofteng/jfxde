@@ -78,7 +78,9 @@ public abstract class InternalFrame extends Region {
         buttonBox.setMinWidth(USE_PREF_SIZE);
         buttonBox.setMinHeight(USE_PREF_SIZE);
 
-        titleBar.setLeft(titleLabel);
+        titleLabel.setMaxWidth(Double.MAX_VALUE);
+
+        titleBar.setCenter(titleLabel);
         titleBar.setRight(buttonBox);
         titleBar.minWidthProperty().bind(buttonBox.widthProperty().add(10));
 

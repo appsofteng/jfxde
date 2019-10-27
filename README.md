@@ -17,13 +17,12 @@ It depends on the following libraries and their dependencies:
 
 - [OpenJDK 12](http://jdk.java.net)
 - [OpenJFX 13](https://openjfx.io)
-- [Hibernate ORM](https://hibernate.org/orm/)
-- [H2 DB](https://www.h2database.com)
 - [RichTextFX](https://github.com/FXMisc/RichTextFX)
 - [ControlsFX](https://github.com/controlsfx/controlsfx)
 - [Java Parser](https://javaparser.org)
 - [Picocli](https://picocli.info)
-- [GSON](https://github.com/google/gson)
+- [MicroStream](https://microstream.one)
+- [Yasson](https://github.com/eclipse-ee4j/yasson)
 
 ## App Example
 This is a simple example of a hello world app. It implements the App interface and declares the required permissions.

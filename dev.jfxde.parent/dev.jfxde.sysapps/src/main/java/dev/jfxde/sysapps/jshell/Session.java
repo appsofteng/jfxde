@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,9 +15,7 @@ import java.util.stream.Collectors;
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfxext.control.ConsoleModel;
 import dev.jfxde.jfxext.control.SplitConsoleView;
-import dev.jfxde.logic.JsonUtils;
 import dev.jfxde.sysapps.jshell.Feedback.Mode;
-import java.util.AbstractMap.SimpleEntry;
 import javafx.stage.Window;
 import jdk.jshell.JShell;
 import jdk.jshell.JShell.Subscription;
@@ -118,12 +117,12 @@ public class Session {
     }
 
     public Env loadEnv() {
-        return JsonUtils.fromJson(context.fc().getAppDataDir().resolve(ENV_FILE_NAME), Env.class, new Env("default"));
+        return context.dc().fromJson(ENV_FILE_NAME, Env.class, new Env("default"));
     }
 
     private void setEnv(Env env) {
         this.env = env;
-        JsonUtils.toJson(env, context.fc().getAppDataDir().resolve(ENV_FILE_NAME));
+        context.dc().toJson(env, ENV_FILE_NAME);
     }
 
     public void resetEnv(Env env) {
@@ -137,12 +136,12 @@ public class Session {
     }
 
     public Settings loadSettings() {
-        return JsonUtils.fromJson(context.fc().getAppDataDir().resolve(SETTINGS_FILE_NAME), Settings.class, new Settings());
+        return context.dc().fromJson(SETTINGS_FILE_NAME, Settings.class, new Settings());
     }
 
     public void setSettings(Settings settings) {
         this.settings = settings;
-        context.tc().executeSequentially(PRIVILEDGED_TASK_QUEUE, () -> JsonUtils.toJson(settings, context.fc().getAppDataDir().resolve(SETTINGS_FILE_NAME)));
+        context.dc().toJson(settings, SETTINGS_FILE_NAME);
     }
 
     private void setListener() {

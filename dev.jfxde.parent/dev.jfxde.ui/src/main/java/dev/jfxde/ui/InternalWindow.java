@@ -1,10 +1,10 @@
 package dev.jfxde.ui;
 
+import dev.jfxde.data.entity.Window;
+import dev.jfxde.data.entity.Window.State;
 import dev.jfxde.fonts.Fonts;
 import dev.jfxde.jfxext.util.LayoutUtils;
 import dev.jfxde.logic.Sys;
-import dev.jfxde.logic.data.Window;
-import dev.jfxde.logic.data.Window.State;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;

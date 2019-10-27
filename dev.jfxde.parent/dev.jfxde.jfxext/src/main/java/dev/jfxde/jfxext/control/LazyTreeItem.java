@@ -23,13 +23,14 @@ public class LazyTreeItem<T> extends TreeItem<T> {
     };
     private Function<LazyTreeItem<T>, Node> graphic = i -> null;
     private Function<LazyTreeItem<T>, String> toString = i -> i.toString();
-    private ForkJoinTask<Void> loaded;
+    private ForkJoinTask<Void> loadedTask;
+    private boolean loaded;
     private boolean allLoaded;
     private Boolean isLeaf;
     private ObservableList<LazyTreeItem<T>> allChildren = FXCollections.observableArrayList();
     private List<LazyTreeItem<T>> cache = new ArrayList<>();
     private List<LazyTreeItem<T>> filteredCache = new ArrayList<>();
-    private static final int CACHE_SIZE = 20;
+    private static final int CACHE_SIZE = 40;
 
     public LazyTreeItem(T value) {
         super(value);
@@ -42,6 +43,11 @@ public class LazyTreeItem<T> extends TreeItem<T> {
         this.filteredChildrenGetter = parent.filteredChildrenGetter;
         this.toString = parent.toString;
         graphic(parent.graphic);
+    }
+
+    public void setChildren(List<TreeItem<T>> value) {
+        super.getChildren().setAll(value);
+        loaded = true;
     }
 
     public LazyTreeItem<T> leaf(Function<LazyTreeItem<T>, Boolean> leaf) {
@@ -88,7 +94,7 @@ public class LazyTreeItem<T> extends TreeItem<T> {
     @Override
     public ObservableList<TreeItem<T>> getChildren() {
 
-        if (loaded == null) {
+        if (!loaded) {
             load();
         }
 
@@ -101,6 +107,7 @@ public class LazyTreeItem<T> extends TreeItem<T> {
     }
 
     private void load() {
+        loaded = true;
         cache.clear();
         var task = Executors.<Void>privilegedCallable(() -> {
 
@@ -108,7 +115,7 @@ public class LazyTreeItem<T> extends TreeItem<T> {
             return null;
         });
 
-        loaded = ForkJoinPool.commonPool().submit(task);
+        loadedTask = ForkJoinPool.commonPool().submit(task);
     }
 
     public void addCached(LazyTreeItem<T> child) {
@@ -117,10 +124,11 @@ public class LazyTreeItem<T> extends TreeItem<T> {
             cache.add(child);
         } else {
             if (!cache.isEmpty()) {
+                var copy = new ArrayList<>(cache);
+                cache.clear();
                 Platform.runLater(() -> {
-                    super.getChildren().addAll(cache);
-                    allChildren.addAll(cache);
-                    cache.clear();
+                    super.getChildren().addAll(copy);
+                    allChildren.addAll(copy);
                 });
             }
         }
@@ -132,9 +140,10 @@ public class LazyTreeItem<T> extends TreeItem<T> {
             filteredCache.add(child);
         } else {
             if (!filteredCache.isEmpty()) {
+                var copy = new ArrayList<>(filteredCache);
+                filteredCache.clear();
                 Platform.runLater(() -> {
-                    allChildren.addAll(filteredCache);
-                    filteredCache.clear();
+                    allChildren.addAll(copy);
                 });
             }
         }
@@ -158,13 +167,13 @@ public class LazyTreeItem<T> extends TreeItem<T> {
             allLoaded = true;
             filteredCache.clear();
 
-            if (loaded == null) {
+            if (!loaded) {
                 load();
             }
 
             var task = Executors.privilegedCallable(() -> {
 
-                loaded.join();
+                loadedTask.join();
                 filteredChildrenGetter.accept(this);
 
                 return null;

@@ -3,6 +3,7 @@ package dev.jfxde.logic.context;
 import dev.jfxde.api.AppContext;
 import dev.jfxde.api.AppController;
 import dev.jfxde.api.AppRequest;
+import dev.jfxde.api.DataController;
 import dev.jfxde.api.FileController;
 import dev.jfxde.api.ResourceController;
 import dev.jfxde.api.TaskController;
@@ -15,6 +16,7 @@ public class AppContextImpl implements AppContext {
     private FileController fileController;
     private TaskController taskController;
     private AppController appController;
+    private DataController dataController;
 
     public AppContextImpl(AppDescriptor appDescriptor) {
         this(appDescriptor, null);
@@ -26,6 +28,7 @@ public class AppContextImpl implements AppContext {
         this.fileController = new FileControllerImpl(appDescriptor);
         this.taskController = new TaskControllerImpl(appDescriptor);
         this.appController = new AppControllerImpl(appDescriptor);
+        this.dataController = new DataControllerImpl(appDescriptor);
     }
 
     @Override
@@ -52,4 +55,9 @@ public class AppContextImpl implements AppContext {
     public AppController ac() {
 		return appController;
 	}
+
+    @Override
+    public DataController dc() {
+        return dataController;
+    }
 }

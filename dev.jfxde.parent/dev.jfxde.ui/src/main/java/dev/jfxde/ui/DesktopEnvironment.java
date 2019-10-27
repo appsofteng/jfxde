@@ -1,10 +1,10 @@
 package dev.jfxde.ui;
 
+import dev.jfxde.data.entity.Desktop;
+import dev.jfxde.data.entity.Window;
+import dev.jfxde.data.entity.Window.State;
 import dev.jfxde.fonts.Fonts;
 import dev.jfxde.logic.Sys;
-import dev.jfxde.logic.data.Desktop;
-import dev.jfxde.logic.data.Window;
-import dev.jfxde.logic.data.Window.State;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;

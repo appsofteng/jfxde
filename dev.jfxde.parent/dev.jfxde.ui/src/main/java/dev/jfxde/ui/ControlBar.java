@@ -3,11 +3,11 @@ package dev.jfxde.ui;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import dev.jfxde.data.entity.Desktop;
 import dev.jfxde.jfxext.util.LayoutUtils;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.AppDescriptor;
 import dev.jfxde.logic.data.AppProviderDescriptor;
-import dev.jfxde.logic.data.Desktop;
 import javafx.animation.Animation.Status;
 import javafx.animation.TranslateTransition;
 import javafx.css.PseudoClass;
