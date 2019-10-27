@@ -117,15 +117,17 @@ public final class AppManager extends Manager {
         List<AppProviderData> appProviderDatas = Sys.dm().getAppProviderData(descriptor.getFqn());
 
         if (appProviderDatas.size() == 1) {
-            AppProviderData appProviderData = appProviderDatas.get(0);
-            var checksum = descriptor.getPermissionChecksum();
+            var storedAppProviderData = appProviderDatas.get(0);
+            var defaultAppProviderData = descriptor.getAppProviderData();
 
-            appProviderData.setName(descriptor.getName());
-            descriptor.setAppProviderData(appProviderData);
+            storedAppProviderData.setName(defaultAppProviderData.getName());
+            descriptor.setAppProviderData(storedAppProviderData);
 
-            if (checksum.equals(descriptor.getPermissionChecksum())) {
+            if (defaultAppProviderData.getPermissionChecksum().equals(storedAppProviderData.getPermissionChecksum())) {
 
                 descriptor.putPolicy();
+            } else {
+                storedAppProviderData.setAllowed(false);
             }
         }
     }
