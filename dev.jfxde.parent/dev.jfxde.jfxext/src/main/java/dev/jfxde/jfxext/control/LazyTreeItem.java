@@ -7,6 +7,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -14,7 +15,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 
-public class LazyTreeItem<T> extends TreeItem<T> {
+public class LazyTreeItem<T extends Comparable<T>> extends TreeItem<T> {
 
     private Function<LazyTreeItem<T>, Boolean> leaf;
     private Consumer<LazyTreeItem<T>> childrenGetter = i -> {
@@ -99,6 +100,22 @@ public class LazyTreeItem<T> extends TreeItem<T> {
         }
 
         return super.getChildren();
+    }
+
+    public void insert(T value) {
+        if (loaded) {
+
+            var index = IntStream.range(0, getChildren().size())
+                    .filter(i -> getChildren().get(i).getValue().compareTo(value) > 0)
+                    .findFirst()
+                    .orElse(-1);
+            var item = new LazyTreeItem<>(value, this);
+            if (index > -1) {
+                getChildren().add(index, item);
+            } else {
+                getChildren().add(item);
+            }
+        }
     }
 
     @Override

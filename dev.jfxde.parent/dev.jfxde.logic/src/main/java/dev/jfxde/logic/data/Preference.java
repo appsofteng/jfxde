@@ -5,7 +5,7 @@ import java.util.prefs.Preferences;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class Preference {
+public class Preference implements Comparable<Preference>{
 
     private StringProperty key;
     private StringProperty value;
@@ -78,5 +78,10 @@ public class Preference {
     @Override
     public String toString() {
         return getKey();
+    }
+
+    @Override
+    public int compareTo(Preference o) {
+        return toString().compareTo(o.toString());
     }
 }
