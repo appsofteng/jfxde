@@ -1,4 +1,4 @@
-package dev.jfxde.ui;
+package dev.jfxde.jfxext.control;
 
 import dev.jfxde.jfxext.util.LayoutUtils;
 import javafx.beans.value.ChangeListener;
@@ -18,24 +18,19 @@ public class InternalDialog extends InternalFrame {
     }
 
     public InternalDialog(Node node, Modality modality) {
-        this(findParent(node), modality);
+        this(findPaneParent(node), modality);
     }
 
-    private InternalDialog(InternalFrame parent, Modality modality) {
-        super(parent.windowPane);
-        this.parent = parent;
+    private InternalDialog(PaneParent paneParent, Modality modality) {
+        super(paneParent.getPane());
+        this.parent = paneParent.getParent();
         this.modality = modality;
 
-        parent.subframes.add(this);
-        addButtons();
-        buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
-        setMoveable();
-        setHandlers();
-    }
-
-    public InternalDialog(Pane windowPane) {
-        super(windowPane);
-        this.modality = Modality.APPLICATION_MODAL;
+        if (this.parent != null) {
+            this.parent.subframes.add(this);
+        } else {
+            this.modality = Modality.APPLICATION_MODAL;
+        }
 
         addButtons();
         buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
@@ -43,9 +38,9 @@ public class InternalDialog extends InternalFrame {
         setHandlers();
     }
 
-    private static InternalFrame findParent(Node node) {
+    private static PaneParent findPaneParent(Node node) {
 
-        InternalFrame frame = null;
+        PaneParent paneParent = null;
         Node parent = node;
 
         while (parent != null && !(parent instanceof InternalFrame)) {
@@ -53,10 +48,12 @@ public class InternalDialog extends InternalFrame {
         }
 
         if (parent instanceof InternalFrame) {
-            frame = (InternalFrame) parent;
+            paneParent = new PaneParent((InternalFrame) parent);
+        } else if (node instanceof Pane) {
+            paneParent = new PaneParent((Pane) node);
         }
 
-        return frame;
+        return paneParent;
     }
 
     @Override
@@ -182,9 +179,31 @@ public class InternalDialog extends InternalFrame {
         }
     }
 
-    void activate() {
+    public void activate() {
         active.set(true);
         toFront();
         focusOwner.requestFocus();
+    }
+
+    private static class PaneParent {
+        private Pane pane;
+        private InternalFrame parent;
+
+        public PaneParent(Pane pane) {
+            this.pane = pane;
+        }
+
+        public PaneParent(InternalFrame parent) {
+            this.parent = parent;
+            this.pane = parent.windowPane;
+        }
+
+        public Pane getPane() {
+            return pane;
+        }
+
+        public InternalFrame getParent() {
+            return parent;
+        }
     }
 }

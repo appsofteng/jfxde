@@ -4,6 +4,7 @@ import dev.jfxde.data.entity.Desktop;
 import dev.jfxde.data.entity.Window;
 import dev.jfxde.data.entity.Window.State;
 import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfxext.control.AlertBuilder;
 import dev.jfxde.logic.Sys;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.HPos;

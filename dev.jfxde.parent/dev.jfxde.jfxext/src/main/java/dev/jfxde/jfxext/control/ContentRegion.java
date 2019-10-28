@@ -1,4 +1,4 @@
-package dev.jfxde.ui;
+package dev.jfxde.jfxext.control;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;

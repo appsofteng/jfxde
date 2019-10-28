@@ -3,6 +3,7 @@ package dev.jfxde.ui;
 import dev.jfxde.data.entity.Window;
 import dev.jfxde.data.entity.Window.State;
 import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfxext.control.InternalFrame;
 import dev.jfxde.jfxext.util.LayoutUtils;
 import dev.jfxde.logic.Sys;
 import javafx.animation.FadeTransition;
@@ -237,7 +238,7 @@ public class InternalWindow extends InternalFrame {
 
     }
 
-    void close() {
+    protected void close() {
         super.close();
         onClose();
     }
@@ -245,11 +246,11 @@ public class InternalWindow extends InternalFrame {
     protected void onClose() {
     }
 
-    void activateRoot() {
+    protected void activateRoot() {
         windowModel.activate();
     }
 
-    void activate() {
+    public void activate() {
         active.set(true);
         subframes.forEach(InternalFrame::deactivateAll);
         requestFocus();

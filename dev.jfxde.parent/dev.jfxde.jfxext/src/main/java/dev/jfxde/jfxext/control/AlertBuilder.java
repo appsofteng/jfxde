@@ -1,24 +1,24 @@
-package dev.jfxde.ui;
+package dev.jfxde.jfxext.control;
 
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 
 public final class AlertBuilder {
 
     private Alert alert;
-    private Pane owner;
+    private InternalDialog dialog;
     private Runnable action = () -> {};
 
-    private AlertBuilder(Pane owner, Alert alert) {
-       this.owner = owner;
+    private AlertBuilder(Node owner, Alert alert) {
+       dialog = new InternalDialog(owner, Modality.WINDOW_MODAL);
        this.alert = alert;
     }
 
-    public static AlertBuilder get(Pane owner, AlertType alertType) {
+    public static AlertBuilder get(Node owner, AlertType alertType) {
         return new AlertBuilder(owner, new Alert(alertType));
     }
 
@@ -60,7 +60,6 @@ public final class AlertBuilder {
             dialogPane.setMinHeight(dialogPane.prefHeight(w));
         });
 
-        var dialog = new InternalDialog(owner);
         dialog.setTitle(alert.getTitle());
         dialog.setUseComputedSize();
 

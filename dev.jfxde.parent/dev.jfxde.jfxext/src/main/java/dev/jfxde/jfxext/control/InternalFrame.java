@@ -1,9 +1,12 @@
-package dev.jfxde.ui;
+package dev.jfxde.jfxext.control;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import dev.jfxde.jfxext.animation.DropShadowTransition;
-import dev.jfxde.logic.Sys;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
@@ -45,6 +48,8 @@ public abstract class InternalFrame extends Region {
     protected Bounds restoreBounds;
     protected Point2D pressDragPoint;
 
+    private Map<StringProperty, String> stringProperties = new HashMap<>();
+
     protected BooleanProperty active = new BooleanPropertyBase() {
         @Override
         protected void invalidated() {
@@ -71,7 +76,8 @@ public abstract class InternalFrame extends Region {
         close.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         close.setFocusTraversable(false);
         close.setTooltip(new Tooltip());
-        close.getTooltip().textProperty().bind(Sys.rm().getStringBinding("close"));
+        close.getTooltip().setText("Close");
+        stringProperties.put(close.getTooltip().textProperty(), "close");
     }
 
     protected void buildLayout(double width, double height) {
@@ -140,7 +146,7 @@ public abstract class InternalFrame extends Region {
     public void show() {
     }
 
-    void removeContent() {
+    protected void removeContent() {
         contentRegion.removeContent();
     }
 
@@ -158,9 +164,9 @@ public abstract class InternalFrame extends Region {
         return root;
     }
 
-    abstract void activate();
+    public abstract void activate();
 
-    void activateRoot() {
+    protected void activateRoot() {
 
     }
 
@@ -203,17 +209,17 @@ public abstract class InternalFrame extends Region {
         }
     }
 
-    void deactivateAll() {
+    public void deactivateAll() {
         deactivate();
 
         subframes.forEach(InternalFrame::deactivateAll);
     }
 
-    void setSubFramesVisible(boolean value) {
+    protected void setSubFramesVisible(boolean value) {
         subframes.forEach(s -> s.setSubFramesVisible(value));
     }
 
-    void close() {
+    protected void close() {
         subframes.forEach(InternalFrame::close);
 
         if (parent != null) {
@@ -259,7 +265,7 @@ public abstract class InternalFrame extends Region {
         }
     }
 
-    InternalFrame getModalFrame(InternalFrame frame) {
+    protected InternalFrame getModalFrame(InternalFrame frame) {
         InternalFrame modalFrame = null;
         if (frame.isFrozen()) {
             var tmp = subframes.stream().filter(s -> s.modality != Modality.NONE).findFirst().orElse(null);
@@ -281,7 +287,7 @@ public abstract class InternalFrame extends Region {
         return ancestor == frame;
     }
 
-    void doModalEffect() {
+    public void doModalEffect() {
 
         new DropShadowTransition((DropShadow) getEffect(), this).play();
     }

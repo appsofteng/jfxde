@@ -15,6 +15,7 @@ import javax.swing.filechooser.FileSystemView;
 
 import org.controlsfx.control.BreadCrumbBar;
 
+import dev.jfxde.jfxext.control.InternalDialog;
 import dev.jfxde.jfxext.control.LazyTreeItem;
 import dev.jfxde.jfxext.descriptors.PathDescriptor;
 import dev.jfxde.jfxext.util.FXUtils;
