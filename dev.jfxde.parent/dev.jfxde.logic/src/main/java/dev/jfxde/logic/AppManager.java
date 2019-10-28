@@ -127,6 +127,7 @@ public final class AppManager extends Manager {
 
                 descriptor.putPolicy();
             } else {
+                storedAppProviderData.setPermissionChecksum(defaultAppProviderData.getPermissionChecksum());
                 storedAppProviderData.setAllowed(false);
             }
         }
