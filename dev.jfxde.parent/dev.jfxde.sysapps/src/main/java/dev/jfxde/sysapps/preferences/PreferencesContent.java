@@ -21,7 +21,7 @@ public class PreferencesContent extends StackPane {
         Platform.runLater(() -> {
             LazyTreeItem<Preference> root = new LazyTreeItem<>(new Preference())
                     .leaf(i -> i.getValue().isLeaf())
-                    .childrenGetter(i -> Sys.pm().getPreferences(i.getValue(), p -> new LazyTreeItem<>(p, i), c -> i.add(c)));
+                    .childrenGetter(i -> Sys.pm().getPreferences(i.getValue(), p -> new LazyTreeItem<>(p, i), c -> i.addCached(c)));
             TreeTableView<Preference> table = new TreeTableView<>(root);
             table.setShowRoot(false);
 

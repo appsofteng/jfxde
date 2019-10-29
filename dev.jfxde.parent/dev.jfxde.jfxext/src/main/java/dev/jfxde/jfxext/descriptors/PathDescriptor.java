@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
+import dev.jfxde.jfxext.nio.file.FileUtils;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyLongProperty;
@@ -188,24 +189,16 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         return Files.isReadable(path);
     }
 
-    public boolean isLeaf() {
+    public boolean isDirLeaf() {
 
-        boolean result = !directory || !Files.isReadable(path) || !isRoot() && !hasSubDirs();
+        boolean result = !directory || !Files.isReadable(path) || !isRoot() && !FileUtils.hasSubDirs(path);
 
         return result;
     }
 
-    private boolean hasSubDirs() {
-        boolean result = false;
+    public boolean isLeaf() {
 
-        try (var stream = Files.list(path)) {
-
-            result = stream.filter(p -> Files.isDirectory(p))
-                    .filter(p -> Files.isReadable(p))
-                    .findAny().isPresent();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        boolean result = !directory || !Files.isReadable(path) || !isRoot() && !FileUtils.isEmpty(path);
 
         return result;
     }
@@ -295,6 +288,20 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     @Override
     public String toString() {
         return name.get();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof PathDescriptor)) {
+            return false;
+        }
+
+        return path.equals(((PathDescriptor)obj).path);
+    }
+
+    @Override
+    public int hashCode() {
+        return path.hashCode();
     }
 
     @Override

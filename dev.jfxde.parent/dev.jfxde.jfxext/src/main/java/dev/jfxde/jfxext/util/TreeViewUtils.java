@@ -2,6 +2,7 @@ package dev.jfxde.jfxext.util;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -29,6 +30,18 @@ public final class TreeViewUtils {
         }
 
         return items;
+    }
+
+    public static <T extends Comparable<T>> void insert(TreeItem<T> item, TreeItem<T> parent) {
+        var index = IntStream.range(0, parent.getChildren().size())
+                .filter(i -> parent.getChildren().get(i).getValue().compareTo(item.getValue()) > 0)
+                .findFirst()
+                .orElse(-1);
+        if (index > -1) {
+            parent.getChildren().add(index, item);
+        } else {
+            parent.getChildren().add(item);
+        }
     }
 
     public static void removeFromParent(TreeItem<?> item) {

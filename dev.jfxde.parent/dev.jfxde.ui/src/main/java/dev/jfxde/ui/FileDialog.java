@@ -83,7 +83,7 @@ public class FileDialog extends InternalDialog {
     private void setGraphics() {
         double height = windowPane.getHeight() * 0.8;
         root = new LazyTreeItem<>(new PathDescriptor())
-                .leaf(i -> i.getValue().isLeaf())
+                .leaf(i -> i.getValue().isDirLeaf())
                 .childrenGetter(i -> i.getValue().getDirectories(p -> new LazyTreeItem<>(p, i), c -> i.addCached(c)))
                 .filteredChildrenGetter(filesGetter)
                 .toString(i -> i.getValue().getPath().toString())

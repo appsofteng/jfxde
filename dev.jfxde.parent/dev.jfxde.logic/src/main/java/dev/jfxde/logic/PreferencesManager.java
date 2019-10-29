@@ -62,6 +62,7 @@ public final class PreferencesManager extends Manager {
         if (parent.getKey() == null) {
             consumer.accept(mapper.apply(new Preference("system", false)));
             consumer.accept(mapper.apply(new Preference("user", false)));
+            consumer.accept(null);
         } else if ("system".equals(parent.getKey())) {
             getChildPreferences(Preferences.systemRoot(), mapper, consumer);
         } else if ("user".equals(parent.getKey())) {
@@ -83,6 +84,7 @@ public final class PreferencesManager extends Manager {
 
             Arrays.stream(keys).map(n -> mapper.apply(new Preference(child, n, true)))
                     .forEach(consumer);
+            consumer.accept(null);
 
         } catch (BackingStoreException e) {
             new RuntimeException(e);

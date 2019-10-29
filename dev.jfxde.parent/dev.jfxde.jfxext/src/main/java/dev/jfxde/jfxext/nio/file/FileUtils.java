@@ -16,6 +16,17 @@ public final class FileUtils {
     private FileUtils() {
     }
 
+    public static Path createFile(Path path, String name) {
+        Path result = getUniquePath(path, name);
+        try {
+            result = Files.createFile(result);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return result;
+    }
+
     public static Path createDirectory(Path path, String name) {
         Path result = getUniquePath(path, name);
         try {
@@ -66,5 +77,35 @@ public final class FileUtils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static boolean hasSubDirs(Path dir) {
+        boolean result = false;
+
+        try (var stream = Files.list(dir)) {
+
+            result = stream.filter(p -> Files.isDirectory(p))
+                    .filter(p -> Files.isReadable(p))
+                    .findAny().isPresent();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return result;
+    }
+
+    public static boolean isEmpty(Path dir) {
+        boolean result = false;
+
+        try (var stream = Files.list(dir)) {
+
+            result = stream
+                    .filter(p -> Files.isReadable(p))
+                    .findAny().isPresent();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return result;
     }
 }

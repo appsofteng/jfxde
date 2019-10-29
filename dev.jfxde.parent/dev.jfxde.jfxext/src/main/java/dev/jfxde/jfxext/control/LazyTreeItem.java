@@ -7,15 +7,17 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 
-public class LazyTreeItem<T extends Comparable<T>> extends TreeItem<T> {
+public class LazyTreeItem<T> extends TreeItem<T> {
 
     private Function<LazyTreeItem<T>, Boolean> leaf;
     private Consumer<LazyTreeItem<T>> childrenGetter = i -> {
@@ -25,8 +27,9 @@ public class LazyTreeItem<T extends Comparable<T>> extends TreeItem<T> {
     private Function<LazyTreeItem<T>, Node> graphic = i -> null;
     private Function<LazyTreeItem<T>, String> toString = i -> i.toString();
     private ForkJoinTask<Void> loadedTask;
-    private boolean loaded;
-    private boolean allLoaded;
+    private boolean loading;
+    private BooleanProperty loaded = new SimpleBooleanProperty();
+    private boolean allLoading;
     private Boolean isLeaf;
     private ObservableList<LazyTreeItem<T>> allChildren = FXCollections.observableArrayList();
     private List<LazyTreeItem<T>> cache = new ArrayList<>();
@@ -48,7 +51,7 @@ public class LazyTreeItem<T extends Comparable<T>> extends TreeItem<T> {
 
     public void setChildren(List<TreeItem<T>> value) {
         super.getChildren().setAll(value);
-        loaded = true;
+        setLoaded(true);
     }
 
     public LazyTreeItem<T> leaf(Function<LazyTreeItem<T>, Boolean> leaf) {
@@ -92,30 +95,30 @@ public class LazyTreeItem<T extends Comparable<T>> extends TreeItem<T> {
         return isLeaf;
     }
 
+    public void setLeaf(Boolean value) {
+        isLeaf = value;
+    }
+
     @Override
     public ObservableList<TreeItem<T>> getChildren() {
 
-        if (!loaded) {
+        if (!loading && !isLoaded()) {
             load();
         }
 
         return super.getChildren();
     }
 
-    public void insert(T value) {
-        if (loaded) {
+    public boolean isLoaded() {
+        return loaded.get();
+    }
 
-            var index = IntStream.range(0, getChildren().size())
-                    .filter(i -> getChildren().get(i).getValue().compareTo(value) > 0)
-                    .findFirst()
-                    .orElse(-1);
-            var item = new LazyTreeItem<>(value, this);
-            if (index > -1) {
-                getChildren().add(index, item);
-            } else {
-                getChildren().add(item);
-            }
-        }
+    public void setLoaded(boolean value) {
+        loaded.set(value);
+    }
+
+    public ReadOnlyBooleanProperty loadedProperty() {
+        return loaded;
     }
 
     @Override
@@ -123,8 +126,21 @@ public class LazyTreeItem<T extends Comparable<T>> extends TreeItem<T> {
         return toString.apply(this);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TreeItem)) {
+            return false;
+        }
+        return getValue().equals(((TreeItem<T>)obj).getValue());
+    }
+
+    @Override
+    public int hashCode() {
+        return getValue().hashCode();
+    }
+
     private void load() {
-        loaded = true;
+        loading = true;
         cache.clear();
         var task = Executors.<Void>privilegedCallable(() -> {
 
@@ -148,6 +164,13 @@ public class LazyTreeItem<T extends Comparable<T>> extends TreeItem<T> {
                     allChildren.addAll(copy);
                 });
             }
+
+            if (child == null) {
+                Platform.runLater(() -> {
+                    loading = false;
+                    setLoaded(true);
+                });
+            }
         }
     }
 
@@ -166,25 +189,12 @@ public class LazyTreeItem<T extends Comparable<T>> extends TreeItem<T> {
         }
     }
 
-    public void add(LazyTreeItem<T> child) {
-        Platform.runLater(() -> {
-            super.getChildren().add(child);
-            allChildren.add(child);
-        });
-    }
-
-    public void addFiltered(LazyTreeItem<T> child) {
-        Platform.runLater(() -> {
-            allChildren.add(child);
-        });
-    }
-
     public ObservableList<LazyTreeItem<T>> getAllChildren() {
-        if (!allLoaded) {
-            allLoaded = true;
+        if (!allLoading) {
+            allLoading = true;
             filteredCache.clear();
 
-            if (!loaded) {
+            if (!loading && !isLoaded()) {
                 load();
             }
 
