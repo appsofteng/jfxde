@@ -2,6 +2,7 @@ package dev.jfxde.ui;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import dev.jfxde.jfxext.util.FXUtils;
 import dev.jfxde.logic.data.PathDescriptor;
@@ -63,15 +64,34 @@ public class PathTreeItem extends TreeItem<PathDescriptor> {
     private void addItems(List<? extends PathDescriptor> pds) {
         pds.forEach(pd -> {
             var item = new PathTreeItem(pd, graphicFactory, dirOnly);
-            allChildren.add(item);
+            var index = IntStream.range(0, allChildren.size())
+                    .filter(i -> allChildren.get(i).getValue().compareTo(item.getValue()) > 0)
+                    .findFirst()
+                    .orElse(-1);
+            if (index > -1) {
+                allChildren.add(index, item);
+            } else {
+                allChildren.add(item);
+            }
+
             if (dirOnly) {
                 if (pd.isDirectory()) {
+                    if (index > -1) {
+                        children.add(index, item);
+                        super.getChildren().add(index, item);
+                    } else {
+                        children.add(item);
+                        super.getChildren().add(item);
+                    }
+                }
+            } else {
+                if (index > -1) {
+                    children.add(index, item);
+                    super.getChildren().add(index, item);
+                } else {
                     children.add(item);
                     super.getChildren().add(item);
                 }
-            } else {
-                children.add(item);
-                super.getChildren().add(item);
             }
         });
     }
