@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 import  dev.jfxde.logic.Constants;
+import dev.jfxde.logic.data.PathDescriptor;
 
 public final class FileManager extends Manager {
 

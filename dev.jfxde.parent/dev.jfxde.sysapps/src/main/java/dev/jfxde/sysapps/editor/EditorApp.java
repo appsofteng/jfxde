@@ -1,4 +1,4 @@
-package dev.jfxde.apps.editor;
+package dev.jfxde.sysapps.editor;
 
 import java.io.FilePermission;
 import java.util.PropertyPermission;

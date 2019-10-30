@@ -17,8 +17,8 @@ import org.controlsfx.control.BreadCrumbBar;
 
 import dev.jfxde.jfxext.control.InternalDialog;
 import dev.jfxde.jfxext.control.LazyTreeItem;
-import dev.jfxde.jfxext.descriptors.PathDescriptor;
 import dev.jfxde.jfxext.util.FXUtils;
+import dev.jfxde.logic.data.PathDescriptor;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ReadOnlyLongProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
