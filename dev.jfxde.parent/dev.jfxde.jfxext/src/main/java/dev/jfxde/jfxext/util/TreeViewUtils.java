@@ -32,6 +32,15 @@ public final class TreeViewUtils {
         return items;
     }
 
+    public static <T> void select(T value, TreeItem<T> parent, TreeView<T> treeView) {
+        var item = parent.getChildren().stream().filter(i -> i.getValue().equals(value)).findFirst().orElse(null);
+
+        if (item != null) {
+            treeView.getSelectionModel().clearSelection();
+            treeView.getSelectionModel().select(item);
+        }
+    }
+
     public static <T extends Comparable<T>> void insert(TreeItem<T> item, TreeItem<T> parent) {
         var index = IntStream.range(0, parent.getChildren().size())
                 .filter(i -> parent.getChildren().get(i).getValue().compareTo(item.getValue()) > 0)

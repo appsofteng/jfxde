@@ -3,10 +3,9 @@ package dev.jfxde.sysapps.editor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import dev.jfxde.jfxext.util.FXUtils;
 import dev.jfxde.logic.data.PathDescriptor;
+import dev.jfxde.ui.PathTreeItem;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.TitledPane;
@@ -27,9 +26,9 @@ public class FileTreePane extends VBox {
 
     private TitledPane createFilesPane() {
 
-        PathTreeItem root = new PathTreeItem(PathDescriptor.getRoot(), pd -> FXUtils.getIcon(pd.getPath()));
+        PathTreeItem root = new PathTreeItem(PathDescriptor.getRoot());
 
-        FileTreeView fileTree = new FileTreeView(root);
+        FileTreeBox fileTree = new FileTreeBox(root);
 
         TitledPane pane = new TitledPane();
         pane.setMinWidth(0);
@@ -42,13 +41,9 @@ public class FileTreePane extends VBox {
 
     private TitledPane createBookmarksPane(List<String> bookmarkPaths) {
 
-        PathTreeItem root = new PathTreeItem(PathDescriptor.getEmpty(), pd -> FXUtils.getIcon(pd.getPath()));
+        PathTreeItem root = new PathTreeItem(PathDescriptor.getNoname(bookmarkPaths));
 
-        List<PathTreeItem> children = bookmarkPaths.stream().map(p -> new PathTreeItem(PathDescriptor.get(p), pd -> FXUtils.getIcon(pd.getPath())))
-                .collect(Collectors.toList());
-        root.getChildren().setAll(children);
-
-        FileTreeView fileTree = new FileTreeView(root);
+        FileTreeBox fileTree = new FileTreeBox(root);
         TitledPane pane = new TitledPane();
         pane.setMinWidth(0);
         pane.setText("Bookmarks");

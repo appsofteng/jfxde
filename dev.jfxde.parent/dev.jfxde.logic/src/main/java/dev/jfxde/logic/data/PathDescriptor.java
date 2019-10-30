@@ -10,25 +10,22 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ForkJoinPool;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import dev.jfxde.jfxext.nio.file.FileUtils;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyLongProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -39,9 +36,8 @@ import javafx.collections.ObservableList;
 public class PathDescriptor implements Comparable<PathDescriptor> {
 
     private static final String TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
-    private static final String ROOT_NAME = File.separator;
-    private static final PathDescriptor ROOT = createRoot();
-    private static final PathDescriptor EMPTY = createEmpty();
+    private static final Path ROOT_PATH = Paths.get(File.separator);
+    private final static Map<Path, WeakReference<PathDescriptor>> CACHE = Collections.synchronizedMap(new WeakHashMap<>());
 
     private Path path;
     private StringProperty name;
@@ -49,33 +45,34 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     private ObjectProperty<FileTime> created;
     private ObjectProperty<FileTime> modified;
     private boolean directory;
-    private PathDescriptor parent;
-    private final static Map<Path, WeakReference<PathDescriptor>> CACHE = Collections.synchronizedMap(new WeakHashMap<>());
+    private Set<PathDescriptor> parents = new HashSet<>();
     private ObservableList<PathDescriptor> directories = FXCollections.observableArrayList();
     private ObservableList<PathDescriptor> files = FXCollections.observableArrayList();
     private ObservableList<PathDescriptor> paths = FXCollections.observableArrayList();
     private boolean loaded;
     private Boolean dirLeaf;
     private Boolean leaf;
-    private BooleanProperty deleted = new SimpleBooleanProperty();
 
-    public PathDescriptor() {
+    private PathDescriptor() {
     }
 
-    public PathDescriptor(String path) {
-        this(null, Paths.get(path));
+    private PathDescriptor(PathDescriptor parent, String path) {
+        this(parent, Paths.get(path));
     }
 
-    public PathDescriptor(PathDescriptor parent, Path path) {
+    private PathDescriptor(PathDescriptor parent, Path path) {
         this(parent, path, Files.isDirectory(path));
     }
 
-    public PathDescriptor(PathDescriptor parent, Path path, boolean dir) {
-        this.parent = parent;
+    private PathDescriptor(PathDescriptor parent, Path path, boolean dir) {
+        if (parent != null) {
+            this.parents.add(parent);
+        }
         this.path = path;
+        this.directory = dir;
+
         Path fileName = path.getFileName();
         setName(fileName == null ? path.toString() : fileName.toString());
-        this.directory = dir;
 
         try {
             var fileAttributes = Files.getFileAttributeView(path, BasicFileAttributeView.class);
@@ -90,43 +87,62 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         }
     }
 
-    private static PathDescriptor createRoot() {
-        var root = new PathDescriptor();
-        root.path = Paths.get(ROOT_NAME);
-        root.setName(ROOT_NAME);
-        root.directory = true;
-
-        return root;
-    }
-
-    private static PathDescriptor createEmpty() {
-
-        var empty = new PathDescriptor();
-        empty.path = null;
-        empty.leaf = true;
-        empty.dirLeaf = true;
-        empty.loaded = true;
-
-        return empty;
-    }
-
     public static PathDescriptor getRoot() {
-        return ROOT;
+        // Create a new root path so that it is not strongly referenced and thus removed
+        // from the cache.
+        return getFromCache(null, Paths.get(ROOT_PATH.toString()), true);
     }
 
-    public static PathDescriptor getEmpty() {
-        return EMPTY;
+    public static PathDescriptor getNoname(List<String> paths) {
+
+        var noname = new PathDescriptor();
+        List<PathDescriptor> pds = paths.stream()
+                .map(p -> Paths.get(p))
+                .map(p -> getFromCache(noname, p, Files.isDirectory(p)))
+                .collect(Collectors.toList());
+
+        noname.setName("");
+        noname.path = null;
+        noname.directory = !pds.isEmpty();
+        noname.leaf = !noname.directory;
+        noname.dirLeaf = !noname.directory;
+        noname.loaded = true;
+        noname.paths.setAll(pds);
+
+        return noname;
     }
 
-    public static PathDescriptor get(String path) {
-        var key = Paths.get(path);
-        var pd = CACHE.computeIfAbsent(key, k -> new WeakReference<>(new PathDescriptor(path)));
-
-        return pd.get();
+    static PathDescriptor createDirectory(PathDescriptor parent, Path path) {
+        var pathDescriptor = add(parent, path, true);
+        parent.paths.add(pathDescriptor);
+        parent.dirLeaf = false;
+        parent.leaf = false;
+        parent.loaded = true;
+        return pathDescriptor;
     }
 
-    public ReadOnlyBooleanProperty deletedProperty() {
-        return deleted;
+    static PathDescriptor createFile(PathDescriptor parent, Path path) {
+        var pathDescriptor = add(parent, path, false);
+        parent.paths.add(pathDescriptor);
+        parent.leaf = false;
+        parent.loaded = true;
+        return pathDescriptor;
+    }
+
+    void delete() {
+        CACHE.remove(path);
+        parents.forEach(p -> p.remove(this));
+    }
+
+    private void remove(PathDescriptor pd) {
+        directories.remove(pd);
+        files.remove(pd);
+        paths.remove(pd);
+
+        if (paths.isEmpty()) {
+            dirLeaf = true;
+            leaf = true;
+        }
     }
 
     public Path getPath() {
@@ -268,7 +284,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     }
 
     boolean isRoot() {
-        return ROOT_NAME.equals(path.toString());
+        return ROOT_PATH.equals(path);
     }
 
     public ObservableList<PathDescriptor> getDirectories() {
@@ -299,18 +315,19 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
             if (isRoot()) {
                 listRoots();
             } else {
-
                 list();
             }
+
+            paths.setAll(directories);
+            paths.addAll(files);
         });
     }
 
     private void listRoots() {
         try (var stream = StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false)) {
-            var roots = stream.map(p -> new PathDescriptor(this, p, true)).collect(Collectors.toList());
-            directories.setAll(roots);
-            paths.setAll(roots);
-            roots.forEach(p -> CACHE.put(p.path, new WeakReference<>(p)));
+            stream.forEach(p -> {
+                add(this, p, true);
+            });
         }
     }
 
@@ -321,14 +338,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
             while (iterator.hasNext()) {
                 var p = iterator.next();
                 boolean directory = Files.isDirectory(p);
-                var pd = new PathDescriptor(this, p, directory);
-                CACHE.put(path, new WeakReference<>(pd));
-                paths.add(pd);
-                if (directory) {
-                    directories.add(pd);
-                } else {
-                    files.add(pd);
-                }
+                add(this, p, directory);
             }
 
         } catch (Exception e) {
@@ -336,74 +346,26 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         }
     }
 
-    public <T> void getDirectories(Function<PathDescriptor, T> mapper, Consumer<T> consumer) {
-
-        if (!Files.isReadable(path)) {
-            return;
-        }
-        if (isRoot()) {
-            listRoots(mapper, consumer);
+    private static PathDescriptor add(PathDescriptor parent, Path p, boolean directory) {
+        var pd = getFromCache(parent, p, directory);
+        if (directory) {
+            parent.directories.add(pd);
         } else {
-
-            list(p -> consumer.accept(mapper.apply(new PathDescriptor(this, p, true))), p -> {
-            }, consumer);
+            parent.files.add(pd);
         }
+
+        return pd;
     }
 
-    public <T> void getFiles(Function<PathDescriptor, T> mapper, Consumer<T> consumer) {
-        if (!isRoot()) {
+    private static PathDescriptor getFromCache(PathDescriptor parent, Path path, boolean dir) {
 
-            list(p -> {
-            }, p -> consumer.accept(mapper.apply(new PathDescriptor(this, p, false))), consumer);
+        var pd = CACHE.computeIfAbsent(path, k -> new WeakReference<>(new PathDescriptor(parent, path, dir))).get();
+
+        if (parent != null) {
+            pd.parents.add(parent);
         }
-    }
 
-    public <T> void getAll(Function<PathDescriptor, T> mapper, Consumer<T> consumer) {
-
-        if (!Files.isReadable(path)) {
-            return;
-        }
-        if (isRoot()) {
-            listRoots(mapper, consumer);
-        } else {
-
-            var files = new ArrayList<T>();
-            list(p -> consumer.accept(mapper.apply(new PathDescriptor(this, p, true))),
-                    p -> files.add(mapper.apply(new PathDescriptor(this, p, false))), p -> {
-                    });
-            files.forEach(f -> consumer.accept(f));
-            consumer.accept(null);
-        }
-    }
-
-    private <T> void listRoots(Function<PathDescriptor, T> mapper, Consumer<T> consumer) {
-        try (var stream = StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false)) {
-            stream.map(p -> new PathDescriptor(this, p, true))
-                    // .sorted()
-                    .map(mapper)
-                    .forEach(consumer);
-            consumer.accept(null);
-        }
-    }
-
-    private <T> void list(Consumer<Path> dirs, Consumer<Path> files, Consumer<T> end) {
-        try (var stream = Files.newDirectoryStream(path)) {
-            var iterator = stream.iterator();
-
-            while (iterator.hasNext()) {
-                var p = iterator.next();
-                boolean directory = Files.isDirectory(p);
-                if (directory) {
-                    dirs.accept(p);
-                } else {
-                    files.accept(p);
-                }
-            }
-
-            end.accept(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return pd;
     }
 
     @Override
@@ -417,12 +379,12 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
             return false;
         }
 
-        return path.equals(((PathDescriptor) obj).path);
+        return path != null ? path.equals(((PathDescriptor) obj).path) : super.equals(obj);
     }
 
     @Override
     public int hashCode() {
-        return path.hashCode();
+        return path != null ? path.hashCode() : super.hashCode();
     }
 
     @Override

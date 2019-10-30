@@ -17,6 +17,11 @@ public final class FXUtils {
     }
 
    public static ImageView getIcon(Path path) {
+
+       if (path == null) {
+           return null;
+       }
+
         ImageIcon icon = (ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(path.toFile());
         BufferedImage image = (BufferedImage) icon.getImage();
         Image fxIcon = SwingFXUtils.toFXImage(image, null);
