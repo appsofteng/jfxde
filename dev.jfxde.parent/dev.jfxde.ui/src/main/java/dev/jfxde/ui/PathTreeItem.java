@@ -40,6 +40,25 @@ public class PathTreeItem extends TreeItem<PathDescriptor> {
     }
 
     private void setListeners() {
+        getValue().nameProperty().addListener((v,o,n) -> {
+            var parent = (PathTreeItem)getParent();
+
+            parent.getChildren().remove(this);
+            parent.allChildren.remove(this);
+            parent.children.remove(this);
+
+            var index = findIndex(parent, this);
+            if (index > -1) {
+                parent.getChildren().add(index, this);
+                parent.allChildren.add(index, this);
+                parent.children.add(index, this);
+            } else {
+                parent.getChildren().add(this);
+                parent.allChildren.add(this);
+                parent.children.add(this);
+            }
+        });
+
         getValue().getPaths().addListener((Change<? extends PathDescriptor> c) -> {
 
             while (c.next()) {
@@ -61,13 +80,19 @@ public class PathTreeItem extends TreeItem<PathDescriptor> {
         });
     }
 
+    private int findIndex(PathTreeItem parent, PathTreeItem item) {
+        var index = IntStream.range(0, parent.allChildren.size())
+                .filter(i -> parent.allChildren.get(i).getValue().compareTo(item.getValue()) > 0)
+                .findFirst()
+                .orElse(-1);
+
+        return index;
+    }
+
     private void addItems(List<? extends PathDescriptor> pds) {
         pds.forEach(pd -> {
             var item = new PathTreeItem(pd, graphicFactory, dirOnly);
-            var index = IntStream.range(0, allChildren.size())
-                    .filter(i -> allChildren.get(i).getValue().compareTo(item.getValue()) > 0)
-                    .findFirst()
-                    .orElse(-1);
+            var index = findIndex(this, item);
             if (index > -1) {
                 allChildren.add(index, item);
             } else {

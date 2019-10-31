@@ -20,8 +20,10 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 
 public class FileTreeBox extends VBox {
 
@@ -44,6 +46,8 @@ public class FileTreeBox extends VBox {
         fileTreeView.setShowRoot(false);
         fileTreeView.setMaxHeight(Double.MAX_VALUE);
         fileTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        fileTreeView.setCellFactory(TextFieldTreeCell.forTreeView(new PathDescriptorStringConverter()));
+
         VBox.setVgrow(fileTreeView, Priority.ALWAYS);
 
         getChildren().add(fileTreeView);
@@ -54,6 +58,15 @@ public class FileTreeBox extends VBox {
                 .addListener((v, o, n) -> {
                     selectedItems.setAll(TreeViewUtils.getSelectedItemsNoAncestor(fileTreeView));
                 });
+
+        fileTreeView.setOnEditCommit(e -> {
+            var oldValue = e.getOldValue();
+            PathDescriptors.rename(oldValue, oldValue.getNewName());
+            fileTreeView.getSelectionModel().clearSelection();
+            fileTreeView.getSelectionModel().select(e.getTreeItem());
+
+            fileTreeView.setEditable(false);
+        });
     }
 
     private void setContextMenu() {
@@ -66,6 +79,14 @@ public class FileTreeBox extends VBox {
         stringProperties.put(newDirectory.textProperty(), "newFile");
         newFile.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         newFile.setOnAction(e -> create(PathDescriptors::createFile));
+
+        MenuItem rename = new MenuItem("Rename");
+        stringProperties.put(newDirectory.textProperty(), "rename");
+        rename.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
+        rename.setOnAction(e -> {
+            fileTreeView.setEditable(true);
+            fileTreeView.edit(fileTreeView.getSelectionModel().getSelectedItem());
+        });
 
         MenuItem delete = new MenuItem("Delete");
         stringProperties.put(delete.textProperty(), "delete");
@@ -81,21 +102,21 @@ public class FileTreeBox extends VBox {
                             var parent = i.getParent();
                             var sibling = i.previousSibling() != null ? i.previousSibling() : i.nextSibling();
                             PathDescriptors.delete(i.getValue())
-                            .thenRun(() -> Platform.runLater(() -> {
-                                if (parent.getChildren().isEmpty()) {
-                                    parent.setExpanded(false);
-                                    fileTreeView.getSelectionModel().clearSelection();
-                                    fileTreeView.getSelectionModel().select(parent);
-                                } else {
-                                    fileTreeView.getSelectionModel().clearSelection();
-                                    fileTreeView.getSelectionModel().select(sibling);
-                                }
-                            }));
+                                    .thenRun(() -> Platform.runLater(() -> {
+                                        if (parent.getChildren().isEmpty()) {
+                                            parent.setExpanded(false);
+                                            fileTreeView.getSelectionModel().clearSelection();
+                                            fileTreeView.getSelectionModel().select(parent);
+                                        } else {
+                                            fileTreeView.getSelectionModel().clearSelection();
+                                            fileTreeView.getSelectionModel().select(sibling);
+                                        }
+                                    }));
                         });
                     }).show();
         });
 
-        ContextMenu menu = new ContextMenu(newDirectory, newFile, delete);
+        ContextMenu menu = new ContextMenu(newDirectory, newFile, rename, delete);
         fileTreeView.setContextMenu(menu);
     }
 
@@ -106,5 +127,20 @@ public class FileTreeBox extends VBox {
 
         PathDescriptor newPahDescriptor = create.apply(parentPahDescriptor, strings.computeIfAbsent("new", k -> "New"));
         TreeViewUtils.select(newPahDescriptor, parentItem, fileTreeView);
+    }
+
+    private class PathDescriptorStringConverter extends StringConverter<PathDescriptor> {
+
+        @Override
+        public String toString(PathDescriptor pd) {
+            return pd.toString();
+        }
+
+        @Override
+        public PathDescriptor fromString(String string) {
+            var pd = fileTreeView.getSelectionModel().getSelectedItem().getValue();
+            pd.setNewName(string);
+            return pd;
+        }
     }
 }

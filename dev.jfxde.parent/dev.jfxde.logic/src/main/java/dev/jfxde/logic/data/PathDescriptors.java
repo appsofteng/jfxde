@@ -1,5 +1,7 @@
 package dev.jfxde.logic.data;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
@@ -31,5 +33,20 @@ public final class PathDescriptors {
     public static CompletableFuture<Void> delete(PathDescriptor pd) {
 
         return FileUtils.delete(pd.getPath()).thenRun(() -> pd.delete());
+    }
+
+    public static boolean rename(PathDescriptor pd, String name) {
+        boolean renamed = false;
+        var targetPath = pd.getPath().resolveSibling(name);
+        if (Files.notExists(targetPath)) {
+            try {
+                Files.move(pd.getPath(), targetPath);
+                pd.rename(targetPath, name);
+                renamed = true;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return renamed;
     }
 }

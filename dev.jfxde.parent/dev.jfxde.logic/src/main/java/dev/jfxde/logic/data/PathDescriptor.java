@@ -41,6 +41,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
 
     private Path path;
     private StringProperty name;
+    private String newName;
     private LongProperty size;
     private ObjectProperty<FileTime> created;
     private ObjectProperty<FileTime> modified;
@@ -54,14 +55,6 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     private Boolean leaf;
 
     private PathDescriptor() {
-    }
-
-    private PathDescriptor(PathDescriptor parent, String path) {
-        this(parent, Paths.get(path));
-    }
-
-    private PathDescriptor(PathDescriptor parent, Path path) {
-        this(parent, path, Files.isDirectory(path));
     }
 
     private PathDescriptor(PathDescriptor parent, Path path, boolean dir) {
@@ -149,8 +142,38 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         return path;
     }
 
+    public String getName() {
+        return name.get();
+    }
+
     private void setName(String value) {
         nameProperty().set(value);
+    }
+
+    public String getNewName() {
+        return newName;
+    }
+
+    public void setNewName(String newName) {
+        this.newName = newName;
+    }
+
+    void rename(Path target, String name) {
+        var old = path;
+        path = target;
+        CACHE.put(path, new WeakReference<>(this));
+
+        if (isDirectory()) {
+            paths.forEach(p -> p.rename(old, path));
+        }
+
+        setName(name);
+    }
+
+    private void rename(Path oldParent, Path newParent) {
+        var relative = oldParent.relativize(path);
+        path = newParent.resolve(relative);
+        CACHE.put(path, new WeakReference<>(this));
     }
 
     public StringProperty nameProperty() {
