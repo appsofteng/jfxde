@@ -28,7 +28,7 @@ module dev.jfxde.jfxext {
     exports dev.jfxde.jfxext.util to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
     exports dev.jfxde.jfxext.concurrent to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
     exports dev.jfxde.jfxext.util.prefs to dev.jfxde.logic;
-    exports dev.jfxde.jfxext.nio.file to dev.jfxde.logic, dev.jfxde.sysapps;
+    exports dev.jfxde.j.nio.file to dev.jfxde.logic, dev.jfxde.sysapps;
 
     opens dev.jfxde.jfxext.util.prefs to java.prefs;
     opens dev.jfxde.jfxext.control to javafx.graphics;

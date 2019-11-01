@@ -6,56 +6,56 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import dev.jfxde.jfxext.nio.file.FileUtils;
+import dev.jfxde.j.nio.file.XFiles;
 
-public final class PathDescriptors {
+public final class FXFiles {
 
-    private PathDescriptors() {
+    private FXFiles() {
     }
 
-    public static PathDescriptor createDirectory(PathDescriptor parent, String name) {
+    public static FXPath createDirectory(FXPath parent, String name) {
 
-        Path path = FileUtils.createDirectory(parent.getPath(), name);
+        Path path = XFiles.createDirectory(parent.getPath(), name);
 
-        PathDescriptor pathDescriptor = PathDescriptor.createDirectory(parent, path);
+        FXPath pathDescriptor = FXPath.createDirectory(parent, path);
 
         return pathDescriptor;
     }
 
-    public static PathDescriptor createFile(PathDescriptor parent, String name) {
+    public static FXPath createFile(FXPath parent, String name) {
 
-        Path path = FileUtils.createFile(parent.getPath(), name);
+        Path path = XFiles.createFile(parent.getPath(), name);
 
-        PathDescriptor pathDescriptor = PathDescriptor.createFile(parent, path);
+        FXPath pathDescriptor = FXPath.createFile(parent, path);
 
         return pathDescriptor;
     }
 
-    public static CompletableFuture<Void> move(List<PathDescriptor> pds, PathDescriptor targetDir) {
+    public static CompletableFuture<Void> move(List<FXPath> pds, FXPath targetDir) {
         var future = CompletableFuture.runAsync(() -> {
             pds.forEach(pd -> {
-                Path target = FileUtils.move(pd.getPath(), targetDir.getPath());
+                Path target = XFiles.move(pd.getPath(), targetDir.getPath());
                 pd.move(targetDir, target);
             });
         });
         return future;
     }
 
-    public static CompletableFuture<Void> copy(List<PathDescriptor> pds, PathDescriptor targetDir) {
+    public static CompletableFuture<Void> copy(List<FXPath> pds, FXPath targetDir) {
         var future = CompletableFuture.runAsync(() -> {
             pds.forEach(pd -> {
-                Path target = FileUtils.copy(pd.getPath(), targetDir.getPath());
-                pd.copy(targetDir, target);
+                Path target = XFiles.copy(pd.getPath(), targetDir.getPath());
+                FXPath.copy(targetDir, target);
             });
         });
         return future;
     }
 
-    public static CompletableFuture<Void> delete(List<PathDescriptor> pds) {
+    public static CompletableFuture<Void> delete(List<FXPath> pds) {
 
         var future = CompletableFuture.runAsync(() -> {
             pds.forEach(pd -> {
-                FileUtils.delete(pd.getPath());
+                XFiles.delete(pd.getPath());
                 pd.delete();
             });
         });
@@ -63,7 +63,7 @@ public final class PathDescriptors {
         return future;
     }
 
-    public static boolean rename(PathDescriptor pd, String name) {
+    public static boolean rename(FXPath pd, String name) {
         boolean renamed = false;
         var targetPath = pd.getPath().resolveSibling(name);
         if (Files.notExists(targetPath)) {

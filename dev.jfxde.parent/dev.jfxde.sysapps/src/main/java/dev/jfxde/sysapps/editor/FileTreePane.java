@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import dev.jfxde.logic.data.PathDescriptor;
+import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.ui.PathTreeItem;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Accordion;
@@ -26,7 +26,7 @@ public class FileTreePane extends VBox {
 
     private TitledPane createFilesPane() {
 
-        PathTreeItem root = new PathTreeItem(PathDescriptor.getRoot());
+        PathTreeItem root = new PathTreeItem(FXPath.getRoot());
 
         FileTreeBox fileTree = new FileTreeBox(root);
 
@@ -41,7 +41,7 @@ public class FileTreePane extends VBox {
 
     private TitledPane createBookmarksPane(List<String> bookmarkPaths) {
 
-        PathTreeItem root = new PathTreeItem(PathDescriptor.getNoname(bookmarkPaths));
+        PathTreeItem root = new PathTreeItem(FXPath.getPseudoRoot(bookmarkPaths));
 
         FileTreeBox fileTree = new FileTreeBox(root);
         TitledPane pane = new TitledPane();

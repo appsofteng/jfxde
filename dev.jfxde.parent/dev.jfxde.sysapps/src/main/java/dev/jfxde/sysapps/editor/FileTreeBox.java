@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import dev.jfxde.jfxext.control.AlertBuilder;
 import dev.jfxde.jfxext.util.TreeViewUtils;
-import dev.jfxde.logic.data.PathDescriptor;
-import dev.jfxde.logic.data.PathDescriptors;
+import dev.jfxde.logic.data.FXPath;
+import dev.jfxde.logic.data.FXFiles;
 import dev.jfxde.ui.PathTreeItem;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
@@ -30,13 +30,13 @@ import javafx.util.StringConverter;
 
 public class FileTreeBox extends VBox {
 
-    private TreeView<PathDescriptor> fileTreeView;
+    private TreeView<FXPath> fileTreeView;
     private PathTreeItem root;
     private Map<StringProperty, String> stringProperties = new HashMap<>();
     private Map<String, String> strings = new HashMap<>();
-    private ObservableList<TreeItem<PathDescriptor>> selectedItems = FXCollections.observableArrayList();
-    private ObservableList<TreeItem<PathDescriptor>> cutItems = FXCollections.observableArrayList();
-    private ObservableList<TreeItem<PathDescriptor>> copyItems = FXCollections.observableArrayList();
+    private ObservableList<TreeItem<FXPath>> selectedItems = FXCollections.observableArrayList();
+    private ObservableList<TreeItem<FXPath>> cutItems = FXCollections.observableArrayList();
+    private ObservableList<TreeItem<FXPath>> copyItems = FXCollections.observableArrayList();
 
     public FileTreeBox(PathTreeItem root) {
         this.root = root;
@@ -60,7 +60,7 @@ public class FileTreeBox extends VBox {
 
     private void setListeners() {
         fileTreeView.getSelectionModel().getSelectedItems()
-                .addListener((Change<? extends TreeItem<PathDescriptor>> c) -> {
+                .addListener((Change<? extends TreeItem<FXPath>> c) -> {
                     while (c.next()) {
                         selectedItems.setAll(TreeViewUtils.getSelectedItemsNoAncestor(fileTreeView));
                     }
@@ -68,14 +68,14 @@ public class FileTreeBox extends VBox {
 
         fileTreeView.setOnEditCommit(e -> {
             var oldValue = e.getOldValue();
-            PathDescriptors.rename(oldValue, oldValue.getNewName());
+            FXFiles.rename(oldValue, oldValue.getNewName());
             fileTreeView.getSelectionModel().clearSelection();
             fileTreeView.getSelectionModel().select(e.getTreeItem());
 
             fileTreeView.setEditable(false);
         });
 
-        cutItems.addListener((Change<? extends TreeItem<PathDescriptor>> c) -> {
+        cutItems.addListener((Change<? extends TreeItem<FXPath>> c) -> {
 
             while (c.next()) {
                 if (c.wasAdded()) {
@@ -98,12 +98,12 @@ public class FileTreeBox extends VBox {
         MenuItem newDirectory = new MenuItem("New Directory");
         stringProperties.put(newDirectory.textProperty(), "newDirectory");
         newDirectory.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
-        newDirectory.setOnAction(e -> create(PathDescriptors::createDirectory));
+        newDirectory.setOnAction(e -> create(FXFiles::createDirectory));
 
         MenuItem newFile = new MenuItem("New File");
         stringProperties.put(newFile.textProperty(), "newFile");
         newFile.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
-        newFile.setOnAction(e -> create(PathDescriptors::createFile));
+        newFile.setOnAction(e -> create(FXFiles::createFile));
 
         MenuItem rename = new MenuItem("Rename");
         stringProperties.put(rename.textProperty(), "rename");
@@ -142,11 +142,11 @@ public class FileTreeBox extends VBox {
             if (cutItems.isEmpty()) {
                 var pds = copyItems.stream().map(TreeItem::getValue).collect(Collectors.toList());
                 copyItems.clear();
-                PathDescriptors.copy(pds, parentPahDescriptor);
+                FXFiles.copy(pds, parentPahDescriptor);
             } else {
                 var pds = cutItems.stream().map(TreeItem::getValue).collect(Collectors.toList());
                 cutItems.clear();
-                PathDescriptors.move(pds, parentPahDescriptor);
+                FXFiles.move(pds, parentPahDescriptor);
             }
         });
 
@@ -161,7 +161,7 @@ public class FileTreeBox extends VBox {
             AlertBuilder.get(this, AlertType.CONFIRMATION)
                     .title(strings.computeIfAbsent("confirmation", k -> "Confirmation"))
                     .headerText(strings.computeIfAbsent("areYouSure", k -> "Are you sure you want to delete the selected items?"))
-                    .action(() -> PathDescriptors.delete(pds))
+                    .action(() -> FXFiles.delete(pds))
                     .show();
         });
 
@@ -170,26 +170,26 @@ public class FileTreeBox extends VBox {
         fileTreeView.setContextMenu(menu);
     }
 
-    private void create(BiFunction<PathDescriptor, String, PathDescriptor> create) {
+    private void create(BiFunction<FXPath, String, FXPath> create) {
         cutItems.clear();
         copyItems.clear();
         var item = fileTreeView.getSelectionModel().getSelectedItem();
         var parentItem = item.getValue().isFile() ? item.getParent() : item;
         var parentPahDescriptor = parentItem.getValue();
 
-        PathDescriptor newPahDescriptor = create.apply(parentPahDescriptor, strings.computeIfAbsent("new", k -> "New"));
+        FXPath newPahDescriptor = create.apply(parentPahDescriptor, strings.computeIfAbsent("new", k -> "New"));
         TreeViewUtils.select(newPahDescriptor, parentItem, fileTreeView);
     }
 
-    private class PathDescriptorStringConverter extends StringConverter<PathDescriptor> {
+    private class PathDescriptorStringConverter extends StringConverter<FXPath> {
 
         @Override
-        public String toString(PathDescriptor pd) {
+        public String toString(FXPath pd) {
             return pd.toString();
         }
 
         @Override
-        public PathDescriptor fromString(String string) {
+        public FXPath fromString(String string) {
             var pd = fileTreeView.getSelectionModel().getSelectedItem().getValue();
             pd.setNewName(string);
             return pd;

@@ -1,18 +1,16 @@
-package dev.jfxde.jfxext.nio.file;
+package dev.jfxde.j.nio.file;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import dev.jfxde.jfxext.util.LU;
 
-public final class FileUtils {
+public final class XFiles {
 
-    private FileUtils() {
+    private XFiles() {
     }
 
     public static Path createFile(Path path, String name) {
@@ -75,11 +73,9 @@ public final class FileUtils {
 
     private static Path copyDirectory(Path source, Path target) {
         try (var stream = Files.walk(source)) {
-            Files.copy(source, target);
-
             stream.forEach(p -> {
                 Path entryTarget = target.resolve(source.relativize(p));
-                LU.of(() -> Files.copy(p, entryTarget));
+                try { Files.copy(p, entryTarget);} catch(IOException e) {throw new RuntimeException(e);}
             });
 
         } catch (IOException e) {

@@ -21,11 +21,14 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import dev.jfxde.jfxext.nio.file.FileUtils;
+import dev.jfxde.j.nio.file.XFiles;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyLongProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -33,11 +36,11 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class PathDescriptor implements Comparable<PathDescriptor> {
+public class FXPath implements Comparable<FXPath> {
 
     private static final String TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
     private static final Path ROOT_PATH = Paths.get(File.separator);
-    private final static Map<Path, WeakReference<PathDescriptor>> CACHE = Collections.synchronizedMap(new WeakHashMap<>());
+    private final static Map<Path, WeakReference<FXPath>> CACHE = Collections.synchronizedMap(new WeakHashMap<>());
 
     private Path path;
     private StringProperty name;
@@ -45,22 +48,22 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     private LongProperty size;
     private ObjectProperty<FileTime> created;
     private ObjectProperty<FileTime> modified;
-    private boolean directory;
-    private Set<PathDescriptor> parents = new HashSet<>();
-    private ObservableList<PathDescriptor> paths = FXCollections.observableArrayList();
+    private BooleanProperty directory = new SimpleBooleanProperty();
+    private Set<FXPath> parents = new HashSet<>();
+    private ObservableList<FXPath> paths = FXCollections.observableArrayList();
     private boolean loaded;
     private Boolean dirLeaf;
     private Boolean leaf;
 
-    private PathDescriptor() {
+    private FXPath() {
     }
 
-    private PathDescriptor(PathDescriptor parent, Path path, boolean dir) {
+    private FXPath(FXPath parent, Path path, boolean dir) {
         if (parent != null) {
             this.parents.add(parent);
         }
         this.path = path;
-        this.directory = dir;
+        setDirectory(dir);
 
         Path fileName = path.getFileName();
         setName(fileName == null ? path.toString() : fileName.toString());
@@ -78,32 +81,32 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         }
     }
 
-    public static PathDescriptor getRoot() {
+    public static FXPath getRoot() {
         // Create a new root path so that it is not strongly referenced and thus removed
         // from the cache.
         return getFromCache(null, Paths.get(ROOT_PATH.toString()), true);
     }
 
-    public static PathDescriptor getNoname(List<String> paths) {
+    public static FXPath getPseudoRoot(List<String> paths) {
 
-        var noname = new PathDescriptor();
-        List<PathDescriptor> pds = paths.stream()
+        var pseudoRoot = new FXPath();
+        List<FXPath> pds = paths.stream()
                 .map(p -> Paths.get(p))
-                .map(p -> getFromCache(noname, p, Files.isDirectory(p)))
+                .map(p -> getFromCache(pseudoRoot, p, Files.isDirectory(p)))
                 .collect(Collectors.toList());
 
-        noname.setName("");
-        noname.path = null;
-        noname.directory = !pds.isEmpty();
-        noname.leaf = !noname.directory;
-        noname.dirLeaf = !noname.directory;
-        noname.loaded = true;
-        noname.paths.setAll(pds);
+        pseudoRoot.setName("");
+        pseudoRoot.path = null;
+        pseudoRoot.setDirectory(!pds.isEmpty());
+        pseudoRoot.leaf = !pseudoRoot.isDirectory();
+        pseudoRoot.dirLeaf = !pseudoRoot.isDirectory();
+        pseudoRoot.loaded = true;
+        pseudoRoot.paths.setAll(pds);
 
-        return noname;
+        return pseudoRoot;
     }
 
-    static PathDescriptor createDirectory(PathDescriptor parent, Path path) {
+    static FXPath createDirectory(FXPath parent, Path path) {
         var pathDescriptor = add(parent, path, true);
         parent.dirLeaf = false;
         parent.leaf = false;
@@ -111,28 +114,57 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         return pathDescriptor;
     }
 
-    static PathDescriptor createFile(PathDescriptor parent, Path path) {
+    static FXPath createFile(FXPath parent, Path path) {
         var pathDescriptor = add(parent, path, false);
         parent.leaf = false;
         parent.loaded = true;
         return pathDescriptor;
     }
 
-    void move(PathDescriptor newParent, Path newPath) {
+    void rename(Path newPath, String newName) {
         CACHE.remove(path);
-        parents.forEach(p -> p.remove(this));
+        var oldPath = path;
         path = newPath;
-        setName(path.getFileName().toString());
         CACHE.put(path, new WeakReference<>(this));
-        add(newParent, this);
+
+        paths.forEach(p -> p.rename(oldPath, path));
+
+        setName(newName);
     }
 
-    PathDescriptor copy(PathDescriptor newParent, Path newPath) {
-        var pathDescriptor = add(newParent, newPath, Files.isDirectory(newPath));
-        newParent.dirLeaf = false;
+    private void rename(Path oldParent, Path newParent) {
+        CACHE.remove(path);
+        var relative = oldParent.relativize(path);
+        path = newParent.resolve(relative);
+        CACHE.put(path, new WeakReference<>(this));
+
+        paths.forEach(p -> p.rename(oldParent, newParent));
+    }
+
+    void move(FXPath newParent, Path newPath) {
+        CACHE.remove(path);
+        parents.stream().filter(p -> !p.isPseudoRoot()).forEach(p -> p.remove(this));
+        var oldPath = path;
+        path = newPath;
+        CACHE.put(path, new WeakReference<>(this));
+
+        paths.forEach(p -> p.rename(oldPath, path));
+
+        newParent.dirLeaf = !isDirectory();
         newParent.leaf = false;
         newParent.loaded = true;
-        return pathDescriptor;
+
+        Path fileName = path.getFileName();
+        setName(fileName == null ? path.toString() : fileName.toString());
+        newParent.paths.add(this);
+    }
+
+    static FXPath copy(FXPath newParent, Path newPath) {
+        var fxpath = add(newParent, newPath, Files.isDirectory(newPath));
+        newParent.dirLeaf = !fxpath.isDirectory();
+        newParent.leaf = false;
+        newParent.loaded = true;
+        return fxpath;
     }
 
     void delete() {
@@ -140,7 +172,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         parents.forEach(p -> p.remove(this));
     }
 
-    private void remove(PathDescriptor pd) {
+    private void remove(FXPath pd) {
         paths.remove(pd);
 
         if (paths.isEmpty()) {
@@ -169,31 +201,13 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         this.newName = newName;
     }
 
-    void rename(Path target, String name) {
-        var old = path;
-        path = target;
-        CACHE.put(path, new WeakReference<>(this));
-
-        if (isDirectory()) {
-            paths.forEach(p -> p.rename(old, path));
-        }
-
-        setName(name);
-    }
-
-    private void rename(Path oldParent, Path newParent) {
-        var relative = oldParent.relativize(path);
-        path = newParent.resolve(relative);
-        CACHE.put(path, new WeakReference<>(this));
-    }
-
     public StringProperty nameProperty() {
 
         if (name == null) {
             name = new SimpleStringProperty() {
                 @Override
                 public Object getBean() {
-                    return PathDescriptor.this;
+                    return FXPath.this;
                 }
 
                 @Override
@@ -220,12 +234,12 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
             size = new SimpleLongProperty() {
                 @Override
                 public Object getBean() {
-                    return PathDescriptor.this;
+                    return FXPath.this;
                 }
 
                 @Override
                 public String toString() {
-                    return directory ? "" : NumberFormat.getInstance().format(Math.ceil(get() / 1024.0)) + " KiB";
+                    return isDirectory() ? "" : NumberFormat.getInstance().format(Math.ceil(get() / 1024.0)) + " KiB";
                 }
             };
         }
@@ -247,7 +261,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
 
                 @Override
                 public Object getBean() {
-                    return PathDescriptor.this;
+                    return FXPath.this;
                 }
 
                 public String toString() {
@@ -274,7 +288,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
 
                 @Override
                 public Object getBean() {
-                    return PathDescriptor.this;
+                    return FXPath.this;
                 }
 
                 public String toString() {
@@ -288,11 +302,19 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     }
 
     public boolean isDirectory() {
+        return directory.get();
+    }
+
+    private void setDirectory(boolean value) {
+        directory.set(value);
+    }
+
+    public ReadOnlyBooleanProperty directoryProperty() {
         return directory;
     }
 
     public boolean isFile() {
-        return !directory;
+        return !isDirectory();
     }
 
     public boolean isReadable() {
@@ -302,7 +324,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     public boolean isDirLeaf() {
 
         if (dirLeaf == null) {
-            dirLeaf = !directory || !Files.isReadable(path) || !isRoot() && !FileUtils.hasSubDirs(path);
+            dirLeaf = !isDirectory() || !Files.isReadable(path) || !isRoot() && !XFiles.hasSubDirs(path);
         }
 
         return dirLeaf;
@@ -311,7 +333,7 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     public boolean isLeaf() {
 
         if (leaf == null) {
-            leaf = !directory || !Files.isReadable(path) || !isRoot() && !FileUtils.isEmpty(path);
+            leaf = !isDirectory() || !Files.isReadable(path) || !isRoot() && !XFiles.isEmpty(path);
         }
 
         return leaf;
@@ -321,7 +343,11 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         return ROOT_PATH.equals(path);
     }
 
-    public ObservableList<PathDescriptor> getPaths() {
+    boolean isPseudoRoot() {
+        return path == null;
+    }
+
+    public ObservableList<FXPath> getPaths() {
         return paths;
     }
 
@@ -369,20 +395,16 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         }
     }
 
-    private static PathDescriptor add(PathDescriptor parent, Path p, boolean directory) {
+    private static FXPath add(FXPath parent, Path p, boolean directory) {
         var pd = getFromCache(parent, p, directory);
         parent.paths.add(pd);
 
         return pd;
     }
 
-    private static void add(PathDescriptor parent, PathDescriptor pd) {
-        parent.paths.add(pd);
-    }
+    private static FXPath getFromCache(FXPath parent, Path path, boolean dir) {
 
-    private static PathDescriptor getFromCache(PathDescriptor parent, Path path, boolean dir) {
-
-        var pd = CACHE.computeIfAbsent(path, k -> new WeakReference<>(new PathDescriptor(parent, path, dir))).get();
+        var pd = CACHE.computeIfAbsent(path, k -> new WeakReference<>(new FXPath(parent, path, dir))).get();
 
         if (parent != null) {
             pd.parents.add(parent);
@@ -398,11 +420,11 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof PathDescriptor)) {
+        if (!(obj instanceof FXPath)) {
             return false;
         }
 
-        return path != null ? path.equals(((PathDescriptor) obj).path) : super.equals(obj);
+        return path != null ? path.equals(((FXPath) obj).path) : super.equals(obj);
     }
 
     @Override
@@ -411,8 +433,8 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     }
 
     @Override
-    public int compareTo(PathDescriptor o) {
-        int result = Boolean.compare(!directory, !o.directory);
+    public int compareTo(FXPath o) {
+        int result = Boolean.compare(!isDirectory(), !o.isDirectory());
 
         if (result == 0) {
             result = name.get().compareToIgnoreCase(o.name.get());
@@ -425,10 +447,10 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
 
         @Override
         public int compare(StringProperty o1, StringProperty o2) {
-            PathDescriptor desc1 = (PathDescriptor) o1.getBean();
-            PathDescriptor desc2 = (PathDescriptor) o2.getBean();
+            FXPath desc1 = (FXPath) o1.getBean();
+            FXPath desc2 = (FXPath) o2.getBean();
 
-            int result = Boolean.compare(!desc1.directory, !desc2.directory);
+            int result = Boolean.compare(!desc1.isDirectory(), !desc2.isDirectory());
 
             if (result == 0) {
                 result = o1.getValue().compareToIgnoreCase(o2.getValue());
@@ -451,10 +473,10 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
                 return 1;
             }
 
-            PathDescriptor desc1 = (PathDescriptor) o1.getBean();
-            PathDescriptor desc2 = (PathDescriptor) o2.getBean();
+            FXPath desc1 = (FXPath) o1.getBean();
+            FXPath desc2 = (FXPath) o2.getBean();
 
-            int result = Boolean.compare(!desc1.directory, !desc2.directory);
+            int result = Boolean.compare(!desc1.isDirectory(), !desc2.isDirectory());
 
             if (result == 0) {
                 result = o1.asObject().get().compareTo(o2.asObject().get());
@@ -477,8 +499,8 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
                 return 1;
             }
 
-            PathDescriptor desc1 = (PathDescriptor) o1.getBean();
-            PathDescriptor desc2 = (PathDescriptor) o2.getBean();
+            FXPath desc1 = (FXPath) o1.getBean();
+            FXPath desc2 = (FXPath) o2.getBean();
 
             int result = 0;
 

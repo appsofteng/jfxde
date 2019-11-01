@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.controlsfx.control.BreadCrumbBar;
 
 import dev.jfxde.jfxext.control.InternalDialog;
-import dev.jfxde.logic.data.PathDescriptor;
+import dev.jfxde.logic.data.FXPath;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ReadOnlyLongProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -47,21 +47,21 @@ import javafx.util.Duration;
 public class FileDialog extends InternalDialog {
 
     private BorderPane borderPane = new BorderPane();
-    private BreadCrumbBar<PathDescriptor> breadCrumbBar;
-    private TreeView<PathDescriptor> fileTree;
-    private TableView<TreeItem<PathDescriptor>> fileTable = new TableView<>();
-    private ListView<TreeItem<PathDescriptor>> selectionView = new ListView<>();
+    private BreadCrumbBar<FXPath> breadCrumbBar;
+    private TreeView<FXPath> fileTree;
+    private TableView<TreeItem<FXPath>> fileTable = new TableView<>();
+    private ListView<TreeItem<FXPath>> selectionView = new ListView<>();
     private ButtonBar buttonBar = new ButtonBar();
     private Button okButton = new Button("OK");
     private Button cancelButton = new Button("Cancel");
 
-    private Set<TreeItem<PathDescriptor>> selection = new HashSet<>();
+    private Set<TreeItem<FXPath>> selection = new HashSet<>();
     private Consumer<List<Path>> selectionConsumer;
 
-    private TreeItem<PathDescriptor> root;
+    private TreeItem<FXPath> root;
     private boolean dirOnly;
     private boolean allPaths = true;
-    private SortedList<TreeItem<PathDescriptor>> sortedAllChildren;
+    private SortedList<TreeItem<FXPath>> sortedAllChildren;
 
     public FileDialog(Node node) {
         super(node, Modality.WINDOW_MODAL);
@@ -79,7 +79,7 @@ public class FileDialog extends InternalDialog {
 
     private void setGraphics() {
         double height = windowPane.getHeight() * 0.8;
-        root = new PathTreeItem(PathDescriptor.getRoot(), true);
+        root = new PathTreeItem(FXPath.getRoot(), true);
 
         breadCrumbBar = new BreadCrumbBar<>(root);
 
@@ -87,14 +87,14 @@ public class FileDialog extends InternalDialog {
         fileTree.setShowRoot(false);
         fileTree.setPrefHeight(height);
 
-        TableColumn<TreeItem<PathDescriptor>, StringProperty> nameColumn = new TableColumn<>();
+        TableColumn<TreeItem<FXPath>, StringProperty> nameColumn = new TableColumn<>();
         nameColumn.setText("Name");
         nameColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().nameProperty()));
-        nameColumn.setComparator(new PathDescriptor.StringComparator());
+        nameColumn.setComparator(new FXPath.StringComparator());
         nameColumn.setPrefWidth(200);
         nameColumn.setCellFactory(c -> {
 
-            var cell = new TableCell<TreeItem<PathDescriptor>, StringProperty>() {
+            var cell = new TableCell<TreeItem<FXPath>, StringProperty>() {
                 @Override
                 protected void updateItem(StringProperty item, boolean empty) {
                     super.updateItem(item, empty);
@@ -117,22 +117,22 @@ public class FileDialog extends InternalDialog {
             return cell;
         });
 
-        TableColumn<TreeItem<PathDescriptor>, ReadOnlyObjectProperty<FileTime>> createdColumn = new TableColumn<>();
+        TableColumn<TreeItem<FXPath>, ReadOnlyObjectProperty<FileTime>> createdColumn = new TableColumn<>();
         createdColumn.setText("Created");
         createdColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().createdProperty()));
-        createdColumn.setComparator(new PathDescriptor.ObjectComparator<>());
+        createdColumn.setComparator(new FXPath.ObjectComparator<>());
         createdColumn.setPrefWidth(120);
 
-        TableColumn<TreeItem<PathDescriptor>, ReadOnlyObjectProperty<FileTime>> modifiedColumn = new TableColumn<>();
+        TableColumn<TreeItem<FXPath>, ReadOnlyObjectProperty<FileTime>> modifiedColumn = new TableColumn<>();
         modifiedColumn.setText("Modified");
         modifiedColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().modifiedProperty()));
-        modifiedColumn.setComparator(new PathDescriptor.ObjectComparator<>());
+        modifiedColumn.setComparator(new FXPath.ObjectComparator<>());
         modifiedColumn.setPrefWidth(120);
 
-        TableColumn<TreeItem<PathDescriptor>, ReadOnlyLongProperty> sizeColumn = new TableColumn<>();
+        TableColumn<TreeItem<FXPath>, ReadOnlyLongProperty> sizeColumn = new TableColumn<>();
         sizeColumn.setText("Size");
         sizeColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().sizeProperty()));
-        sizeColumn.setComparator(new PathDescriptor.LongComparator());
+        sizeColumn.setComparator(new FXPath.LongComparator());
         sizeColumn.getStyleClass().add("jd-table-column-numerical");
         sizeColumn.setPrefWidth(100);
 
@@ -231,7 +231,7 @@ public class FileDialog extends InternalDialog {
         cancelButton.setOnAction(e -> close());
     }
 
-    private ObservableList<TreeItem<PathDescriptor>> getTableItems(TreeItem<PathDescriptor> treeItem) {
+    private ObservableList<TreeItem<FXPath>> getTableItems(TreeItem<FXPath> treeItem) {
         if (dirOnly) {
             return treeItem.getChildren();
         } else {
