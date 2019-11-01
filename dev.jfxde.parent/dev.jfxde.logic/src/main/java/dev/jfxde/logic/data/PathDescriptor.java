@@ -47,8 +47,6 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     private ObjectProperty<FileTime> modified;
     private boolean directory;
     private Set<PathDescriptor> parents = new HashSet<>();
-    private ObservableList<PathDescriptor> directories = FXCollections.observableArrayList();
-    private ObservableList<PathDescriptor> files = FXCollections.observableArrayList();
     private ObservableList<PathDescriptor> paths = FXCollections.observableArrayList();
     private boolean loaded;
     private Boolean dirLeaf;
@@ -107,7 +105,6 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
 
     static PathDescriptor createDirectory(PathDescriptor parent, Path path) {
         var pathDescriptor = add(parent, path, true);
-        parent.paths.add(pathDescriptor);
         parent.dirLeaf = false;
         parent.leaf = false;
         parent.loaded = true;
@@ -116,9 +113,25 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
 
     static PathDescriptor createFile(PathDescriptor parent, Path path) {
         var pathDescriptor = add(parent, path, false);
-        parent.paths.add(pathDescriptor);
         parent.leaf = false;
         parent.loaded = true;
+        return pathDescriptor;
+    }
+
+    void move(PathDescriptor newParent, Path newPath) {
+        CACHE.remove(path);
+        parents.forEach(p -> p.remove(this));
+        path = newPath;
+        setName(path.getFileName().toString());
+        CACHE.put(path, new WeakReference<>(this));
+        add(newParent, this);
+    }
+
+    PathDescriptor copy(PathDescriptor newParent, Path newPath) {
+        var pathDescriptor = add(newParent, newPath, Files.isDirectory(newPath));
+        newParent.dirLeaf = false;
+        newParent.leaf = false;
+        newParent.loaded = true;
         return pathDescriptor;
     }
 
@@ -128,8 +141,6 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
     }
 
     private void remove(PathDescriptor pd) {
-        directories.remove(pd);
-        files.remove(pd);
         paths.remove(pd);
 
         if (paths.isEmpty()) {
@@ -310,14 +321,6 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
         return ROOT_PATH.equals(path);
     }
 
-    public ObservableList<PathDescriptor> getDirectories() {
-        return directories;
-    }
-
-    public ObservableList<PathDescriptor> getFiles() {
-        return files;
-    }
-
     public ObservableList<PathDescriptor> getPaths() {
         return paths;
     }
@@ -340,9 +343,6 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
             } else {
                 list();
             }
-
-            paths.setAll(directories);
-            paths.addAll(files);
         });
     }
 
@@ -371,13 +371,13 @@ public class PathDescriptor implements Comparable<PathDescriptor> {
 
     private static PathDescriptor add(PathDescriptor parent, Path p, boolean directory) {
         var pd = getFromCache(parent, p, directory);
-        if (directory) {
-            parent.directories.add(pd);
-        } else {
-            parent.files.add(pd);
-        }
+        parent.paths.add(pd);
 
         return pd;
+    }
+
+    private static void add(PathDescriptor parent, PathDescriptor pd) {
+        parent.paths.add(pd);
     }
 
     private static PathDescriptor getFromCache(PathDescriptor parent, Path path, boolean dir) {

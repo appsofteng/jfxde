@@ -3,6 +3,7 @@ package dev.jfxde.logic.data;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import dev.jfxde.jfxext.nio.file.FileUtils;
@@ -30,9 +31,36 @@ public final class PathDescriptors {
         return pathDescriptor;
     }
 
-    public static CompletableFuture<Void> delete(PathDescriptor pd) {
+    public static CompletableFuture<Void> move(List<PathDescriptor> pds, PathDescriptor targetDir) {
+        var future = CompletableFuture.runAsync(() -> {
+            pds.forEach(pd -> {
+                Path target = FileUtils.move(pd.getPath(), targetDir.getPath());
+                pd.move(targetDir, target);
+            });
+        });
+        return future;
+    }
 
-        return FileUtils.delete(pd.getPath()).thenRun(() -> pd.delete());
+    public static CompletableFuture<Void> copy(List<PathDescriptor> pds, PathDescriptor targetDir) {
+        var future = CompletableFuture.runAsync(() -> {
+            pds.forEach(pd -> {
+                Path target = FileUtils.copy(pd.getPath(), targetDir.getPath());
+                pd.copy(targetDir, target);
+            });
+        });
+        return future;
+    }
+
+    public static CompletableFuture<Void> delete(List<PathDescriptor> pds) {
+
+        var future = CompletableFuture.runAsync(() -> {
+            pds.forEach(pd -> {
+                FileUtils.delete(pd.getPath());
+                pd.delete();
+            });
+        });
+
+        return future;
     }
 
     public static boolean rename(PathDescriptor pd, String name) {

@@ -16,16 +16,17 @@ public final class TreeViewUtils {
 
     public static <T> ObservableList<TreeItem<T>> getSelectedItemsNoAncestor(TreeView<T> treeView) {
         ObservableList<TreeItem<T>> items = FXCollections.emptyObservableList();
+        var selectedItems = treeView.getSelectionModel().getSelectedItems();
 
-        if (!treeView.getSelectionModel().getSelectedItems().isEmpty()) {
+        if (!selectedItems.isEmpty()) {
 
-            List<TreeItem<T>> selectedItems = treeView.getSelectionModel().getSelectedItems()
+            List<TreeItem<T>> selectedItemsNoAncestor = selectedItems
                     .stream()
-                    .takeWhile(i -> !containsAncestor(i, treeView.getSelectionModel().getSelectedItems()))
+                    .takeWhile(i -> !containsAncestor(i, selectedItems))
                     .collect(Collectors.toList());
 
-            if (selectedItems.size() == treeView.getSelectionModel().getSelectedItems().size()) {
-                items = FXCollections.observableArrayList(selectedItems);
+            if (selectedItemsNoAncestor.size() == selectedItems.size()) {
+                items = FXCollections.observableArrayList(selectedItemsNoAncestor);
             }
         }
 

@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,6 +37,58 @@ public final class FileUtils {
         return result;
     }
 
+    public static Path move(Path source, Path targetDir) {
+        Path target = getUniquePath(targetDir, source.getFileName().toString());
+        try {
+            if (Files.isDirectory(source)) {
+                moveDirectory(source, target);
+            } else {
+                target = Files.move(source, target);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return target;
+    }
+
+    public static Path copy(Path source, Path targetDir) {
+        Path target = getUniquePath(targetDir, source.getFileName().toString());
+        try {
+            if (Files.isDirectory(source)) {
+                target = copyDirectory(source, target);
+            } else {
+                target = Files.copy(source, target);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return target;
+    }
+
+    private static Path moveDirectory(Path source, Path target) {
+        target = copyDirectory(source, target);
+        deleteDirectory(source);
+        return target;
+    }
+
+    private static Path copyDirectory(Path source, Path target) {
+        try (var stream = Files.walk(source)) {
+            Files.copy(source, target);
+
+            stream.forEach(p -> {
+                Path entryTarget = target.resolve(source.relativize(p));
+                LU.of(() -> Files.copy(p, entryTarget));
+            });
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return target;
+    }
+
     private static Path getUniquePath(Path path, String name) {
         Path result = null;
         if (!Files.isDirectory(path)) {
@@ -54,26 +105,20 @@ public final class FileUtils {
         return result;
     }
 
-    public static CompletableFuture<Void> delete(Path path) {
+    public static void delete(Path path) {
 
-        var future = CompletableFuture.runAsync(() -> {
-            if (Files.isDirectory(path)) {
-                deleteDirectory(path);
-            } else {
-                LU.of(() -> Files.delete(path));
-            }
-        });
-
-        return future;
+        if (Files.isDirectory(path)) {
+            deleteDirectory(path);
+        } else {
+            LU.of(() -> Files.delete(path));
+        }
     }
 
     private static void deleteDirectory(Path path) {
 
         try (Stream<Path> stream = Files.walk(path)) {
-            List<Path> paths = stream
-                    .sorted(Comparator.reverseOrder())
-                    .collect(Collectors.toList());
-            paths.forEach(p -> LU.of(() -> Files.delete(p)));
+            stream.sorted(Comparator.reverseOrder())
+                    .forEach(p -> LU.of(() -> Files.delete(p)));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

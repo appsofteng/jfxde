@@ -3,24 +3,27 @@ package dev.jfxde.sysapps.editor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import dev.jfxde.jfxext.control.AlertBuilder;
 import dev.jfxde.jfxext.util.TreeViewUtils;
 import dev.jfxde.logic.data.PathDescriptor;
 import dev.jfxde.logic.data.PathDescriptors;
 import dev.jfxde.ui.PathTreeItem;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.TextFieldTreeCell;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
@@ -32,6 +35,8 @@ public class FileTreeBox extends VBox {
     private Map<StringProperty, String> stringProperties = new HashMap<>();
     private Map<String, String> strings = new HashMap<>();
     private ObservableList<TreeItem<PathDescriptor>> selectedItems = FXCollections.observableArrayList();
+    private ObservableList<TreeItem<PathDescriptor>> cutItems = FXCollections.observableArrayList();
+    private ObservableList<TreeItem<PathDescriptor>> copyItems = FXCollections.observableArrayList();
 
     public FileTreeBox(PathTreeItem root) {
         this.root = root;
@@ -54,9 +59,11 @@ public class FileTreeBox extends VBox {
     }
 
     private void setListeners() {
-        fileTreeView.getSelectionModel().selectedItemProperty()
-                .addListener((v, o, n) -> {
-                    selectedItems.setAll(TreeViewUtils.getSelectedItemsNoAncestor(fileTreeView));
+        fileTreeView.getSelectionModel().getSelectedItems()
+                .addListener((Change<? extends TreeItem<PathDescriptor>> c) -> {
+                    while (c.next()) {
+                        selectedItems.setAll(TreeViewUtils.getSelectedItemsNoAncestor(fileTreeView));
+                    }
                 });
 
         fileTreeView.setOnEditCommit(e -> {
@@ -67,6 +74,24 @@ public class FileTreeBox extends VBox {
 
             fileTreeView.setEditable(false);
         });
+
+        cutItems.addListener((Change<? extends TreeItem<PathDescriptor>> c) -> {
+
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    c.getAddedSubList().forEach(i -> i.getGraphic().setDisable(true));
+                }
+                if (c.wasRemoved()) {
+                    c.getRemoved().forEach(i -> i.getGraphic().setDisable(false));
+                }
+            }
+        });
+
+        fileTreeView.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                cutItems.clear();
+            }
+        });
     }
 
     private void setContextMenu() {
@@ -76,51 +101,78 @@ public class FileTreeBox extends VBox {
         newDirectory.setOnAction(e -> create(PathDescriptors::createDirectory));
 
         MenuItem newFile = new MenuItem("New File");
-        stringProperties.put(newDirectory.textProperty(), "newFile");
+        stringProperties.put(newFile.textProperty(), "newFile");
         newFile.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         newFile.setOnAction(e -> create(PathDescriptors::createFile));
 
         MenuItem rename = new MenuItem("Rename");
-        stringProperties.put(newDirectory.textProperty(), "rename");
+        stringProperties.put(rename.textProperty(), "rename");
         rename.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         rename.setOnAction(e -> {
+            cutItems.clear();
+            copyItems.clear();
             fileTreeView.setEditable(true);
             fileTreeView.edit(fileTreeView.getSelectionModel().getSelectedItem());
+        });
+
+        MenuItem cut = new MenuItem("Cut");
+        stringProperties.put(cut.textProperty(), "cut");
+        cut.disableProperty().bind(Bindings.isEmpty(selectedItems));
+        cut.setOnAction(e -> {
+            copyItems.clear();
+            cutItems.setAll(selectedItems);
+        });
+
+        MenuItem copy = new MenuItem("Copy");
+        stringProperties.put(copy.textProperty(), "copy");
+        copy.disableProperty().bind(Bindings.isEmpty(selectedItems));
+        copy.setOnAction(e -> {
+            cutItems.clear();
+            copyItems.setAll(selectedItems);
+        });
+
+        MenuItem paste = new MenuItem("Paste");
+        stringProperties.put(paste.textProperty(), "paste");
+        paste.disableProperty().bind(Bindings.isEmpty(cutItems).and(Bindings.isEmpty(copyItems))
+                .or(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)));
+        paste.setOnAction(e -> {
+            var item = fileTreeView.getSelectionModel().getSelectedItem();
+            var parentItem = item.getValue().isFile() ? item.getParent() : item;
+            var parentPahDescriptor = parentItem.getValue();
+            if (cutItems.isEmpty()) {
+                var pds = copyItems.stream().map(TreeItem::getValue).collect(Collectors.toList());
+                copyItems.clear();
+                PathDescriptors.copy(pds, parentPahDescriptor);
+            } else {
+                var pds = cutItems.stream().map(TreeItem::getValue).collect(Collectors.toList());
+                cutItems.clear();
+                PathDescriptors.move(pds, parentPahDescriptor);
+            }
         });
 
         MenuItem delete = new MenuItem("Delete");
         stringProperties.put(delete.textProperty(), "delete");
         delete.disableProperty().bind(Bindings.isEmpty(selectedItems));
         delete.setOnAction(e -> {
-            var items = FXCollections.observableArrayList(selectedItems);
+            cutItems.clear();
+            copyItems.clear();
+            var pds = selectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList());
 
             AlertBuilder.get(this, AlertType.CONFIRMATION)
                     .title(strings.computeIfAbsent("confirmation", k -> "Confirmation"))
                     .headerText(strings.computeIfAbsent("areYouSure", k -> "Are you sure you want to delete the selected items?"))
-                    .action(() -> {
-                        items.forEach(i -> {
-                            var parent = i.getParent();
-                            var sibling = i.previousSibling() != null ? i.previousSibling() : i.nextSibling();
-                            PathDescriptors.delete(i.getValue())
-                                    .thenRun(() -> Platform.runLater(() -> {
-                                        if (parent.getChildren().isEmpty()) {
-                                            parent.setExpanded(false);
-                                            fileTreeView.getSelectionModel().clearSelection();
-                                            fileTreeView.getSelectionModel().select(parent);
-                                        } else {
-                                            fileTreeView.getSelectionModel().clearSelection();
-                                            fileTreeView.getSelectionModel().select(sibling);
-                                        }
-                                    }));
-                        });
-                    }).show();
+                    .action(() -> PathDescriptors.delete(pds))
+                    .show();
         });
 
-        ContextMenu menu = new ContextMenu(newDirectory, newFile, rename, delete);
+        ContextMenu menu = new ContextMenu(newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy, paste,
+                new SeparatorMenuItem(), delete);
         fileTreeView.setContextMenu(menu);
     }
 
     private void create(BiFunction<PathDescriptor, String, PathDescriptor> create) {
+        cutItems.clear();
+        copyItems.clear();
         var item = fileTreeView.getSelectionModel().getSelectedItem();
         var parentItem = item.getValue().isFile() ? item.getParent() : item;
         var parentPahDescriptor = parentItem.getValue();

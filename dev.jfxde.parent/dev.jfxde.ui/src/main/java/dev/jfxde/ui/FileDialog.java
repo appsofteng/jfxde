@@ -20,11 +20,13 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
@@ -32,6 +34,7 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -46,18 +49,19 @@ public class FileDialog extends InternalDialog {
     private BorderPane borderPane = new BorderPane();
     private BreadCrumbBar<PathDescriptor> breadCrumbBar;
     private TreeView<PathDescriptor> fileTree;
-    private TableView<PathTreeItem> fileTable = new TableView<>();
-    private ListView<PathTreeItem> selectionView = new ListView<>();
+    private TableView<TreeItem<PathDescriptor>> fileTable = new TableView<>();
+    private ListView<TreeItem<PathDescriptor>> selectionView = new ListView<>();
     private ButtonBar buttonBar = new ButtonBar();
     private Button okButton = new Button("OK");
     private Button cancelButton = new Button("Cancel");
 
-    private Set<PathTreeItem> selection = new HashSet<>();
+    private Set<TreeItem<PathDescriptor>> selection = new HashSet<>();
     private Consumer<List<Path>> selectionConsumer;
 
-    private PathTreeItem root;
+    private TreeItem<PathDescriptor> root;
     private boolean dirOnly;
     private boolean allPaths = true;
+    private SortedList<TreeItem<PathDescriptor>> sortedAllChildren;
 
     public FileDialog(Node node) {
         super(node, Modality.WINDOW_MODAL);
@@ -83,14 +87,14 @@ public class FileDialog extends InternalDialog {
         fileTree.setShowRoot(false);
         fileTree.setPrefHeight(height);
 
-        TableColumn<PathTreeItem, StringProperty> nameColumn = new TableColumn<>();
+        TableColumn<TreeItem<PathDescriptor>, StringProperty> nameColumn = new TableColumn<>();
         nameColumn.setText("Name");
         nameColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().nameProperty()));
         nameColumn.setComparator(new PathDescriptor.StringComparator());
         nameColumn.setPrefWidth(200);
         nameColumn.setCellFactory(c -> {
 
-            var cell = new TableCell<PathTreeItem, StringProperty>() {
+            var cell = new TableCell<TreeItem<PathDescriptor>, StringProperty>() {
                 @Override
                 protected void updateItem(StringProperty item, boolean empty) {
                     super.updateItem(item, empty);
@@ -104,7 +108,7 @@ public class FileDialog extends InternalDialog {
                         var treeItem = row == null ? null : row.getItem();
 
                         if (treeItem != null) {
-                            setGraphic(new ImageView(((ImageView) treeItem.getGraphic()).getImage()));
+                            setGraphic(new Label("", new ImageView(((ImageView) ((Label)treeItem.getGraphic()).getGraphic()).getImage())));
                         }
                     }
                 }
@@ -113,19 +117,19 @@ public class FileDialog extends InternalDialog {
             return cell;
         });
 
-        TableColumn<PathTreeItem, ReadOnlyObjectProperty<FileTime>> createdColumn = new TableColumn<>();
+        TableColumn<TreeItem<PathDescriptor>, ReadOnlyObjectProperty<FileTime>> createdColumn = new TableColumn<>();
         createdColumn.setText("Created");
         createdColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().createdProperty()));
         createdColumn.setComparator(new PathDescriptor.ObjectComparator<>());
         createdColumn.setPrefWidth(120);
 
-        TableColumn<PathTreeItem, ReadOnlyObjectProperty<FileTime>> modifiedColumn = new TableColumn<>();
+        TableColumn<TreeItem<PathDescriptor>, ReadOnlyObjectProperty<FileTime>> modifiedColumn = new TableColumn<>();
         modifiedColumn.setText("Modified");
         modifiedColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().modifiedProperty()));
         modifiedColumn.setComparator(new PathDescriptor.ObjectComparator<>());
         modifiedColumn.setPrefWidth(120);
 
-        TableColumn<PathTreeItem, ReadOnlyLongProperty> sizeColumn = new TableColumn<>();
+        TableColumn<TreeItem<PathDescriptor>, ReadOnlyLongProperty> sizeColumn = new TableColumn<>();
         sizeColumn.setText("Size");
         sizeColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().sizeProperty()));
         sizeColumn.setComparator(new PathDescriptor.LongComparator());
@@ -136,6 +140,7 @@ public class FileDialog extends InternalDialog {
         fileTable.setPrefHeight(height);
         fileTable.setItems(getTableItems(root));
         fileTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        fileTable.getSortOrder().add(nameColumn);
 
         SplitPane splitPane = new SplitPane(fileTree, fileTable);
         splitPane.setDividerPositions(0.2f);
@@ -175,14 +180,14 @@ public class FileDialog extends InternalDialog {
     private void setBehavior() {
 
         breadCrumbBar.setOnCrumbAction(e -> {
-            var treeItem = (PathTreeItem) e.getSelectedCrumb();
+            var treeItem = e.getSelectedCrumb();
             selection.addAll(selectionView.getItems());
             fileTable.setItems(getTableItems(treeItem));
         });
 
         fileTree.setOnMousePressed(e -> {
             if (e.isPrimaryButtonDown() && e.getClickCount() == 1) {
-                var treeItem = (PathTreeItem) fileTree.getSelectionModel().getSelectedItem();
+                var treeItem = fileTree.getSelectionModel().getSelectedItem();
 
                 if (treeItem != null) {
                     selection.addAll(selectionView.getItems());
@@ -226,11 +231,16 @@ public class FileDialog extends InternalDialog {
         cancelButton.setOnAction(e -> close());
     }
 
-    private ObservableList<PathTreeItem> getTableItems(PathTreeItem treeItem) {
+    private ObservableList<TreeItem<PathDescriptor>> getTableItems(TreeItem<PathDescriptor> treeItem) {
         if (dirOnly) {
-            return treeItem.getItems();
+            return treeItem.getChildren();
         } else {
-            return treeItem.getAllChildren();
+            if (sortedAllChildren != null) {
+                sortedAllChildren.comparatorProperty().unbind();
+            }
+            sortedAllChildren = new SortedList<>(((PathTreeItem)treeItem).getAllChildren());
+            sortedAllChildren.comparatorProperty().bind(fileTable.comparatorProperty());
+            return sortedAllChildren;
         }
     }
 

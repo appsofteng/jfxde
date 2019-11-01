@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import javax.swing.ImageIcon;
 import javax.swing.filechooser.FileSystemView;
 
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -16,7 +18,15 @@ public final class FXUtils {
 
     }
 
-   public static ImageView getIcon(Path path) {
+    public static void runFX(Runnable run) {
+        if (Platform.isFxApplicationThread()) {
+           run.run();
+        } else {
+            Platform.runLater(run);
+        }
+    }
+
+   public static Label getIcon(Path path) {
 
        if (path == null) {
            return null;
@@ -27,6 +37,6 @@ public final class FXUtils {
         Image fxIcon = SwingFXUtils.toFXImage(image, null);
         ImageView imageView = (new ImageView(fxIcon));
 
-        return imageView;
+        return new Label("", imageView);
     }
 }
