@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 
+import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfxext.util.FXUtils;
 import dev.jfxde.logic.data.FXPath;
 import javafx.application.Platform;
@@ -30,9 +31,9 @@ public class PathTreeItem extends TreeItem<FXPath> {
         while (c.next()) {
 
             if (c.wasAdded()) {
-                FXUtils.runFX(() -> addItems(c.getAddedSubList()));
+                XPlatform.runFX(() -> addItems(c.getAddedSubList()));
             } else if (c.wasRemoved()) {
-                FXUtils.runFX(() -> removeItems(c.getRemoved()));
+                XPlatform.runFX(() -> removeItems(c.getRemoved()));
             }
         }
     };
@@ -75,7 +76,7 @@ public class PathTreeItem extends TreeItem<FXPath> {
     private void removeItems(List<? extends FXPath> paths) {
         allChildren.removeIf(i -> ((PathTreeItem) i).remove(paths));
 
-        if (super.getChildren().isEmpty()) {
+        if (super.getChildren().isEmpty() && getParent() != null) {
             setExpanded(false);
         }
     }

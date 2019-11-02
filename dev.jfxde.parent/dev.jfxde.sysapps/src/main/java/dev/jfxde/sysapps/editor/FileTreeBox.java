@@ -3,6 +3,7 @@ package dev.jfxde.sysapps.editor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import dev.jfxde.jfxext.control.AlertBuilder;
@@ -11,6 +12,8 @@ import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.logic.data.FXFiles;
 import dev.jfxde.ui.PathTreeItem;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
@@ -24,6 +27,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
@@ -37,13 +41,25 @@ public class FileTreeBox extends VBox {
     private ObservableList<TreeItem<FXPath>> selectedItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> cutItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> copyItems = FXCollections.observableArrayList();
+    private FXPath favoriteRoot;
+    private ObjectProperty<Consumer<FXPath>> fileSelectedHandler = new SimpleObjectProperty<>();
 
-    public FileTreeBox(PathTreeItem root) {
+    public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<FXPath> fileSelectedHandler) {
         this.root = root;
+        this.favoriteRoot = favorites;
+        setFileSelectedHandler(fileSelectedHandler);
 
         setGraphics();
         setContextMenu();
         setListeners();
+    }
+
+    private Consumer<FXPath> getFileSelectedHandler() {
+        return fileSelectedHandler.get();
+    }
+
+    private void setFileSelectedHandler(Consumer<FXPath> value) {
+        fileSelectedHandler.set(value);
     }
 
     private void setGraphics() {
@@ -90,6 +106,18 @@ public class FileTreeBox extends VBox {
         fileTreeView.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ESCAPE) {
                 cutItems.clear();
+            }
+        });
+
+        fileTreeView.setOnMousePressed(e -> {
+            var item = fileTreeView.getSelectionModel().getSelectedItem();
+
+            if (e.getButton() == MouseButton.PRIMARY && item != null) {
+
+                var path = item.getValue();
+                if (e.getClickCount() == 2 && path.isFile()) {
+                    getFileSelectedHandler().accept(path);
+                }
             }
         });
     }
@@ -150,6 +178,43 @@ public class FileTreeBox extends VBox {
             }
         });
 
+        MenuItem addFavorite = new MenuItem("Add Favorite");
+        stringProperties.put(addFavorite.textProperty(), "addFavorite");
+        addFavorite.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)
+                .or(Bindings.createBooleanBinding(() -> fileTreeView.getSelectionModel().getSelectedItem() == null ||
+                        fileTreeView.getSelectionModel().getSelectedItem().getValue().isFile() ||
+                        favoriteRoot.getPaths().contains(fileTreeView.getSelectionModel().getSelectedItem().getValue()), fileTreeView.getSelectionModel().getSelectedItems(), favoriteRoot.getPaths())));
+        addFavorite.setOnAction(e -> {
+            cutItems.clear();
+            copyItems.clear();
+            var item = fileTreeView.getSelectionModel().getSelectedItem();
+            favoriteRoot.add(item.getValue());
+        });
+
+        MenuItem removeFavorite = new MenuItem("Remove Favorite");
+        stringProperties.put(removeFavorite.textProperty(), "removeFavorite");
+        removeFavorite.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)
+                .or(Bindings.createBooleanBinding(() -> fileTreeView.getSelectionModel().getSelectedItem() == null ||
+                        fileTreeView.getSelectionModel().getSelectedItem().getValue().isFile() ||
+                        !favoriteRoot.getPaths().contains(fileTreeView.getSelectionModel().getSelectedItem().getValue()), fileTreeView.getSelectionModel().getSelectedItems(), favoriteRoot.getPaths())));
+        removeFavorite.setOnAction(e -> {
+            cutItems.clear();
+            copyItems.clear();
+            var item = fileTreeView.getSelectionModel().getSelectedItem();
+            favoriteRoot.remove(item.getValue());
+        });
+
+        MenuItem refresh = new MenuItem("Refresh");
+        stringProperties.put(refresh.textProperty(), "refresh");
+        refresh.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
+        refresh.setOnAction(e -> {
+            cutItems.clear();
+            copyItems.clear();
+            var item = fileTreeView.getSelectionModel().getSelectedItem();
+            item.getValue().refresh();
+
+        });
+
         MenuItem delete = new MenuItem("Delete");
         stringProperties.put(delete.textProperty(), "delete");
         delete.disableProperty().bind(Bindings.isEmpty(selectedItems));
@@ -165,7 +230,8 @@ public class FileTreeBox extends VBox {
                     .show();
         });
 
-        ContextMenu menu = new ContextMenu(newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy, paste,
+        ContextMenu menu = new ContextMenu(newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy, paste, new SeparatorMenuItem(),
+                addFavorite, removeFavorite, new SeparatorMenuItem(), refresh,
                 new SeparatorMenuItem(), delete);
         fileTreeView.setContextMenu(menu);
     }
@@ -185,7 +251,7 @@ public class FileTreeBox extends VBox {
 
         @Override
         public String toString(FXPath pd) {
-            return pd.toString();
+            return pd == null ? null : pd.toString();
         }
 
         @Override

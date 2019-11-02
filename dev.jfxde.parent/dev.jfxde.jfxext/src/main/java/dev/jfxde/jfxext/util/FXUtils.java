@@ -18,14 +18,6 @@ public final class FXUtils {
 
     }
 
-    public static void runFX(Runnable run) {
-        if (Platform.isFxApplicationThread()) {
-           run.run();
-        } else {
-            Platform.runLater(run);
-        }
-    }
-
    public static Label getIcon(Path path) {
 
        if (path == null) {
