@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
-import dev.jfxde.jfxext.util.LU;
+import dev.jfxde.j.util.LU;
 import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.Session;
 import javafx.application.Platform;

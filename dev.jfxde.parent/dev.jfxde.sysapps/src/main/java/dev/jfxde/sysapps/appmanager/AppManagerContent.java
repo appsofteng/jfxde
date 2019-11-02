@@ -4,7 +4,7 @@ import java.util.List;
 
 import dev.jfxde.api.App;
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.util.LayoutUtils;
+import dev.jfxde.jfx.scene.layout.LayoutUtils;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.AppDescriptor;
 import dev.jfxde.logic.data.AppProviderDescriptor;

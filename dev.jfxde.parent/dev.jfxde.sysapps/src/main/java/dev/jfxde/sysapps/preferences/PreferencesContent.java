@@ -1,7 +1,7 @@
 package dev.jfxde.sysapps.preferences;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.control.LazyTreeItem;
+import dev.jfxde.jfx.scene.control.LazyTreeItem;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.Preference;
 import javafx.application.Platform;

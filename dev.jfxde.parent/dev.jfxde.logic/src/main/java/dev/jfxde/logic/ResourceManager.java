@@ -18,7 +18,7 @@ import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
 import dev.jfxde.api.ResourceController;
-import dev.jfxde.jfxext.util.FXResourceBundle;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.StringProperty;

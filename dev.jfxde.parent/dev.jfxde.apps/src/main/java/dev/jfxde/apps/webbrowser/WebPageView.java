@@ -3,7 +3,7 @@ package dev.jfxde.apps.webbrowser;
 import java.util.Objects;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.util.JSUtils;
+import dev.jfxde.jfx.scene.web.JSUtils;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;

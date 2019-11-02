@@ -7,7 +7,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
-import dev.jfxde.jfxext.util.prefs.FilePreferencesFactory;
+import dev.jfxde.j.util.prefs.FilePreferencesFactory;
 import dev.jfxde.logic.data.Preference;
 import dev.jfxde.logic.data.PropertyDescriptor;
 import javafx.collections.FXCollections;

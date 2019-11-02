@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 import org.controlsfx.control.ListSelectionView;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.control.cell.AutoCompleteTextFieldTableCell;
-import dev.jfxde.jfxext.control.cell.CheckComboBoxTableCell;
-import dev.jfxde.jfxext.util.CollectionStringConverter;
-import dev.jfxde.jfxext.util.LU;
+import dev.jfxde.j.util.LU;
+import dev.jfxde.jfx.scene.control.cell.AutoCompleteTextFieldTableCell;
+import dev.jfxde.jfx.scene.control.cell.CheckComboBoxTableCell;
+import dev.jfxde.jfx.util.converter.CollectionStringConverter;
 import dev.jfxde.ui.FileDialog;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder;

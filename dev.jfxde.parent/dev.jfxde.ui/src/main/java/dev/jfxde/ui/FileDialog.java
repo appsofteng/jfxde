@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import org.controlsfx.control.BreadCrumbBar;
 
-import dev.jfxde.jfxext.control.InternalDialog;
+import dev.jfxde.jfx.scene.control.InternalDialog;
 import dev.jfxde.logic.data.FXPath;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ReadOnlyLongProperty;

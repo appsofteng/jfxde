@@ -1,6 +1,6 @@
 package dev.jfxde.apps.webbrowser;
 
-import dev.jfxde.jfxext.util.JSUtils;
+import dev.jfxde.jfx.scene.web.JSUtils;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;

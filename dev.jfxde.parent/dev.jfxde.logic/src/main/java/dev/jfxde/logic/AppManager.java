@@ -19,7 +19,7 @@ import dev.jfxde.api.AppRequest;
 import dev.jfxde.api.Resource;
 import dev.jfxde.data.entity.AppProviderData;
 import dev.jfxde.data.entity.Window;
-import dev.jfxde.jfxext.concurrent.CTask;
+import dev.jfxde.jfx.concurrent.CTask;
 import dev.jfxde.logic.context.AppContextImpl;
 import dev.jfxde.logic.data.AppDescriptor;
 import dev.jfxde.logic.data.AppProviderDescriptor;

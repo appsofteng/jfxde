@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import dev.jfxde.jfx.application.XPlatform;
-import dev.jfxde.jfxext.util.FXUtils;
+import dev.jfxde.jfx.embed.swing.FXUtils;
 import dev.jfxde.logic.data.FXPath;
 import javafx.application.Platform;
 import javafx.beans.Observable;

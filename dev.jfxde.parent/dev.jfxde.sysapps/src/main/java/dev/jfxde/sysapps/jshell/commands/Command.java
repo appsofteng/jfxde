@@ -1,6 +1,6 @@
 package dev.jfxde.sysapps.jshell.commands;
 
-import dev.jfxde.jfxext.control.ConsoleModel;
+import dev.jfxde.jfx.scene.control.ConsoleModel;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import jdk.jshell.JShell;

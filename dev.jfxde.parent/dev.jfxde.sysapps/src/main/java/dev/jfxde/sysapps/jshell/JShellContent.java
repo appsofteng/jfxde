@@ -7,17 +7,17 @@ import java.util.List;
 import org.fxmisc.richtext.CodeArea;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.concurrent.CTask;
-import dev.jfxde.jfxext.control.SplitConsoleView;
-import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
-import dev.jfxde.jfxext.richtextfx.features.AreaFeatures;
-import dev.jfxde.jfxext.richtextfx.features.BlockEndFeature;
-import dev.jfxde.jfxext.richtextfx.features.CompletionFeature;
-import dev.jfxde.jfxext.richtextfx.features.CompletionItem;
-import dev.jfxde.jfxext.richtextfx.features.HighlightBlockDelimiterFeature;
-import dev.jfxde.jfxext.richtextfx.features.IndentationFeature;
-import dev.jfxde.jfxext.richtextfx.features.Lexer;
-import dev.jfxde.jfxext.richtextfx.features.LexerFeature;
+import dev.jfxde.fxmisc.richtext.TextStyleSpans;
+import dev.jfxde.fxmisc.richtext.features.AreaFeatures;
+import dev.jfxde.fxmisc.richtext.features.BlockEndFeature;
+import dev.jfxde.fxmisc.richtext.features.CompletionFeature;
+import dev.jfxde.fxmisc.richtext.features.CompletionItem;
+import dev.jfxde.fxmisc.richtext.features.HighlightBlockDelimiterFeature;
+import dev.jfxde.fxmisc.richtext.features.IndentationFeature;
+import dev.jfxde.fxmisc.richtext.features.Lexer;
+import dev.jfxde.fxmisc.richtext.features.LexerFeature;
+import dev.jfxde.jfx.concurrent.CTask;
+import dev.jfxde.jfx.scene.control.SplitConsoleView;
 import javafx.collections.ListChangeListener.Change;
 import javafx.scene.layout.BorderPane;
 

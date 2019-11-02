@@ -4,8 +4,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.jfxde.jfxext.control.ConsoleModel;
-import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import dev.jfxde.fxmisc.richtext.TextStyleSpans;
+import dev.jfxde.jfx.scene.control.ConsoleModel;
 import javafx.collections.ListChangeListener.Change;
 
 public class ConsoleManager extends Manager {

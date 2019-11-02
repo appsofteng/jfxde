@@ -6,8 +6,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import dev.jfxde.jfxext.control.AlertBuilder;
-import dev.jfxde.jfxext.util.TreeViewUtils;
+import dev.jfxde.jfx.scene.control.AlertBuilder;
+import dev.jfxde.jfx.scene.control.TreeViewUtils;
 import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.logic.data.FXFiles;
 import dev.jfxde.ui.PathTreeItem;

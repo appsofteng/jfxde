@@ -7,8 +7,8 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
-import dev.jfxde.jfxext.richtextfx.features.DocRef;
-import dev.jfxde.jfxext.util.JavadocUtils;
+import dev.jfxde.fxmisc.richtext.features.DocRef;
+import dev.jfxde.jx.tools.JavadocUtils;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
 import jdk.jshell.SourceCodeAnalysis.Documentation;

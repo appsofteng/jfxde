@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-import dev.jfxde.jfxext.util.LU;
+import dev.jfxde.j.util.LU;
 
 public final class XFiles {
 

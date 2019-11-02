@@ -8,9 +8,9 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
+import dev.jfxde.j.util.LU;
 import dev.jfxde.jfx.application.XPlatform;
-import dev.jfxde.jfxext.util.FXUtils;
-import dev.jfxde.jfxext.util.LU;
+import dev.jfxde.jfx.embed.swing.FXUtils;
 import dev.jfxde.logic.data.FXPath;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;

@@ -1,6 +1,6 @@
 package dev.jfxde.sysapps.jshell.commands;
 
-import dev.jfxde.jfxext.control.InternalDialog;
+import dev.jfxde.jfx.scene.control.InternalDialog;
 import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.SetBox;
 import javafx.application.Platform;

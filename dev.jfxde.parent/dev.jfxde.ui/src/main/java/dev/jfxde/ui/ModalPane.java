@@ -1,6 +1,6 @@
 package dev.jfxde.ui;
 
-import dev.jfxde.jfxext.control.InternalFrame;
+import dev.jfxde.jfx.scene.control.InternalFrame;
 import javafx.scene.layout.Pane;
 
 public class ModalPane extends Pane {
