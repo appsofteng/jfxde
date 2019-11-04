@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.features;
+package dev.jfxde.fxmisc.richtext.extensions;
 
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.ESCAPE;
@@ -37,15 +37,13 @@ public class CompletionPopup extends Tooltip {
 
     private EventHandler<KeyEvent> handler;
 
-    public CompletionPopup(Collection<? extends CompletionItem> items, Function<DocRef, String> documentation) {
+    public CompletionPopup(Function<DocRef, String> documentation) {
         docPopup = new DocPopup(documentation);
         // does not work well because it blocks mouse press events outside the popup
         // setAutoHide(true);
 
         // not working when the list inside the popup has the focus
         setHideOnEscape(false);
-
-        itemView.setItems(FXCollections.observableArrayList(items));
 
         setMinSize(10, 10);
         setPrefSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);

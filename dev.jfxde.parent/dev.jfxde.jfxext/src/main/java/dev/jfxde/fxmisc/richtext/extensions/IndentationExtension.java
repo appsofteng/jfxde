@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.features;
+package dev.jfxde.fxmisc.richtext.extensions;
 
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.TAB;
@@ -13,15 +13,15 @@ import org.fxmisc.wellbehaved.event.Nodes;
 
 import javafx.scene.control.IndexRange;
 
-public class IndentationFeature<T extends GenericStyledArea<?,?,?>> extends Feature<T> {
+public class IndentationExtension<T extends GenericStyledArea<?,?,?>> extends AreaExtension<T> {
 
     private static final String INDENTATION = "    ";
 
-    private LexerFeature<StyleClassedTextArea> lexerFeature;
+    private LexerExtension<StyleClassedTextArea> lexerExtension;
 
     @Override
     public void init() {
-        lexerFeature = (LexerFeature<StyleClassedTextArea>) area.getProperties().get(LexerFeature.class);
+        lexerExtension = areaExtensions.getExtension(LexerExtension.class);
         Nodes.addInputMap(getArea(), sequence(
                 consume(keyPressed(ENTER), e -> insertNewLineIndentation()),
                 consume(keyPressed(TAB), e -> insertIndentation()),
@@ -51,7 +51,7 @@ public class IndentationFeature<T extends GenericStyledArea<?,?,?>> extends Feat
     }
 
     private String getOpeningDelimitersPattern() {
-        return lexerFeature != null ? lexerFeature.getLexer().getOpeningDelimitersPattern() : "";
+        return lexerExtension != null ? lexerExtension.getLexer().getOpeningDelimitersPattern() : "";
     }
 
     void insertIndentation() {

@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.features;
+package dev.jfxde.fxmisc.richtext.extensions;
 
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -10,19 +10,25 @@ import javafx.scene.control.IndexRange;
 
 import static org.fxmisc.richtext.model.TwoDimensional.Bias.Forward;
 
-public abstract class Feature<T extends GenericStyledArea<?, ?, ?>> {
+public abstract class AreaExtension<T extends GenericStyledArea<?, ?, ?>> {
 
+    protected AreaExtensions<? extends GenericStyledArea<?, ?, ?>> areaExtensions;
     protected T area;
 
     public T getArea() {
         return area;
     }
 
-    public void setArea(T area) {
+    void setAreaFeatures(AreaExtensions<? extends GenericStyledArea<?, ?, ?>> areaExtensions) {
+        this.areaExtensions = areaExtensions;
+    }
+
+    void setArea(T area) {
         this.area = area;
     }
 
-    public void init() {}
+    public void init() {
+    }
 
     boolean isCaretPosition(int position, int insertionEnd) {
         int caretPosition = insertionEnd >= 0 ? insertionEnd : getArea().getCaretPosition();
@@ -35,7 +41,7 @@ public abstract class Feature<T extends GenericStyledArea<?, ?, ?>> {
     }
 
     String getCurrentParagraphIndentation() {
-        return  getParagraphIndentation(getArea().getCurrentParagraph());
+        return getParagraphIndentation(getArea().getCurrentParagraph());
     }
 
     String getParagraphIndentation(int index) {
@@ -54,7 +60,7 @@ public abstract class Feature<T extends GenericStyledArea<?, ?, ?>> {
         return getArea().offsetToPosition(position, Forward).getMajor();
     }
 
-    void changeParagraphs(IndexRange range, Function<Integer,String> change) {
+    void changeParagraphs(IndexRange range, Function<Integer, String> change) {
 
         int startParagraph = getParagraphForAbsolutePosition(range.getStart());
         int endParagraph = getParagraphForAbsolutePosition(range.getEnd());
@@ -76,7 +82,8 @@ public abstract class Feature<T extends GenericStyledArea<?, ?, ?>> {
             return;
         }
 
-        getArea().replaceText(getArea().getAbsolutePosition(startParagraph, 0), getArea().getAbsolutePosition(endParagraph, getArea().getParagraphLength(endParagraph)), newText);
+        getArea().replaceText(getArea().getAbsolutePosition(startParagraph, 0),
+                getArea().getAbsolutePosition(endParagraph, getArea().getParagraphLength(endParagraph)), newText);
 
         if (range.getLength() > 0) {
             if (caretAtEnd) {

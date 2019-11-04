@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.features;
+package dev.jfxde.fxmisc.richtext.extensions;
 
 public interface TokenListener {
 

@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.features;
+package dev.jfxde.fxmisc.richtext.extensions;
 
 import static javafx.scene.input.KeyCode.ESCAPE;
 import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 import org.fxmisc.wellbehaved.event.Nodes;
 
+import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.scene.layout.LayoutUtils;
 import dev.jfxde.jfx.scene.web.JSUtils;
 import dev.jfxde.jfx.util.FXResourceBundle;
@@ -28,7 +29,7 @@ import javafx.scene.web.WebView;
 
 public class DocPopup extends Tooltip {
 
-    private WebView webView = new WebView();
+    private WebView webView;
     private Function<DocRef, String> documentation;
     private ContextMenu contextMenu;
     private ObservableList<DocRef> history = FXCollections.observableArrayList();
@@ -38,21 +39,23 @@ public class DocPopup extends Tooltip {
         this.documentation = documentation;
         setMinSize(10, 10);
         setPrefSize(CompletionPopup.DEFAULT_WIDTH, CompletionPopup.DEFAULT_HEIGHT);
-//        webView.setFocusTraversable(false);
-        webView.setContextMenuEnabled(false);
-        StackPane pane = new StackPane(webView);
-        pane.setPadding(new Insets(5));
-        setGraphic(pane);
-        LayoutUtils.makeResizable(this, pane, 5);
-        createContextMenu();
-        setBehavior();
+
+        XPlatform.runFX(() -> {
+            webView = new WebView();
+            webView.setContextMenuEnabled(false);
+            StackPane pane = new StackPane(webView);
+            pane.setPadding(new Insets(5));
+            setGraphic(pane);
+            LayoutUtils.makeResizable(this, pane, 5);
+            createContextMenu();
+            setBehavior();
+        });
     }
 
     private void setBehavior() {
         setHideOnEscape(false);
         Nodes.addInputMap(webView,
                 sequence(consume(keyPressed(ESCAPE), e -> getOwnerWindow().hide())));
-                      //  consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 1), e -> webView.setFocusTraversable(true))));
 
         webView.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
 

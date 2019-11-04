@@ -3,8 +3,8 @@ package dev.jfxde.sysapps.jshell;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import dev.jfxde.fxmisc.richtext.features.CompletionItem;
-import dev.jfxde.fxmisc.richtext.features.DocRef;
+import dev.jfxde.fxmisc.richtext.extensions.CompletionItem;
+import dev.jfxde.fxmisc.richtext.extensions.DocRef;
 
 public class QualifiedNameCompletionItem extends CompletionItem {
 

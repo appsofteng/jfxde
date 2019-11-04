@@ -8,6 +8,7 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
+import dev.jfxde.fxmisc.richtext.AreaUtils;
 import dev.jfxde.j.util.LU;
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.embed.swing.FXUtils;
@@ -36,10 +37,12 @@ public class Editor extends StackPane {
                 .otherwise(Bindings.createStringBinding(() -> path.getName(), path.pathProperty())));
 
         area.setParagraphGraphicFactory(LineNumberFactory.get(area));
+        area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
+        area.textProperty().addListener((v, o, n) -> setEdited(true));
 
         getChildren().add(new VirtualizedScrollPane<>(area));
 
-        readText();
+        AreaUtils.readText(area, path.getPath());
     }
 
     public FXPath getPath() {
@@ -62,20 +65,7 @@ public class Editor extends StackPane {
         return edited.getReadOnlyProperty();
     }
 
-    private void readText() {
-
-        CompletableFuture.supplyAsync(() -> LU.of(() -> Files.readString(path.getPath())))
-                .thenAccept(s ->
-                    XPlatform.runFX(() -> {
-                        area.replaceText(0, 0, s);
-                        area.getUndoManager().forgetHistory();
-                        area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
-                        area.textProperty().addListener((v, o, n) -> setEdited(true));
-                        area.requestFocus();
-                        area.moveTo(0);
-                        area.requestFollowCaret();
-                    })
-               );
-
+    void save() {
+        AreaUtils.writeText(area, path.getPath(), () -> setEdited(false));
     }
 }

@@ -12,8 +12,6 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import dev.jfxde.fxmisc.richtext.ContextMenuBuilder;
 import dev.jfxde.fxmisc.richtext.TextStyleSpans;
-import dev.jfxde.fxmisc.richtext.features.AreaFeatures;
-import dev.jfxde.fxmisc.richtext.features.IndentationFeature;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
@@ -51,13 +49,8 @@ public class SplitConsoleView extends BorderPane {
         this.history.addAll(history);
         this.styleFilter = styleFilter;
         historyIndex = history.size();
-        initInputArea();
         setGraphics();
         setBehavior();
-    }
-
-    private void initInputArea() {
-        AreaFeatures.decorate(inputArea).add(new IndentationFeature<>()).init();
     }
 
     public ConsoleModel getConsoleModel() {

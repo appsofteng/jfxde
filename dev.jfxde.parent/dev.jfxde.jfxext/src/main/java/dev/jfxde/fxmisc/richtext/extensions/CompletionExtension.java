@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.features;
+package dev.jfxde.fxmisc.richtext.extensions;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -11,13 +11,13 @@ import javafx.geometry.Bounds;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
-public class CompletionFeature<T extends GenericStyledArea<?, ?, ?>> extends Feature<T> {
+public class CompletionExtension<T extends GenericStyledArea<?, ?, ?>> extends AreaExtension<T> {
 
     private CompletionPopup codeCompletion;
-    private Consumer<CompletionFeature<T>> complete;
+    private Consumer<CompletionExtension<T>> complete;
     private Function<DocRef, String> documentation;
 
-    public CompletionFeature(Consumer<CompletionFeature<T>> complete, Function<DocRef, String> documentation) {
+    public CompletionExtension(Consumer<CompletionExtension<T>> complete, Function<DocRef, String> documentation) {
         this.complete = complete;
         this.documentation = documentation;
     }
@@ -53,7 +53,7 @@ public class CompletionFeature<T extends GenericStyledArea<?, ?, ?>> extends Fea
             if (codeCompletion != null) {
                 codeCompletion.setItems(items);
             } else {
-                codeCompletion = new CompletionPopup(items, documentation);
+         //       codeCompletion = new CompletionPopup(items, documentation);
             }
 
             codeCompletion.show(area, bounds.getMaxX(), bounds.getMaxY());

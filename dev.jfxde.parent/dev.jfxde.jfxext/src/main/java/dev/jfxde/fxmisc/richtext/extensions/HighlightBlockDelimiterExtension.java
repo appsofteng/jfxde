@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.features;
+package dev.jfxde.fxmisc.richtext.extensions;
 
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.StyleClassedTextArea;
@@ -18,9 +18,9 @@ import javafx.application.Platform;
 
 import org.fxmisc.richtext.CodeArea;
 
-public class HighlightBlockDelimiterFeature<T extends StyleClassedTextArea> extends Feature<T> implements TokenListener {
+public class HighlightBlockDelimiterExtension<T extends StyleClassedTextArea> extends AreaExtension<T> implements TokenListener {
 
-    private LexerFeature<StyleClassedTextArea> lexerFeature;
+    private LexerExtension<StyleClassedTextArea> lexerFeature;
     private boolean delimiterFound;
     private int insertionEnd = -1;
     private Deque<Map<String, Deque<Token>>> metaStack = new ArrayDeque<>();
@@ -28,7 +28,8 @@ public class HighlightBlockDelimiterFeature<T extends StyleClassedTextArea> exte
 
     @Override
     public void init() {
-        lexerFeature = (LexerFeature<StyleClassedTextArea>) area.getProperties().get(LexerFeature.class);
+
+        lexerFeature = areaExtensions.getExtension(LexerExtension.class);
         lexerFeature.addRichTextChangeConsumer(ch -> {
             insertionEnd = ch.toPlainTextChange().getInsertionEnd();
             delimiterFound = false;

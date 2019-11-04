@@ -3,19 +3,12 @@ package dev.jfxde.sysapps.jshell;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.fxmisc.richtext.CodeArea;
+import java.util.function.Consumer;
 
 import dev.jfxde.api.AppContext;
+import dev.jfxde.fxmisc.richtext.CodeAreaExtender;
 import dev.jfxde.fxmisc.richtext.TextStyleSpans;
-import dev.jfxde.fxmisc.richtext.features.AreaFeatures;
-import dev.jfxde.fxmisc.richtext.features.BlockEndFeature;
-import dev.jfxde.fxmisc.richtext.features.CompletionFeature;
-import dev.jfxde.fxmisc.richtext.features.CompletionItem;
-import dev.jfxde.fxmisc.richtext.features.HighlightBlockDelimiterFeature;
-import dev.jfxde.fxmisc.richtext.features.IndentationFeature;
-import dev.jfxde.fxmisc.richtext.features.Lexer;
-import dev.jfxde.fxmisc.richtext.features.LexerFeature;
+import dev.jfxde.fxmisc.richtext.extensions.CompletionItem;
 import dev.jfxde.jfx.concurrent.CTask;
 import dev.jfxde.jfx.scene.control.SplitConsoleView;
 import javafx.collections.ListChangeListener.Change;
@@ -74,17 +67,18 @@ public class JShellContent extends BorderPane {
             }
         });
 
-        Lexer lexer = Lexer.get("file.java", CommandProcessor.COMMAND_PATTERN);
-        LexerFeature<CodeArea> lexerFeature = new LexerFeature<>(lexer);
-        lexerFeature.setDisableHighlight(consoleView.getConsoleModel().getReadFromPipe());
-        AreaFeatures.decorate(consoleView.getInputArea())
-                .add(new CompletionFeature<>(this::codeCompletion, completion::loadDocumentation))
-                .add(new BlockEndFeature<>())
-                .add(new IndentationFeature<>())
-                .add(lexerFeature)
-                .add(new HighlightBlockDelimiterFeature<>())
-                .init();
-        consoleView.getOutputArea().getStylesheets().add(lexer.getCss());
+        CodeAreaExtender.get(consoleView.getInputArea())
+                .highlighting("java", consoleView.getConsoleModel().getReadFromPipe())
+                .completion(this::codeCompletion, completion::loadDocumentation);
+
+        CodeAreaExtender.get(consoleView.getOutputArea())
+                .style("java");
+
+//        AreaExtensions.decorate(consoleView.getInputArea())
+//                .add(new BlockEndExtension<>())
+//                .add(new IndentationExtension<>())
+//                .add(new HighlightBlockDelimiterExtension<>())
+
     }
 
     private List<String> loadHistory() {
@@ -93,10 +87,10 @@ public class JShellContent extends BorderPane {
         return history;
     }
 
-    private void codeCompletion(CompletionFeature<CodeArea> behavior) {
+    private void codeCompletion(Consumer<Collection<CompletionItem>> behavior) {
 
-        CTask<Collection<CompletionItem>> task = CTask.create(() -> completion.getCompletionItems(behavior.getArea()))
-                .onSucceeded(behavior::showCompletionItems);
+        CTask<Collection<CompletionItem>> task = CTask.create(() -> completion.getCompletionItems(consoleView.getInputArea()))
+                .onSucceeded(behavior);
 
         context.tc().executeSequentially(Session.PRIVILEDGED_TASK_QUEUE, task);
     }

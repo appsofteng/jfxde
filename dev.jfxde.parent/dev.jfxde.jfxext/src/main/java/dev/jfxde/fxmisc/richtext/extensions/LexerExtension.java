@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.features;
+package dev.jfxde.fxmisc.richtext.extensions;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -9,14 +9,14 @@ import java.util.function.Consumer;
 import org.fxmisc.richtext.StyleClassedTextArea;
 import org.fxmisc.richtext.model.RichTextChange;
 
-public class LexerFeature<T extends StyleClassedTextArea> extends Feature<T> {
+public class LexerExtension<T extends StyleClassedTextArea> extends AreaExtension<T> {
 
     private Lexer lexer;
     final List<Consumer<RichTextChange<?, ?, ?>>> richTextChangeConsumers = new ArrayList<>();
 
     private AtomicBoolean disableHighlight = new AtomicBoolean();
 
-    public LexerFeature(Lexer lexer) {
+    public LexerExtension(Lexer lexer) {
         this.lexer = lexer;
     }
 

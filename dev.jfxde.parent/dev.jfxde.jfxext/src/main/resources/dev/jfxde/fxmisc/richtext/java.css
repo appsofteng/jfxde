@@ -6,19 +6,19 @@
 .styled-text-area .semicolon {
     -fx-font-weight: bold;
 }
-.styled-text-area .paren-open, .styled-text-area .paren-close {
+.styled-text-area .parenopen, .styled-text-area .parenclose {
     -fx-fill: firebrick;
     -fx-font-weight: bold;
 }
-.styled-text-area .bracket-open, .styled-text-area .bracket-close {
+.styled-text-area .bracketopen, .styled-text-area .bracketclose {
     -fx-fill: green;
     -fx-font-weight: bold;
 }
-.styled-text-area .brace-open, .styled-text-area .brace-close {
+.styled-text-area .braceopen, .styled-text-area .braceclose {
     -fx-fill: teal;
     -fx-font-weight: bold;
 }
-.styled-text-area .generic-type {
+.styled-text-area .generictypeopen, .styled-text-area .generictypeclose {
 }
 .styled-text-area .char {
     -fx-fill: khaki;

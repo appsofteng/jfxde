@@ -22,7 +22,7 @@ module dev.jfxde.jfxext {
 
 
     exports dev.jfxde.fxmisc.richtext to dev.jfxde.sysapps, dev.jfxde.logic;
-    exports dev.jfxde.fxmisc.richtext.features to dev.jfxde.sysapps;
+    exports dev.jfxde.fxmisc.richtext.extensions to dev.jfxde.sysapps;
 
     exports dev.jfxde.j.nio.file to dev.jfxde.logic, dev.jfxde.sysapps;
     exports dev.jfxde.j.util to dev.jfxde.logic, dev.jfxde.sysapps;

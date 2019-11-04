@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.features;
+package dev.jfxde.fxmisc.richtext.extensions;
 
 import static org.fxmisc.wellbehaved.event.EventPattern.keyTyped;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
@@ -11,14 +11,15 @@ import java.util.regex.Matcher;
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.wellbehaved.event.Nodes;
 
-public class BlockEndFeature<T extends GenericStyledArea<?,?,?>> extends Feature<T> {
+public class BlockEndExtension<T extends GenericStyledArea<?,?,?>> extends AreaExtension<T> {
 
     private Lexer lexer;
 
     @Override
     public void init() {
 
-        lexer = ((LexerFeature) area.getProperties().get(LexerFeature.class)).getLexer();
+        LexerExtension lexerExtension = areaExtensions.getExtension(LexerExtension.class);
+        lexer = lexerExtension.getLexer();
         Nodes.addInputMap(getArea(), sequence(
                 consume(keyTyped().onlyIf(k -> lexer.isClosingDelimiter(k.getCharacter())), e -> insertBlockEnd(e.getCharacter()))
             ));
