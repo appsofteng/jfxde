@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.extensions;
+package dev.jfxde.fxmisc.richtext;
 
 import static javafx.scene.input.KeyCode.ENTER;
 import static javafx.scene.input.KeyCode.ESCAPE;

@@ -13,18 +13,21 @@ public class Lexer {
 
     private Pattern pattern;
     private List<String> groups;
+    private String openingDelimiterPattern;
 
-    private Lexer(String regex, List<String> groups) {
+    private Lexer(String regex, List<String> groups, String openingDelimiterPattern) {
         this.pattern = Pattern.compile(regex);
         this.groups = groups;
+        this.openingDelimiterPattern = openingDelimiterPattern;
     }
 
-    public static Lexer get(String language) {
+    static Lexer get(String language) {
         Lexer lexer = null;
         try (var bis = new BufferedReader(new InputStreamReader(Lexer.class.getResourceAsStream(language)))) {
             List<String> groups = Arrays.asList(bis.readLine().split(","));
+            String openingDelimiterPattern = bis.readLine();
             String regex = bis.lines().collect(Collectors.joining());
-            lexer = new Lexer(regex, groups);
+            lexer = new Lexer(regex, groups, openingDelimiterPattern);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -32,7 +35,7 @@ public class Lexer {
         return lexer;
     }
 
-    public int tokenize(String input, BiConsumer<Integer, Token> consumer) {
+   int tokenize(String input, BiConsumer<Integer, Token> consumer) {
         Matcher matcher = pattern.matcher(input);
         int lastEnd = 0;
         while (matcher.find()) {
@@ -43,5 +46,9 @@ public class Lexer {
         }
 
         return lastEnd;
+    }
+
+    String getOpeningDelimiterPattern() {
+        return openingDelimiterPattern;
     }
 }

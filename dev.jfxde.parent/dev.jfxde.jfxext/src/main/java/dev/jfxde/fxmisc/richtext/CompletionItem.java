@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.extensions;
+package dev.jfxde.fxmisc.richtext;
 
 public abstract class CompletionItem implements Comparable<CompletionItem> {
 

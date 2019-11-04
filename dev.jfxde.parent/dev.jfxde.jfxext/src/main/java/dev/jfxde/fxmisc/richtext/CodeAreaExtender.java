@@ -1,5 +1,12 @@
 package dev.jfxde.fxmisc.richtext;
 
+import static javafx.scene.input.KeyCode.ENTER;
+import static javafx.scene.input.KeyCode.TAB;
+import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
+import static org.fxmisc.wellbehaved.event.InputMap.consume;
+import static org.fxmisc.wellbehaved.event.InputMap.sequence;
+
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,13 +17,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.model.StyleSpan;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
+import org.fxmisc.wellbehaved.event.Nodes;
 
-import dev.jfxde.fxmisc.richtext.extensions.CompletionItem;
-import dev.jfxde.fxmisc.richtext.extensions.CompletionPopup;
-import dev.jfxde.fxmisc.richtext.extensions.DocRef;
 import javafx.geometry.Bounds;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -24,23 +30,36 @@ import javafx.scene.input.KeyEvent;
 public final class CodeAreaExtender {
 
     private CodeArea area;
+    private String language;
+    private Lexer lexer;
 
-    private CodeAreaExtender(CodeArea area) {
+    private CodeAreaExtender(CodeArea area, String language) {
         this.area = area;
+        this.language = language;
     }
 
-    public static CodeAreaExtender get(CodeArea area) {
-        return new CodeAreaExtender(area);
+    public static CodeAreaExtender get(CodeArea area, String language) {
+        return new CodeAreaExtender(area, language);
     }
 
-    public CodeAreaExtender style(String language) {
+    public CodeAreaExtender style() {
         area.getStylesheets().add(CodeAreaExtender.class.getResource(language + ".css").toExternalForm());
         return this;
     }
 
-    public CodeAreaExtender highlighting(String language, AtomicBoolean disableHighlight) {
-        style(language);
-        Lexer lexer = Lexer.get(language);
+    private Lexer getLexer() {
+
+        if (lexer == null) {
+            lexer = Lexer.get(language);
+        }
+
+        return lexer;
+    }
+
+    public CodeAreaExtender highlighting(AtomicBoolean disableHighlight) {
+        style();
+        area.getStylesheets().add(CodeAreaExtender.class.getResource(language + "-edit.css").toExternalForm());
+
         area.richChanges()
                 .filter(ch -> !ch.toPlainTextChange().getInserted().equals(ch.toPlainTextChange().getRemoved()))
                 .successionEnds(Duration.ofMillis(200))
@@ -50,7 +69,7 @@ public final class CodeAreaExtender {
                     }
                     StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
 
-                    var end = lexer.tokenize(area.getText(), (lastEnd, t) -> {
+                    var end = getLexer().tokenize(area.getText(), (lastEnd, t) -> {
                         spansBuilder.add(Collections.emptyList(), t.getStart() - lastEnd);
                         spansBuilder.add(new StyleSpan<>(List.of(t.getType().toLowerCase()), t.getLength()));
                     });
@@ -90,6 +109,17 @@ public final class CodeAreaExtender {
                 complete.accept(show);
             }
         });
+
+        return this;
+    }
+
+    public CodeAreaExtender indentation() {
+        IndentationWrapper<GenericStyledArea<?,?,?>> indentationWrapper = new IndentationWrapper<>(area, getLexer());
+        Nodes.addInputMap(area, sequence(
+                consume(keyPressed(ENTER), e -> indentationWrapper.insertNewLineIndentation()),
+                consume(keyPressed(TAB), e -> indentationWrapper.insertIndentation()),
+                consume(keyPressed(TAB, SHIFT_DOWN), e -> indentationWrapper.deleteIndentation())
+            ));
 
         return this;
     }

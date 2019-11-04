@@ -1,5 +1,7 @@
-KEYWORD,PARENOPEN,PARENCLOSE,BRACEOPEN,BRACECLOSE,BRACKETOPEN,BRACKETCLOSE,GENERICTYPEOPEN,GENERICTYPECLOSE,SEMICOLON,CHAR,STRING,COMMENT
-(?<KEYWORD>\b(?:abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|instanceof|in|interface|long|native|new|package|private|protected|public|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|transient|try|var|void|volatile|while)\b)
+JSHELLCOMMAND,KEYWORD,PARENOPEN,PARENCLOSE,BRACEOPEN,BRACECLOSE,BRACKETOPEN,BRACKETCLOSE,GENERICTYPEOPEN,GENERICTYPECLOSE,SEMICOLON,CHAR,STRING,COMMENT
+[{(\[<]
+(?<JSHELLCOMMAND>^/[\w!?-]*(?: .*)*$)
+|(?<KEYWORD>\b(?:abstract|assert|boolean|break|byte|case|catch|char|class|const|continue|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements|import|instanceof|in|interface|long|native|new|package|private|protected|public|return|short|static|strictfp|super|switch|synchronized|this|throw|throws|transient|try|var|void|volatile|while)\b)
 |(?<PARENOPEN>\()
 |(?<PARENCLOSE>\))
 |(?<BRACEOPEN>\{)

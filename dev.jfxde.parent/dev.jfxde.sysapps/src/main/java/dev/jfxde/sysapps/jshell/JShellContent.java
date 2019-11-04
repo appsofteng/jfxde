@@ -7,8 +7,8 @@ import java.util.function.Consumer;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.fxmisc.richtext.CodeAreaExtender;
+import dev.jfxde.fxmisc.richtext.CompletionItem;
 import dev.jfxde.fxmisc.richtext.TextStyleSpans;
-import dev.jfxde.fxmisc.richtext.extensions.CompletionItem;
 import dev.jfxde.jfx.concurrent.CTask;
 import dev.jfxde.jfx.scene.control.SplitConsoleView;
 import javafx.collections.ListChangeListener.Change;
@@ -67,16 +67,16 @@ public class JShellContent extends BorderPane {
             }
         });
 
-        CodeAreaExtender.get(consoleView.getInputArea())
-                .highlighting("java", consoleView.getConsoleModel().getReadFromPipe())
-                .completion(this::codeCompletion, completion::loadDocumentation);
+        CodeAreaExtender.get(consoleView.getInputArea(), "java")
+                .highlighting(consoleView.getConsoleModel().getReadFromPipe())
+                .completion(this::codeCompletion, completion::loadDocumentation)
+                .indentation();
 
-        CodeAreaExtender.get(consoleView.getOutputArea())
-                .style("java");
+        CodeAreaExtender.get(consoleView.getOutputArea(), "java")
+                .style();
 
 //        AreaExtensions.decorate(consoleView.getInputArea())
 //                .add(new BlockEndExtension<>())
-//                .add(new IndentationExtension<>())
 //                .add(new HighlightBlockDelimiterExtension<>())
 
     }

@@ -286,8 +286,11 @@ public class AppProviderDescriptor implements Comparable<AppProviderDescriptor> 
 
     public void putPolicy() {
         if (isAllowed()) {
-            CustomPolicy policy = (CustomPolicy) Policy.getPolicy();
-            policy.put(getCodeSource(), getPermissionCollection());
+            Policy policy = Policy.getPolicy();
+            if (policy instanceof CustomPolicy) {
+                CustomPolicy customPolicy = (CustomPolicy) policy;
+                customPolicy.put(getCodeSource(), getPermissionCollection());
+            }
         }
     }
 

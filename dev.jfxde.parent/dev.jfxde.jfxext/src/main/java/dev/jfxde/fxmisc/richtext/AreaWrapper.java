@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.extensions;
+package dev.jfxde.fxmisc.richtext;
 
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -10,24 +10,16 @@ import javafx.scene.control.IndexRange;
 
 import static org.fxmisc.richtext.model.TwoDimensional.Bias.Forward;
 
-public abstract class AreaExtension<T extends GenericStyledArea<?, ?, ?>> {
+public abstract class AreaWrapper<T extends GenericStyledArea<?, ?, ?>> {
 
-    protected AreaExtensions<? extends GenericStyledArea<?, ?, ?>> areaExtensions;
     protected T area;
 
-    public T getArea() {
-        return area;
-    }
-
-    void setAreaFeatures(AreaExtensions<? extends GenericStyledArea<?, ?, ?>> areaExtensions) {
-        this.areaExtensions = areaExtensions;
-    }
-
-    void setArea(T area) {
+    public AreaWrapper(T area) {
         this.area = area;
     }
 
-    public void init() {
+    public T getArea() {
+        return area;
     }
 
     boolean isCaretPosition(int position, int insertionEnd) {

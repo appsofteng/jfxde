@@ -4,8 +4,8 @@ import java.util.function.Function;
 
 import org.fxmisc.richtext.CodeArea;
 
-import dev.jfxde.fxmisc.richtext.extensions.CompletionItem;
-import dev.jfxde.fxmisc.richtext.extensions.DocRef;
+import dev.jfxde.fxmisc.richtext.CompletionItem;
+import dev.jfxde.fxmisc.richtext.DocRef;
 import jdk.jshell.SourceCodeAnalysis.Suggestion;
 
 public class SuggestionCompletionItem extends CompletionItem {

@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
-import dev.jfxde.fxmisc.richtext.extensions.DocRef;
+import dev.jfxde.fxmisc.richtext.DocRef;
 import dev.jfxde.jx.tools.JavadocUtils;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;

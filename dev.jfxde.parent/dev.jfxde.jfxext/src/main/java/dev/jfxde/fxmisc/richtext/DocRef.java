@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext.extensions;
+package dev.jfxde.fxmisc.richtext;
 
 import java.util.Map;
 import java.util.TreeMap;

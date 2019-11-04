@@ -1,33 +1,19 @@
-package dev.jfxde.fxmisc.richtext.extensions;
-
-import static javafx.scene.input.KeyCode.ENTER;
-import static javafx.scene.input.KeyCode.TAB;
-import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
-import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
-import static org.fxmisc.wellbehaved.event.InputMap.consume;
-import static org.fxmisc.wellbehaved.event.InputMap.sequence;
+package dev.jfxde.fxmisc.richtext;
 
 import org.fxmisc.richtext.GenericStyledArea;
-import org.fxmisc.richtext.StyleClassedTextArea;
-import org.fxmisc.wellbehaved.event.Nodes;
 
 import javafx.scene.control.IndexRange;
 
-public class IndentationExtension<T extends GenericStyledArea<?,?,?>> extends AreaExtension<T> {
+public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends AreaWrapper<T> {
+
+    private Lexer lexer;
+
+    IndentationWrapper(T area, Lexer lexer) {
+        super(area);
+        this.lexer = lexer;
+    }
 
     private static final String INDENTATION = "    ";
-
-    private LexerExtension<StyleClassedTextArea> lexerExtension;
-
-    @Override
-    public void init() {
-        lexerExtension = areaExtensions.getExtension(LexerExtension.class);
-        Nodes.addInputMap(getArea(), sequence(
-                consume(keyPressed(ENTER), e -> insertNewLineIndentation()),
-                consume(keyPressed(TAB), e -> insertIndentation()),
-                consume(keyPressed(TAB, SHIFT_DOWN), e -> deleteIndentation())
-            ));
-    }
 
     String getIndentation() {
         return INDENTATION;
@@ -39,7 +25,7 @@ public class IndentationExtension<T extends GenericStyledArea<?,?,?>> extends Ar
 
         String indentation = getParagraphIndentation(getArea().getCurrentParagraph());
 
-        if (paragraph.substring(0, area.getCaretColumn()).matches(".*" + getOpeningDelimitersPattern() + " *$")) {
+        if (paragraph.substring(0, area.getCaretColumn()).matches(".*" + lexer.getOpeningDelimiterPattern() + " *$")) {
             indentation += getIndentation();
         }
 
@@ -48,10 +34,6 @@ public class IndentationExtension<T extends GenericStyledArea<?,?,?>> extends Ar
         }
 
         getArea().insertText(getArea().getCaretPosition(), "\n" + indentation);
-    }
-
-    private String getOpeningDelimitersPattern() {
-        return lexerExtension != null ? lexerExtension.getLexer().getOpeningDelimitersPattern() : "";
     }
 
     void insertIndentation() {
