@@ -42,11 +42,6 @@ public final class CodeAreaExtender {
         return new CodeAreaExtender(area, language);
     }
 
-    public CodeAreaExtender style() {
-        area.getStylesheets().add(CodeAreaExtender.class.getResource(language + ".css").toExternalForm());
-        return this;
-    }
-
     private Lexer getLexer() {
 
         if (lexer == null) {
@@ -56,20 +51,27 @@ public final class CodeAreaExtender {
         return lexer;
     }
 
+    public CodeAreaExtender style() {
+        area.getStylesheets().add(CodeAreaExtender.class.getResource(language + ".css").toExternalForm());
+        return this;
+    }
+
     public CodeAreaExtender highlighting(AtomicBoolean disableHighlight) {
         style();
         area.getStylesheets().add(CodeAreaExtender.class.getResource(language + "-edit.css").toExternalForm());
 
+        BlockEndWrapper<GenericStyledArea<?,?,?>> blockEndWrapper = new BlockEndWrapper<>(area);
+
         area.richChanges()
                 .filter(ch -> !ch.toPlainTextChange().getInserted().equals(ch.toPlainTextChange().getRemoved()))
-                .successionEnds(Duration.ofMillis(200))
+                .successionEnds(Duration.ofMillis(100))
                 .subscribe(ch -> {
                     if (disableHighlight.get()) {
                         return;
                     }
                     StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
 
-                    var end = getLexer().tokenize(area.getText(), (lastEnd, t) -> {
+                    var end = getLexer().tokenize(area.getText(), ch.getPosition(), (lastEnd, t) -> {
                         spansBuilder.add(Collections.emptyList(), t.getStart() - lastEnd);
                         spansBuilder.add(new StyleSpan<>(List.of(t.getType().toLowerCase()), t.getLength()));
                     });
@@ -78,6 +80,7 @@ public final class CodeAreaExtender {
 
                     StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
                     area.setStyleSpans(0, styleSpans);
+                    blockEndWrapper.indentEnd(getLexer().getCloseTokenOnPosition());
 
                 });
 
@@ -114,12 +117,11 @@ public final class CodeAreaExtender {
     }
 
     public CodeAreaExtender indentation() {
-        IndentationWrapper<GenericStyledArea<?,?,?>> indentationWrapper = new IndentationWrapper<>(area, getLexer());
+        IndentationWrapper<GenericStyledArea<?, ?, ?>> indentationWrapper = new IndentationWrapper<>(area, getLexer());
         Nodes.addInputMap(area, sequence(
                 consume(keyPressed(ENTER), e -> indentationWrapper.insertNewLineIndentation()),
                 consume(keyPressed(TAB), e -> indentationWrapper.insertIndentation()),
-                consume(keyPressed(TAB, SHIFT_DOWN), e -> indentationWrapper.deleteIndentation())
-            ));
+                consume(keyPressed(TAB, SHIFT_DOWN), e -> indentationWrapper.deleteIndentation())));
 
         return this;
     }

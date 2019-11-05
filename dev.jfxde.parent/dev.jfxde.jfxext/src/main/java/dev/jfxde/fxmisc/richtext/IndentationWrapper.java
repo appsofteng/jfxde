@@ -25,7 +25,7 @@ public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends Area
 
         String indentation = getParagraphIndentation(getArea().getCurrentParagraph());
 
-        if (paragraph.substring(0, area.getCaretColumn()).matches(".*" + lexer.getOpeningDelimiterPattern() + " *$")) {
+        if (paragraph.substring(0, area.getCaretColumn()).matches(".*" + lexer.getOpenTokenPattern() + " *$")) {
             indentation += getIndentation();
         }
 

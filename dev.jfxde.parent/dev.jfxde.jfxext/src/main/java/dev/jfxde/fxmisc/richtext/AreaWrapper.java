@@ -52,6 +52,10 @@ public abstract class AreaWrapper<T extends GenericStyledArea<?, ?, ?>> {
         return getArea().offsetToPosition(position, Forward).getMajor();
     }
 
+    int getColumnForAbsolutePosition(int position) {
+        return getArea().offsetToPosition(position, Forward).getMinor();
+    }
+
     void changeParagraphs(IndexRange range, Function<Integer, String> change) {
 
         int startParagraph = getParagraphForAbsolutePosition(range.getStart());
