@@ -1,5 +1,8 @@
 package dev.jfxde.fxmisc.richtext;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Token {
 
     private int start;
@@ -8,13 +11,20 @@ public class Token {
     private String value;
     private int length;
     private Token oppositeToken;
+    private boolean onCaretPosition;
+    private List<String> style = new ArrayList<>();
 
-    public Token(int start, int end, String type, String value) {
+    public Token() {
+    }
+
+    public Token(int start, int end, String type, String value, int caretPosition) {
         this.start = start;
         this.end = end;
         this.type = type;
         this.value = value;
         this.length = end - start;
+        this.onCaretPosition = start <= caretPosition && caretPosition <= end;
+        style.add(type.toLowerCase());
     }
 
     public int getStart() {
@@ -41,11 +51,31 @@ public class Token {
         return length;
     }
 
-    public boolean isWithin(int index) {
-        return start <= index && index < end;
+    public List<String> getStyle() {
+        return style;
+    }
+
+    public boolean isOnCaretPosition() {
+        return onCaretPosition;
+    }
+
+    public boolean isCloseOnCaretPosition() {
+        return isClose(type) && isOnCaretPosition() && oppositeToken != null || isClose(type) && oppositeToken != null  && oppositeToken.isOnCaretPosition();
+    }
+
+    boolean isDelimiter() {
+        return (isOpen(type) || isClose(type)) && oppositeToken != null;
     }
 
     public void setOppositeToken(Token oppositeToken) {
         this.oppositeToken = oppositeToken;
+    }
+
+    static boolean isOpen(String type) {
+        return type.toLowerCase().endsWith("open");
+    }
+
+    static boolean isClose(String type) {
+        return type.toLowerCase().endsWith("close");
     }
 }

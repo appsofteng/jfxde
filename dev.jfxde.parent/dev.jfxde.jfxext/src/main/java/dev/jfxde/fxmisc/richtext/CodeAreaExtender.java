@@ -10,7 +10,6 @@ import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -18,7 +17,6 @@ import java.util.function.Function;
 
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.GenericStyledArea;
-import org.fxmisc.richtext.model.StyleSpan;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.wellbehaved.event.Nodes;
@@ -60,7 +58,8 @@ public final class CodeAreaExtender {
         style();
         area.getStylesheets().add(CodeAreaExtender.class.getResource(language + "-edit.css").toExternalForm());
 
-        BlockEndWrapper<GenericStyledArea<?,?,?>> blockEndWrapper = new BlockEndWrapper<>(area);
+        var blockEndWrapper = new BlockEndWrapper<>(area);
+        var highlightWrappr = new HighlightWrapper(area, getLexer());
 
         area.richChanges()
                 .filter(ch -> !ch.toPlainTextChange().getInserted().equals(ch.toPlainTextChange().getRemoved()))
@@ -69,20 +68,29 @@ public final class CodeAreaExtender {
                     if (disableHighlight.get()) {
                         return;
                     }
+
+                    int insertionEnd = ch.toPlainTextChange().getInsertionEnd();
+                    int caretPosition = insertionEnd >= 0 ? insertionEnd : area.getCaretPosition();
+
                     StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
 
-                    var end = getLexer().tokenize(area.getText(), ch.getPosition(), (lastEnd, t) -> {
+                    var end = getLexer().tokenize(area.getText(), caretPosition, (lastEnd, t) -> {
                         spansBuilder.add(Collections.emptyList(), t.getStart() - lastEnd);
-                        spansBuilder.add(new StyleSpan<>(List.of(t.getType().toLowerCase()), t.getLength()));
+                        spansBuilder.add(highlightWrappr.getStyleSpan(t));
                     });
 
                     spansBuilder.add(Collections.emptyList(), area.getText().length() - end);
-
                     StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
+
+
                     area.setStyleSpans(0, styleSpans);
-                    blockEndWrapper.indentEnd(getLexer().getCloseTokenOnPosition());
+                    blockEndWrapper.indentEnd(getLexer().getCloseTokenOnChangePosition());
 
                 });
+
+        area.caretPositionProperty().addListener((v,o,n) -> {
+            highlightWrappr.highlightDelimiters(n);
+        });
 
         return this;
     }

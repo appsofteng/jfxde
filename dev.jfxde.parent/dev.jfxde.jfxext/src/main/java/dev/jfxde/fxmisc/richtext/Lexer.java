@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +25,7 @@ public class Lexer {
     private Map<String, String> closeOpenTypes = new HashMap<>();
     private List<Token> tokens = new ArrayList<>();
     private Map<String, Deque<Token>> tokenStack = new HashMap<>();
-    private Token closeTokenOnPosition;
+    private Token closeTokenOnChangePosition;
 
     private Lexer(String regex, List<String> groups, String openingTokenPattern) {
         this.pattern = Pattern.compile(regex);
@@ -36,17 +38,17 @@ public class Lexer {
 
         String open = null;
         for (var group : groups) {
-            if (group.toLowerCase().endsWith("open")) {
+            if (Token.isOpen(group)) {
                 open = group;
-            } else if (group.toLowerCase().endsWith("close")) {
+            } else if (Token.isClose(group)) {
                 openCloseTypes.put(open, group);
                 closeOpenTypes.put(group, open);
             }
         }
     }
 
-    public Token getCloseTokenOnPosition() {
-        return closeTokenOnPosition;
+    public Token getCloseTokenOnChangePosition() {
+        return closeTokenOnChangePosition;
     }
 
     static Lexer get(String language) {
@@ -63,17 +65,17 @@ public class Lexer {
         return lexer;
     }
 
-    int tokenize(String input, int changePosition, BiConsumer<Integer, Token> consumer) {
+    int tokenize(String input, int caretPosition, BiConsumer<Integer, Token> consumer) {
         Matcher matcher = pattern.matcher(input);
         int lastEnd = 0;
         tokens.clear();
         tokenStack.clear();
-        closeTokenOnPosition = null;
+        closeTokenOnChangePosition = null;
 
         while (matcher.find()) {
             String type = groups.stream().filter(g -> matcher.group(g) != null).findFirst().orElse("");
-            Token token = new Token(matcher.start(), matcher.end(), type, matcher.group());
-            updateStack(token, changePosition);
+            Token token = new Token(matcher.start(), matcher.end(), type, matcher.group(), caretPosition);
+            updateStack(token);
             tokens.add(token);
             consumer.accept(lastEnd, token);
             lastEnd = matcher.end();
@@ -82,7 +84,7 @@ public class Lexer {
         return lastEnd;
     }
 
-    private void updateStack(Token token, int changePosition) {
+    private void updateStack(Token token) {
         String closeType = openCloseTypes.get(token.getType());
         if (closeType != null) {
             tokenStack.computeIfAbsent(closeType, k -> new ArrayDeque<>()).push(token);
@@ -91,9 +93,11 @@ public class Lexer {
             if (openType != null) {
                 var stack = tokenStack.get(token.getType());
                 if (stack != null) {
-                    token.setOppositeToken(stack.pop());
-                    if (token.isWithin(changePosition)) {
-                        closeTokenOnPosition = token;
+                    var opposite = stack.pop();
+                    token.setOppositeToken(opposite);
+                    opposite.setOppositeToken(token);
+                    if (token.isOnCaretPosition()) {
+                        closeTokenOnChangePosition = token;
                     }
                 }
             }
@@ -104,76 +108,31 @@ public class Lexer {
         return openTokenPattern;
     }
 
-    Token getOppositeToken(int position) {
-        Token result = null;
-        int index = getTokenIndex(position);
+    Token getToken(int caretPosition) {
 
-        if (index < 0) {
+        if (tokens.isEmpty() || caretPosition < tokens.get(0).getStart() || caretPosition > tokens.get(tokens.size() - 1).getEnd()) {
             return null;
         }
 
-        Token token = tokens.get(index);
-        String oppositeType = openCloseTypes.get(token.getType());
-
-        if (oppositeType != null) {
-            result = getOppositeToken(token, index, 1, oppositeType);
-
-        } else {
-            oppositeType = closeOpenTypes.get(token.getType());
-            if (oppositeType != null) {
-                result = getOppositeToken(token, index, -1, oppositeType);
-
-            }
-        }
-
-        return result;
-    }
-
-    private int getTokenIndex(int position) {
-
-        if (position < 0 || tokens.isEmpty() || position >= tokens.get(tokens.size() - 1).getEnd()) {
-            return -1;
-        }
-
+        Token token = null;
         int index = tokens.size() / 2;
+        Set<Integer> indices = new HashSet<>();
 
-        while (index >= 0 && index < tokens.size()) {
-            Token token = tokens.get(index);
+        while (index >= 0 && index < tokens.size() && !indices.contains(index)) {
+            token = tokens.get(index);
+            indices.add(index);
 
-            if (position < token.getStart()) {
+            if (caretPosition < token.getStart()) {
                 index = index / 2;
-            } else if (position >= token.getEnd()) {
+            } else if (caretPosition > token.getEnd()) {
                 index = (tokens.size() + index) / 2;
             } else {
                 break;
             }
+
+            token = null;
         }
 
-        return index;
-    }
-
-    private Token getOppositeToken(Token token, int index, int step, String oppositeType) {
-
-        Token opposite = null;
-        int i = index + step;
-        int level = 1;
-
-        while (i >= 0 && i < tokens.size()) {
-            Token next = tokens.get(i);
-
-            if (next.getType().equals(token.getType())) {
-                level++;
-            } else if (next.getType().equals(oppositeType)) {
-                level--;
-                if (level == 0) {
-                    opposite = next;
-                    break;
-                }
-            }
-
-            i += step;
-        }
-
-        return opposite;
+        return token;
     }
 }
