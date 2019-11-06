@@ -41,7 +41,7 @@ public class DesktopEnvironment extends Region {
     public void setThemeColor(String color) {
 
         String style = "-jd-base-color: " + color + ";";
-        for (int i = 4; i < 8; i++) {
+        for (int i = 2; i < 8; i++) {
             style += "-jd-base-color-alpha" + i + ": " + Color.web(color, i / 10.0).toString().replace("0x", "#") + ";";
         }
 

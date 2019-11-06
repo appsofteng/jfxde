@@ -24,10 +24,10 @@ public final class PreferencesManager extends Manager {
     @Override
     void init() throws Exception {
 
-        System.setProperty("dev.jfxde.jfxext.util.prefs.defaultSystemRoot", FileManager.DEFAULT_PREFS_FILE.toString());
-        System.setProperty("dev.jfxde.jfxext.util.prefs.systemRoot", FileManager.SYSTEM_PREFS_FILE.toString());
-        System.setProperty("dev.jfxde.jfxext.util.prefs.defaultUserRoot", FileManager.DEFAULT_PREFS_FILE.toString());
-        System.setProperty("dev.jfxde.jfxext.util.prefs.userRoot", FileManager.USER_PREFS_FILE.toString());
+        System.setProperty("dev.jfxde.j.util.prefs.defaultSystemRoot", FileManager.DEFAULT_PREFS_FILE.toString());
+        System.setProperty("dev.jfxde.j.util.prefs.systemRoot", FileManager.SYSTEM_PREFS_FILE.toString());
+        System.setProperty("dev.jfxde.j.util.prefs.defaultUserRoot", FileManager.DEFAULT_PREFS_FILE.toString());
+        System.setProperty("dev.jfxde.j.util.prefs.userRoot", FileManager.USER_PREFS_FILE.toString());
         System.setProperty("java.util.prefs.PreferencesFactory", FilePreferencesFactory.class.getName());
 
         ResourceManager.setLocale(getLocale());
