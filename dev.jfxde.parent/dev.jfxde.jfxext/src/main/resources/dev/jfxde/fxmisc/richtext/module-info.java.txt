@@ -1,0 +1,15 @@
+KEYWORD,PARENOPEN,PARENCLOSE,BRACEOPEN,BRACECLOSE,BRACKETOPEN,BRACKETCLOSE,GENERICTYPEOPEN,GENERICTYPECLOSE,SEMICOLON,CHAR,STRING,COMMENT
+[{(\[<]
+(?<KEYWORD>\b(?:exports|module|opens|provides|requires|static|to|transitive|uses|with)\b)
+|(?<PARENOPEN>\()
+|(?<PARENCLOSE>\))
+|(?<BRACEOPEN>\{)
+|(?<BRACECLOSE>\})
+|(?<BRACKETOPEN>\[)
+|(?<BRACKETCLOSE>\])
+|(?<GENERICTYPEOPEN>\<(?=[\w\s\?\<\>,]*\>|.+extends.+&.+\>))
+|(?<GENERICTYPECLOSE>(?<=\<[\w\s\?\<\>,]{0,100}|\<.+extends.+&.+)\>)
+|(?<SEMICOLON>;)
+|(?<CHAR>'\S+')
+|(?<STRING>"(?:[^"\\]|\\.)*+")
+|(?<COMMENT>//[^\n]*|/\*[\s\S]*?\*/)

@@ -1,6 +1,6 @@
 
 .styled-text-area .keyword {
-    -fx-fill: deepskyblue;
+    -fx-fill: #009fd4;
     -fx-font-weight: bolder;
 }
 .styled-text-area .semicolon {
@@ -21,11 +21,11 @@
 .styled-text-area .generictypeopen, .styled-text-area .generictypeclose {
 }
 .styled-text-area .char {
-    -fx-fill: khaki;
+    -fx-fill: #d47500;
 }
 
 .styled-text-area .string {
-    -fx-fill: khaki;
+    -fx-fill: #d47500;
 }
 
 .styled-text-area .comment {

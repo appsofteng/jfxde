@@ -14,11 +14,14 @@ public final class XFiles {
     }
 
     public static String getFileExtension(Path path) {
-        Path fileName = path.getFileName();
+        return getFileExtension(path.getFileName());
+    }
+
+    public static String getFileExtension(String path) {
         String extension = null;
 
-        if (fileName != null) {
-            String name = fileName.toString().toLowerCase();
+        if (path != null) {
+            String name = path.toString().toLowerCase();
             int i = name.lastIndexOf(".") + 1;
             if (i > 0) {
                 extension = name.substring(i);

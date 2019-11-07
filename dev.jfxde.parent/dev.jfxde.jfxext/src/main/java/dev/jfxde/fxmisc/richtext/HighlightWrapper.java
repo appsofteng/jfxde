@@ -1,6 +1,7 @@
 package dev.jfxde.fxmisc.richtext;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.model.StyleSpan;
@@ -29,7 +30,7 @@ public class HighlightWrapper extends AreaWrapper<CodeArea> {
             removeHighlightDelimiter();
         }
 
-        token = lexer.getToken(caretPosition);
+        token = lexer.getToken(caretPosition).stream().filter(Token::isDelimiter).findFirst().orElse(null);
         if (token != null) {
             highlightDelimiter();
         }
@@ -37,10 +38,11 @@ public class HighlightWrapper extends AreaWrapper<CodeArea> {
 
     private void highlightDelimiter() {
         if (token.isDelimiter()) {
-            token.getStyle().add("block-delimiter-match");
-            token.getOppositeToken().getStyle().add("block-delimiter-match");
-            area.setStyle(token.getStart(), token.getEnd(), token.getStyle());
-            area.setStyle(token.getOppositeToken().getStart(), token.getOppositeToken().getEnd(), token.getOppositeToken().getStyle());
+// Don't do this because the CodeArea merges the styles of adjacent segments and thus changes color of all the adjacent delimiters.
+//            token.getStyle().add("block-delimiter-match");
+//            token.getOppositeToken().getStyle().add("block-delimiter-match");
+            area.setStyle(token.getStart(), token.getEnd(), List.of("block-delimiter-match"));
+            area.setStyle(token.getOppositeToken().getStart(), token.getOppositeToken().getEnd(), List.of("block-delimiter-match"));
         }
     }
 

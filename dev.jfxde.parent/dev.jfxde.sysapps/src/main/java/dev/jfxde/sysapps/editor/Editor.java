@@ -42,7 +42,8 @@ public class Editor extends StackPane {
         area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
         area.textProperty().addListener((v, o, n) -> setEdited(true));
 
-        CodeAreaExtender.get(area, XFiles.getFileExtension(path.getPath()))
+        CodeAreaExtender.get(area, path.getPath())
+        .style()
         .highlighting()
         .indentation();
 

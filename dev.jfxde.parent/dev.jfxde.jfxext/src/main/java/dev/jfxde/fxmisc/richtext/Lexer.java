@@ -1,6 +1,7 @@
 package dev.jfxde.fxmisc.richtext;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -51,9 +52,21 @@ public class Lexer {
         return closeTokenOnChangePosition;
     }
 
-    static Lexer get(String language) {
+    static Lexer get(String fileName, String language) {
         Lexer lexer = null;
-        try (var bis = new BufferedReader(new InputStreamReader(Lexer.class.getResourceAsStream(language)))) {
+
+        InputStream is = Lexer.class.getResourceAsStream(fileName + ".txt");
+
+        if (is == null) {
+            is = Lexer.class.getResourceAsStream(language + ".txt");
+
+        }
+
+        if (is == null) {
+            return null;
+        }
+
+        try (var bis = new BufferedReader(new InputStreamReader(is))) {
             List<String> groups = Arrays.asList(bis.readLine().split(","));
             String openingTokenPattern = bis.readLine();
             String regex = bis.lines().collect(Collectors.joining());
@@ -93,11 +106,13 @@ public class Lexer {
             if (openType != null) {
                 var stack = tokenStack.get(token.getType());
                 if (stack != null) {
-                    var opposite = stack.pop();
-                    token.setOppositeToken(opposite);
-                    opposite.setOppositeToken(token);
-                    if (token.isOnCaretPosition()) {
-                        closeTokenOnChangePosition = token;
+                    var opposite = stack.pollFirst();
+                    if (opposite != null) {
+                        token.setOppositeToken(opposite);
+                        opposite.setOppositeToken(token);
+                        if (token.isOnCaretPosition()) {
+                            closeTokenOnChangePosition = token;
+                        }
                     }
                 }
             }
@@ -108,14 +123,18 @@ public class Lexer {
         return openTokenPattern;
     }
 
-    Token getToken(int caretPosition) {
+    List<Token> getToken(int caretPosition) {
 
         if (tokens.isEmpty() || caretPosition < tokens.get(0).getStart() || caretPosition > tokens.get(tokens.size() - 1).getEnd()) {
-            return null;
+            return List.of();
         }
+
+        List<Token> result = new ArrayList();
 
         Token token = null;
         int index = tokens.size() / 2;
+        int start = 0;
+        int end = tokens.size();
         Set<Integer> indices = new HashSet<>();
 
         while (index >= 0 && index < tokens.size() && !indices.contains(index)) {
@@ -123,16 +142,30 @@ public class Lexer {
             indices.add(index);
 
             if (caretPosition < token.getStart()) {
-                index = index / 2;
+                end = index;
+                index = (start + index) / 2;
             } else if (caretPosition > token.getEnd()) {
-                index = (tokens.size() + index) / 2;
+                start = index;
+                index = (end + index) / 2;
             } else {
+
+                if (caretPosition == token.getStart()) {
+                    if (index > 0 && tokens.get(index - 1).getEnd() == caretPosition) {
+                        result.add(tokens.get(index - 1));
+                    }
+                    result.add(token);
+                } else if (caretPosition == token.getEnd()) {
+                    result.add(token);
+                    if (index < tokens.size() - 1 && tokens.get(index + 1).getStart() == caretPosition) {
+                        result.add(tokens.get(index + 1));
+                    }
+                }
                 break;
             }
 
             token = null;
         }
 
-        return token;
+        return result;
     }
 }

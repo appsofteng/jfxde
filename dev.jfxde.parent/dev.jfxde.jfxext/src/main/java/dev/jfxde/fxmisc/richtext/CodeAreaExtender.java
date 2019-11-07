@@ -7,6 +7,7 @@ import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
 import static org.fxmisc.wellbehaved.event.InputMap.consume;
 import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,6 +22,7 @@ import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.wellbehaved.event.Nodes;
 
+import dev.jfxde.j.nio.file.XFiles;
 import javafx.geometry.Bounds;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -28,22 +30,29 @@ import javafx.scene.input.KeyEvent;
 public final class CodeAreaExtender {
 
     private CodeArea area;
+    private String fileName;
     private String language;
     private Lexer lexer;
 
-    private CodeAreaExtender(CodeArea area, String language) {
+    private CodeAreaExtender(CodeArea area, String fileName, String language) {
         this.area = area;
+        this.fileName = fileName;
         this.language = language;
     }
 
     public static CodeAreaExtender get(CodeArea area, String language) {
-        return new CodeAreaExtender(area, language);
+        return new CodeAreaExtender(area, language, language);
+    }
+
+    public static CodeAreaExtender get(CodeArea area, Path path) {
+        String fileName = path.getFileName().toString().toLowerCase();
+        return new CodeAreaExtender(area, fileName, XFiles.getFileExtension(fileName));
     }
 
     private Lexer getLexer() {
 
         if (lexer == null) {
-            lexer = Lexer.get(language);
+            lexer = Lexer.get(fileName, language);
         }
 
         return lexer;
@@ -52,6 +61,11 @@ public final class CodeAreaExtender {
     public CodeAreaExtender style() {
         area.getStylesheets().add(CodeAreaExtender.class.getResource(language + ".css").toExternalForm());
         area.getStylesheets().add(CodeAreaExtender.class.getResource("area.css").toExternalForm());
+
+        if (area.isEditable()) {
+            area.getStylesheets().add(CodeAreaExtender.class.getResource("edit.css").toExternalForm());
+        }
+
         return this;
     }
 
@@ -60,8 +74,10 @@ public final class CodeAreaExtender {
     }
 
     public CodeAreaExtender highlighting(AtomicBoolean disableHighlight) {
-        style();
-        area.getStylesheets().add(CodeAreaExtender.class.getResource("edit.css").toExternalForm());
+
+        if (getLexer() == null) {
+            return this;
+        }
 
         var blockEndWrapper = new BlockEndWrapper<>(area);
         var highlightWrappr = new HighlightWrapper(area, getLexer());
@@ -87,13 +103,12 @@ public final class CodeAreaExtender {
                     spansBuilder.add(Collections.emptyList(), area.getText().length() - end);
                     StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
 
-
                     area.setStyleSpans(0, styleSpans);
                     blockEndWrapper.indentEnd(getLexer().getCloseTokenOnChangePosition());
 
                 });
 
-        area.caretPositionProperty().addListener((v,o,n) -> {
+        area.caretPositionProperty().addListener((v, o, n) -> {
             highlightWrappr.highlightDelimiters(n);
         });
 

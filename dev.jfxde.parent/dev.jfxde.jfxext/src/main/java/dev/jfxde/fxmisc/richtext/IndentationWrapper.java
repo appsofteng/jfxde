@@ -21,6 +21,10 @@ public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends Area
 
     void insertNewLineIndentation() {
 
+        if (lexer == null) {
+            return;
+        }
+
         String paragraph = getCurrentParagraphText();
 
         String indentation = getParagraphIndentation(getArea().getCurrentParagraph());

@@ -68,6 +68,7 @@ public class JShellContent extends BorderPane {
         });
 
         CodeAreaExtender.get(consoleView.getInputArea(), "java")
+                .style()
                 .highlighting(consoleView.getConsoleModel().getReadFromPipe())
                 .completion(this::codeCompletion, completion::loadDocumentation)
                 .indentation();
