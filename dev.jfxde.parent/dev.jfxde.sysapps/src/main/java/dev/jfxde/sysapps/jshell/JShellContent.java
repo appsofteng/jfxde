@@ -75,10 +75,6 @@ public class JShellContent extends BorderPane {
         CodeAreaExtender.get(consoleView.getOutputArea(), "java")
                 .style();
 
-//        AreaExtensions.decorate(consoleView.getInputArea())
-//                .add(new BlockEndExtension<>())
-//                .add(new HighlightBlockDelimiterExtension<>())
-
     }
 
     private List<String> loadHistory() {

@@ -51,12 +51,17 @@ public final class CodeAreaExtender {
 
     public CodeAreaExtender style() {
         area.getStylesheets().add(CodeAreaExtender.class.getResource(language + ".css").toExternalForm());
+        area.getStylesheets().add(CodeAreaExtender.class.getResource("area.css").toExternalForm());
         return this;
+    }
+
+    public CodeAreaExtender highlighting() {
+        return highlighting(new AtomicBoolean());
     }
 
     public CodeAreaExtender highlighting(AtomicBoolean disableHighlight) {
         style();
-        area.getStylesheets().add(CodeAreaExtender.class.getResource(language + "-edit.css").toExternalForm());
+        area.getStylesheets().add(CodeAreaExtender.class.getResource("edit.css").toExternalForm());
 
         var blockEndWrapper = new BlockEndWrapper<>(area);
         var highlightWrappr = new HighlightWrapper(area, getLexer());

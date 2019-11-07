@@ -13,6 +13,21 @@ public final class XFiles {
     private XFiles() {
     }
 
+    public static String getFileExtension(Path path) {
+        Path fileName = path.getFileName();
+        String extension = null;
+
+        if (fileName != null) {
+            String name = fileName.toString().toLowerCase();
+            int i = name.lastIndexOf(".") + 1;
+            if (i > 0) {
+                extension = name.substring(i);
+            }
+        }
+
+        return extension;
+    }
+
     public static Path createFile(Path path, String name) {
         Path result = getUniquePath(path, name);
         try {
@@ -75,7 +90,11 @@ public final class XFiles {
         try (var stream = Files.walk(source)) {
             stream.forEach(p -> {
                 Path entryTarget = target.resolve(source.relativize(p));
-                try { Files.copy(p, entryTarget);} catch(IOException e) {throw new RuntimeException(e);}
+                try {
+                    Files.copy(p, entryTarget);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             });
 
         } catch (IOException e) {
