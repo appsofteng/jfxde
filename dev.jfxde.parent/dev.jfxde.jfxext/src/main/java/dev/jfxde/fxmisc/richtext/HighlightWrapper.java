@@ -48,8 +48,8 @@ public class HighlightWrapper extends AreaWrapper<CodeArea> {
 
     private void removeHighlightDelimiter() {
         if (token.isDelimiter()) {
-            token.getStyle().remove("block-delimiter-match");
-            token.getOppositeToken().getStyle().remove("block-delimiter-match");
+            token.resetStyle();
+            token.getOppositeToken().resetStyle();
             area.setStyle(token.getStart(), token.getEnd(), token.getStyle());
             area.setStyle(token.getOppositeToken().getStart(), token.getOppositeToken().getEnd(), token.getOppositeToken().getStyle());
         }
@@ -59,7 +59,9 @@ public class HighlightWrapper extends AreaWrapper<CodeArea> {
         StyleSpan<Collection<String>> styleSpan = new StyleSpan<>(token.getStyle(), token.getLength());
 
         if (token.isCloseOnCaretPosition()) {
+            token.getStyle().clear();
             token.getStyle().add("block-delimiter-match");
+            token.getOppositeToken().getStyle().clear();
             token.getOppositeToken().getStyle().add("block-delimiter-match");
             this.token = token;
         }

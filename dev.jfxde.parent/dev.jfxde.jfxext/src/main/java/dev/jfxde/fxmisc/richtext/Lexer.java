@@ -129,7 +129,7 @@ public class Lexer {
             return List.of();
         }
 
-        List<Token> result = new ArrayList();
+        List<Token> result = new ArrayList<>();
 
         Token token = null;
         int index = tokens.size() / 2;

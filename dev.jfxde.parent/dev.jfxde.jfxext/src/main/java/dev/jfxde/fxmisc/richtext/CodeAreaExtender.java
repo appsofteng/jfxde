@@ -9,8 +9,10 @@ import static org.fxmisc.wellbehaved.event.InputMap.sequence;
 
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -21,6 +23,7 @@ import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.wellbehaved.event.Nodes;
+import org.fxmisc.richtext.model.StyleSpan;
 
 import dev.jfxde.j.nio.file.XFiles;
 import javafx.geometry.Bounds;
@@ -93,13 +96,16 @@ public final class CodeAreaExtender {
                     int insertionEnd = ch.toPlainTextChange().getInsertionEnd();
                     int caretPosition = insertionEnd >= 0 ? insertionEnd : area.getCaretPosition();
 
-                    StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+                   // Use List not StyleSpansBuilder, StyleSpansBuilder merges styles immediately.
+                   List<StyleSpan<Collection<String>>> spans = new ArrayList<>();
 
                     var end = getLexer().tokenize(area.getText(), caretPosition, (lastEnd, t) -> {
-                        spansBuilder.add(Collections.emptyList(), t.getStart() - lastEnd);
-                        spansBuilder.add(highlightWrappr.getStyleSpan(t));
+                        spans.add(new StyleSpan<>(Collections.emptyList(), t.getStart() - lastEnd));
+                        spans.add(highlightWrappr.getStyleSpan(t));
                     });
 
+                    StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+                    spansBuilder.addAll(spans);
                     spansBuilder.add(Collections.emptyList(), area.getText().length() - end);
                     StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
 

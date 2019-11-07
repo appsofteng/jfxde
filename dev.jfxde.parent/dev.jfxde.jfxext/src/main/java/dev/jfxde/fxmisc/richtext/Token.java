@@ -24,7 +24,7 @@ public class Token {
         this.value = value;
         this.length = end - start;
         this.onCaretPosition = start <= caretPosition && caretPosition <= end;
-        style.add(type.toLowerCase());
+        resetStyle();
     }
 
     public int getStart() {
@@ -77,5 +77,10 @@ public class Token {
 
     static boolean isClose(String type) {
         return type.toLowerCase().endsWith("close");
+    }
+
+    void resetStyle() {
+        style.clear();
+        style.add(type.toLowerCase());
     }
 }
