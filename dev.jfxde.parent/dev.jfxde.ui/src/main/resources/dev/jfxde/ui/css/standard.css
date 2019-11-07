@@ -35,8 +35,8 @@
 
     -jd-border-color: -jd-text-fill;
 
-    -jd-passive-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha2, 112%) 0%, derive(-jd-base-color-alpha2, -33%) 100%);
-    -jd-active-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha3, 155%) 0%, derive(-jd-base-color-alpha3, -7%) 100%);
+    -jd-passive-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha5, 112%) 0%, derive(-jd-base-color-alpha5, -33%) 100%);
+    -jd-active-background-color: ladder(-jd-base-color, derive(-jd-base-color-alpha7, 155%) 0%, derive(-jd-base-color-alpha7, -7%) 100%);
 
     -jd-button-color1: rgba(0.0,0.0,0.0,0.08);
     -jd-button-color2: linear-gradient(#5a61af, #51536d);

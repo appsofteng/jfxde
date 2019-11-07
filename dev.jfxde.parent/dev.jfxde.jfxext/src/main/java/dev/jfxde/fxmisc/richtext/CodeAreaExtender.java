@@ -62,7 +62,10 @@ public final class CodeAreaExtender {
     }
 
     public CodeAreaExtender style() {
-        area.getStylesheets().add(CodeAreaExtender.class.getResource(language + ".css").toExternalForm());
+        var languegeSyle = CodeAreaExtender.class.getResource(language + ".css");
+        if (languegeSyle != null) {
+            area.getStylesheets().add(languegeSyle.toExternalForm());
+        }
         area.getStylesheets().add(CodeAreaExtender.class.getResource("area.css").toExternalForm());
 
         if (area.isEditable()) {
@@ -96,8 +99,8 @@ public final class CodeAreaExtender {
                     int insertionEnd = ch.toPlainTextChange().getInsertionEnd();
                     int caretPosition = insertionEnd >= 0 ? insertionEnd : area.getCaretPosition();
 
-                   // Use List not StyleSpansBuilder, StyleSpansBuilder merges styles immediately.
-                   List<StyleSpan<Collection<String>>> spans = new ArrayList<>();
+                    // Use List not StyleSpansBuilder, StyleSpansBuilder merges styles immediately.
+                    List<StyleSpan<Collection<String>>> spans = new ArrayList<>();
 
                     var end = getLexer().tokenize(area.getText(), caretPosition, (lastEnd, t) -> {
                         spans.add(new StyleSpan<>(Collections.emptyList(), t.getStart() - lastEnd));

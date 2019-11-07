@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dev.jfxde.jfx.animation.DropShadowTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
 import javafx.beans.property.StringProperty;
@@ -11,6 +14,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.CacheHint;
 import javafx.scene.Cursor;
@@ -19,12 +23,21 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.RadialGradient;
+import javafx.scene.paint.Stop;
 import javafx.stage.Modality;
+import javafx.util.Duration;
 
 public abstract class InternalFrame extends Region {
 
@@ -69,7 +82,7 @@ public abstract class InternalFrame extends Region {
 
     public InternalFrame(Pane windowPane) {
         this.windowPane = windowPane;
-        setEffect();
+        setBorder();
     }
 
     protected void addButtons() {
@@ -107,19 +120,26 @@ public abstract class InternalFrame extends Region {
         restoreBounds = getBoundsInParent();
     }
 
-    private void setEffect() {
-        DropShadow shadow = new DropShadow();
-        shadow.setRadius(10.0);
-        shadow.setOffsetX(0);
-        shadow.setOffsetY(0);
-        shadow.setWidth(20);
-        shadow.setHeight(20);
-        shadow.setSpread(0.5);
-        shadow.setColor(Color.color(0.4, 0.5, 0.5));
-        setEffect(shadow);
-        setCache(true);
-        setCacheHint(CacheHint.SPEED);
+    private void setBorder() {
+        Stop[] stops = new Stop[] { new Stop(0, Color.rgb(0, 0, 0, 0.6)), new Stop(0.2, Color.rgb(0, 0, 0, 0.5)), new Stop(0.4, Color.rgb(0, 0, 0, 0.4)), new Stop(0.6, Color.rgb(0, 0, 0, 0.3)), new Stop(0.8, Color.rgb(0, 0, 0, 0.2)), new Stop(1, Color.rgb(0, 0, 0, 0.1))};
+        RadialGradient rg = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.REFLECT, stops);
+        var border = new Border(new BorderStroke(rg, BorderStrokeStyle.SOLID, new CornerRadii(8), new BorderWidths(3), new Insets(-3)));
+        setBorder(border);
     }
+// More attractive than border but blocks transparency and uses more graphic resources.
+//    private void setEffect() {
+//        DropShadow shadow = new DropShadow();
+//        shadow.setRadius(10.0);
+//        shadow.setOffsetX(0);
+//        shadow.setOffsetY(0);
+//        shadow.setWidth(20);
+//        shadow.setHeight(20);
+//        shadow.setSpread(0.5);
+//        shadow.setColor(Color.color(0.4, 0.5, 0.5));
+//        setEffect(shadow);
+//        setCache(true);
+//        setCacheHint(CacheHint.SPEED);
+//    }
 
     boolean isUseComputedSize() {
         return payload.getPrefWidth() == Region.USE_COMPUTED_SIZE || payload.getPrefHeight() == Region.USE_COMPUTED_SIZE;
@@ -289,6 +309,19 @@ public abstract class InternalFrame extends Region {
 
     public void doModalEffect() {
 
-        new DropShadowTransition((DropShadow) getEffect(), this).play();
+        var b1 = new Border(new BorderStroke(Color.rgb(255, 255, 255, 0.0), BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(4), new Insets(-4)));
+        var b2 = getBorder();
+        var timeline = new Timeline();
+        timeline.setCycleCount(5);
+        timeline.setRate(15);
+
+        timeline.getKeyFrames().setAll(
+                new KeyFrame(Duration.seconds(1),
+                        new KeyValue(borderProperty(), b1)),
+                new KeyFrame(Duration.seconds(2),
+                        new KeyValue(borderProperty(), b2)));
+        timeline.play();
+
+//        new DropShadowTransition((DropShadow) getEffect(), this).play();
     }
 }

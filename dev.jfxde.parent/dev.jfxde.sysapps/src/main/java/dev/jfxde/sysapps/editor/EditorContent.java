@@ -11,10 +11,12 @@ import javafx.scene.layout.BorderPane;
 
 public class EditorContent extends BorderPane {
 
-    private AppContext context;
     private static final String FAVORITES = "favorites.json";
+
+    private AppContext context;
+    private EditorActions editorActions;
     private FileTreePane fileTreePane;
-    private EditorBar editorBar = new EditorBar();
+    private EditorBar editorBar;
     private EditorPane editorPane = new EditorPane();
     private SplitPane splitPane;
 
@@ -25,12 +27,17 @@ public class EditorContent extends BorderPane {
         splitPane = new SplitPane(fileTreePane, editorPane);
         splitPane.setDividerPositions(0.3);
         SplitPane.setResizableWithParent(fileTreePane, false);
+
+        editorActions = new EditorActions(this);
+        editorBar = new EditorBar(editorActions);
+
+        setListeners();
+
         setTop(editorBar);
         setCenter(splitPane);
-        setListsners();
     }
 
-    private void setListsners() {
+    private void setListeners() {
         fileTreePane.getFavorites().addListener((Change<? extends FXPath> c) -> {
 
             while (c.next()) {
@@ -38,5 +45,9 @@ public class EditorContent extends BorderPane {
                 context.dc().toJson(favorites, FAVORITES);
             }
         });
+    }
+
+    public EditorPane getEditorPane() {
+        return editorPane;
     }
 }

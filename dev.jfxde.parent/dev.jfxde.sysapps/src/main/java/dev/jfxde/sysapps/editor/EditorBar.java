@@ -1,14 +1,19 @@
 package dev.jfxde.sysapps.editor;
 
 import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.scene.control.Button;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 
 public class EditorBar extends VBox {
 
-    public EditorBar() {
+    private EditorActions editorActions;
+
+    public EditorBar(EditorActions editorActions) {
+        this.editorActions = editorActions;
         getChildren().add(createToolBar());
     }
 
@@ -16,6 +21,10 @@ public class EditorBar extends VBox {
         Button save = new Button(Fonts.Unicode.FLOPPY_DISK);
         save.setFocusTraversable(false);
         save.getStyleClass().addAll("jd-font-awesome-solid", "jd-editor-button");
+        save.setTooltip(new Tooltip());
+        FXResourceBundle.getBundle().put(save.getTooltip().textProperty(), "save");
+        save.disableProperty().bind(editorActions.saveDisableProperty());
+        save.setOnAction(editorActions::save);
 
         Button saveAll = new Button();
         saveAll.setFocusTraversable(false);

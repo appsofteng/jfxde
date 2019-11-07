@@ -35,8 +35,8 @@ public class Editor extends StackPane {
 
         title.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
         tabTitle.bind(Bindings.when(edited)
-                .then(Bindings.createStringBinding(() -> "*" + path.getName(), path.pathProperty()))
-                .otherwise(Bindings.createStringBinding(() -> path.getName(), path.pathProperty())));
+                .then(Bindings.createStringBinding(() -> "*" + path.getName(), path.nameProperty()))
+                .otherwise(Bindings.createStringBinding(() -> path.getName(), path.nameProperty())));
 
         area.setParagraphGraphicFactory(LineNumberFactory.get(area));
         area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
@@ -62,6 +62,10 @@ public class Editor extends StackPane {
 
     ReadOnlyStringProperty tabTitleProperty() {
         return tabTitle.getReadOnlyProperty();
+    }
+
+    boolean isEdited() {
+        return edited.get();
     }
 
     private void setEdited(boolean value) {
