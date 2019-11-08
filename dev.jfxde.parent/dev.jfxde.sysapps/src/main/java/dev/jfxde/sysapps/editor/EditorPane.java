@@ -2,10 +2,14 @@ package dev.jfxde.sysapps.editor;
 
 import dev.jfxde.logic.data.FXPath;
 import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.Label;
@@ -23,6 +27,7 @@ public class EditorPane extends StackPane {
     private final ObservableList<Editor> editors = FXCollections.observableArrayList(e -> new Observable[] { e.editedProperty() });
     private final FilteredList<Editor> closableEditors = editors.filtered(e -> !e.isEdited());
     private final ObjectProperty<Editor> selectedEditor = new SimpleObjectProperty<>();
+    private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
 
     public EditorPane() {
         tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
@@ -33,6 +38,25 @@ public class EditorPane extends StackPane {
     }
 
     private void setListeners() {
+        edited.bind(Bindings.createBooleanBinding(() -> editors.stream().anyMatch(Editor::isEdited), editors));
+
+        tabPane.getTabs().addListener((Change<? extends Tab> c) -> {
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    c.getAddedSubList().forEach(t -> {
+                        Editor editor = (Editor)t.getContent();
+                        editors.add(editor);
+                    });
+                } else if (c.wasRemoved()) {
+                    c.getRemoved().forEach(t -> {
+                        Editor editor = (Editor)t.getContent();
+                        editors.remove(editor);
+                        editor.dispose();
+                    });
+                }
+            }
+        });
+
         tabPane.getSelectionModel().selectedItemProperty().addListener((v,o,n) -> {
             if (n != null) {
                 Editor editor = (Editor)n.getContent();
@@ -41,6 +65,10 @@ public class EditorPane extends StackPane {
                 selectedEditor.set(null);
             }
         });
+    }
+
+    ReadOnlyBooleanProperty editedProperty() {
+        return edited;
     }
 
     ReadOnlyObjectProperty<Editor> selectedEditorProperty() {
@@ -94,5 +122,9 @@ public class EditorPane extends StackPane {
 
     void save() {
         tabPane.getTabs().stream().filter(Tab::isSelected).forEach(t -> ((Editor)t.getContent()).save());
+    }
+
+    void saveAll() {
+        tabPane.getTabs().forEach(t -> ((Editor)t.getContent()).save());
     }
 }

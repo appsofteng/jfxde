@@ -1,19 +1,11 @@
 package dev.jfxde.sysapps.editor;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.concurrent.CompletableFuture;
-
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
 import dev.jfxde.fxmisc.richtext.AreaUtils;
 import dev.jfxde.fxmisc.richtext.CodeAreaExtender;
-import dev.jfxde.j.nio.file.XFiles;
-import dev.jfxde.j.util.LU;
-import dev.jfxde.jfx.application.XPlatform;
-import dev.jfxde.jfx.embed.swing.FXUtils;
 import dev.jfxde.logic.data.FXPath;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -43,9 +35,9 @@ public class Editor extends StackPane {
         area.textProperty().addListener((v, o, n) -> setEdited(true));
 
         CodeAreaExtender.get(area, path.getPath())
-        .style()
-        .highlighting()
-        .indentation();
+                .style()
+                .highlighting()
+                .indentation();
 
         getChildren().add(new VirtualizedScrollPane<>(area));
 
@@ -77,6 +69,12 @@ public class Editor extends StackPane {
     }
 
     void save() {
-        AreaUtils.writeText(area, path.getPath(), () -> setEdited(false));
+        if (isEdited()) {
+            AreaUtils.writeText(area, path.getPath(), () -> setEdited(false));
+        }
+    }
+
+    void dispose() {
+        area.dispose();
     }
 }

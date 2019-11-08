@@ -30,6 +30,10 @@ public class EditorBar extends VBox {
         saveAll.setFocusTraversable(false);
         saveAll.getStyleClass().addAll("jd-font-awesome-solid", "jd-editor-button");
         saveAll.setGraphic(new ImageView(getClass().getResource("save-all.png").toExternalForm()));
+        saveAll.setTooltip(new Tooltip());
+        FXResourceBundle.getBundle().put(saveAll.getTooltip().textProperty(), "saveAll");
+        saveAll.disableProperty().bind(editorActions.saveAllDisableProperty());
+        saveAll.setOnAction(editorActions::saveAll);
 
         ToolBar toolBar = new ToolBar(save, saveAll);
 

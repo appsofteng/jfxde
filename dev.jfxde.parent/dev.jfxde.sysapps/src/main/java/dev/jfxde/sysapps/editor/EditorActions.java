@@ -8,6 +8,7 @@ public class EditorActions {
 
     private EditorContent content;
     private ReadOnlyBooleanWrapper saveDisable = new ReadOnlyBooleanWrapper(true);
+    private ReadOnlyBooleanWrapper saveAllDisable = new ReadOnlyBooleanWrapper();
 
     public EditorActions(EditorContent content) {
         this.content = content;
@@ -16,6 +17,8 @@ public class EditorActions {
     }
 
     private void setListeners() {
+        saveAllDisable.bind(content.getEditorPane().editedProperty().not());
+
         content.getEditorPane().selectedEditorProperty().addListener((v,o,n) -> {
             saveDisable.unbind();
             if (n != null) {
@@ -30,7 +33,15 @@ public class EditorActions {
         return saveDisable.getReadOnlyProperty();
     }
 
+    ReadOnlyBooleanProperty saveAllDisableProperty() {
+        return saveAllDisable.getReadOnlyProperty();
+    }
+
     void save(Event e) {
         content.getEditorPane().save();
+    }
+
+    void saveAll(Event e) {
+        content.getEditorPane().saveAll();
     }
 }
