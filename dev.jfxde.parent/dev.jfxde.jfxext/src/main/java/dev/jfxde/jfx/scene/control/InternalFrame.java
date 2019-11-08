@@ -63,6 +63,8 @@ public abstract class InternalFrame extends Region {
 
     private Map<StringProperty, String> stringProperties = new HashMap<>();
 
+    private Timeline modalTimeline;
+
     protected BooleanProperty active = new BooleanPropertyBase() {
         @Override
         protected void invalidated() {
@@ -121,7 +123,9 @@ public abstract class InternalFrame extends Region {
     }
 
     private void setBorder() {
-        Stop[] stops = new Stop[] { new Stop(0, Color.rgb(0, 0, 0, 0.6)), new Stop(0.2, Color.rgb(0, 0, 0, 0.5)), new Stop(0.4, Color.rgb(0, 0, 0, 0.4)), new Stop(0.6, Color.rgb(0, 0, 0, 0.3)), new Stop(0.8, Color.rgb(0, 0, 0, 0.2)), new Stop(1, Color.rgb(0, 0, 0, 0.1))};
+        Stop[] stops = new Stop[] { new Stop(0, Color.rgb(0, 0, 0, 0.6)), new Stop(0.2, Color.rgb(0, 0, 0, 0.5)),
+                new Stop(0.4, Color.rgb(0, 0, 0, 0.4)), new Stop(0.6, Color.rgb(0, 0, 0, 0.3)), new Stop(0.8, Color.rgb(0, 0, 0, 0.2)),
+                new Stop(1, Color.rgb(0, 0, 0, 0.1)) };
         RadialGradient rg = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.REFLECT, stops);
         var border = new Border(new BorderStroke(rg, BorderStrokeStyle.SOLID, new CornerRadii(8), new BorderWidths(3), new Insets(-3)));
         setBorder(border);
@@ -309,18 +313,25 @@ public abstract class InternalFrame extends Region {
 
     public void doModalEffect() {
 
-        var b1 = new Border(new BorderStroke(Color.rgb(255, 255, 255, 0.0), BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(4), new Insets(-4)));
-        var b2 = getBorder();
-        var timeline = new Timeline();
-        timeline.setCycleCount(5);
-        timeline.setRate(15);
+        if (modalTimeline != null) {
+            modalTimeline.stop();
+        } else {
 
-        timeline.getKeyFrames().setAll(
-                new KeyFrame(Duration.seconds(1),
-                        new KeyValue(borderProperty(), b1)),
-                new KeyFrame(Duration.seconds(2),
-                        new KeyValue(borderProperty(), b2)));
-        timeline.play();
+            var b1 = new Border(new BorderStroke(Color.rgb(255, 255, 255, 0.0), BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(4), new Insets(-4)));
+            var b2 = getBorder();
+            modalTimeline = new Timeline();
+            modalTimeline.setCycleCount(5);
+            modalTimeline.setRate(15);
+            modalTimeline.setOnFinished(e -> setBorder(b2));
+
+            modalTimeline.getKeyFrames().setAll(
+                    new KeyFrame(Duration.seconds(1),
+                            new KeyValue(borderProperty(), b1)),
+                    new KeyFrame(Duration.seconds(2),
+                            new KeyValue(borderProperty(), b2)));
+        }
+
+        modalTimeline.play();
 
 //        new DropShadowTransition((DropShadow) getEffect(), this).play();
     }
