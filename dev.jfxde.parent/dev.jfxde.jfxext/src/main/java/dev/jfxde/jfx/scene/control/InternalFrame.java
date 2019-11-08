@@ -317,7 +317,7 @@ public abstract class InternalFrame extends Region {
             modalTimeline.stop();
         } else {
 
-            var b1 = new Border(new BorderStroke(Color.rgb(255, 255, 255, 0.0), BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(4), new Insets(-4)));
+            var b1 = new Border(new BorderStroke(Color.rgb(255, 255, 255, 0.5), BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(4), new Insets(-4)));
             var b2 = getBorder();
             modalTimeline = new Timeline();
             modalTimeline.setCycleCount(5);
