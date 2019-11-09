@@ -1,15 +1,14 @@
 package dev.jfxde.logic.data;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributeView;
-import java.nio.file.attribute.FileTime;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -19,18 +18,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
+import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyLongProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -39,22 +40,22 @@ import javafx.collections.ObservableList;
 
 public class FXPath implements Comparable<FXPath> {
 
-    private static final String TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
     private static final Path ROOT_PATH = Paths.get(File.separator);
     private final static Map<Path, WeakReference<FXPath>> CACHE = Collections.synchronizedMap(new WeakHashMap<>());
+    private static WatchServiceRegister watchServiceRegister;
 
+    private Consumer<List<WatchEvent<?>>> watcher = this::watch;
     private ObjectProperty<Path> path = new SimpleObjectProperty<Path>();
     private StringProperty name;
     private String newName;
-    private LongProperty size;
-    private ObjectProperty<FileTime> created;
-    private ObjectProperty<FileTime> modified;
     private BooleanProperty directory = new SimpleBooleanProperty();
     private Set<FXPath> parents = new HashSet<>();
-    private ObservableList<FXPath> paths = FXCollections.observableArrayList();
+    private ObservableList<FXPath> paths = FXCollections
+            .observableArrayList((p) -> new Observable[] { p.basicFileAttributes.lastModifiedTimeProperty() });
     private boolean loaded;
     private Boolean dirLeaf;
     private Boolean leaf;
+    private FXBasicFileAttributes basicFileAttributes;
 
     private FXPath() {
     }
@@ -69,17 +70,11 @@ public class FXPath implements Comparable<FXPath> {
         Path fileName = path.getFileName();
         setName(fileName == null ? path.toString() : fileName.toString());
 
-        try {
-            var fileAttributes = Files.getFileAttributeView(path, BasicFileAttributeView.class);
-            setCreated(fileAttributes.readAttributes().creationTime());
-            setModified(fileAttributes.readAttributes().lastModifiedTime());
+        basicFileAttributes = new FXBasicFileAttributes(this);
+    }
 
-            if (!dir) {
-                setSize(Files.size(path));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static void setWatchServiceRegister(WatchServiceRegister watchServiceRegister) {
+        FXPath.watchServiceRegister = watchServiceRegister;
     }
 
     public static FXPath getRoot() {
@@ -122,10 +117,10 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     void rename(Path newPath, String newName) {
-        CACHE.remove(getPath());
+        removeFromCache(getPath());
         var oldPath = getPath();
         setPath(newPath);
-        CACHE.put(getPath(), new WeakReference<>(this));
+        getFromCache(getPath(), p -> new WeakReference<>(this), isDirectory());
 
         paths.forEach(p -> p.rename(oldPath, getPath()));
 
@@ -133,20 +128,20 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     private void rename(Path oldParent, Path newParent) {
-        CACHE.remove(getPath());
+        removeFromCache(getPath());
         var relative = oldParent.relativize(getPath());
         setPath(newParent.resolve(relative));
-        CACHE.put(getPath(), new WeakReference<>(this));
+        getFromCache(getPath(), p -> new WeakReference<>(this), isDirectory());
 
         paths.forEach(p -> p.rename(oldParent, newParent));
     }
 
     void move(FXPath newParent, Path newPath) {
-        CACHE.remove(getPath());
+        removeFromCache(getPath());
         new ArrayList<>(parents).stream().filter(p -> !p.isPseudoRoot()).forEach(p -> p.remove(this));
         var oldPath = getPath();
         setPath(newPath);
-        CACHE.put(getPath(), new WeakReference<>(this));
+        getFromCache(getPath(), p -> new WeakReference<>(this), isDirectory());
 
         paths.forEach(p -> p.rename(oldPath, getPath()));
 
@@ -169,7 +164,7 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     void delete() {
-        CACHE.remove(getPath());
+        removeFromCache(getPath());
         new ArrayList<>(parents).forEach(p -> p.remove(this));
     }
 
@@ -239,87 +234,6 @@ public class FXPath implements Comparable<FXPath> {
         return name;
     }
 
-    private void setSize(long value) {
-        getSizeProperty().set(value);
-    }
-
-    public ReadOnlyLongProperty sizeProperty() {
-        return getSizeProperty();
-    }
-
-    private LongProperty getSizeProperty() {
-
-        if (size == null) {
-            size = new SimpleLongProperty() {
-                @Override
-                public Object getBean() {
-                    return FXPath.this;
-                }
-
-                @Override
-                public String toString() {
-                    return isDirectory() ? "" : NumberFormat.getInstance().format(Math.ceil(get() / 1024.0)) + " KiB";
-                }
-            };
-        }
-
-        return size;
-    }
-
-    private void setCreated(FileTime value) {
-        getCreatedProperty().set(value);
-    }
-
-    public ReadOnlyObjectProperty<FileTime> createdProperty() {
-        return getCreatedProperty();
-    }
-
-    private ObjectProperty<FileTime> getCreatedProperty() {
-        if (created == null) {
-            created = new SimpleObjectProperty<>() {
-
-                @Override
-                public Object getBean() {
-                    return FXPath.this;
-                }
-
-                public String toString() {
-                    return new SimpleDateFormat(TIME_FORMAT).format(get().toMillis());
-                };
-
-            };
-        }
-
-        return created;
-    }
-
-    private void setModified(FileTime value) {
-        getModifiedProperty().set(value);
-    }
-
-    public ReadOnlyObjectProperty<FileTime> modifiedProperty() {
-        return getModifiedProperty();
-    }
-
-    private ObjectProperty<FileTime> getModifiedProperty() {
-        if (modified == null) {
-            modified = new SimpleObjectProperty<>() {
-
-                @Override
-                public Object getBean() {
-                    return FXPath.this;
-                }
-
-                public String toString() {
-                    return new SimpleDateFormat(TIME_FORMAT).format(get().toMillis());
-                };
-
-            };
-        }
-
-        return modified;
-    }
-
     public boolean isDirectory() {
         return directory.get();
     }
@@ -385,7 +299,7 @@ public class FXPath implements Comparable<FXPath> {
             return;
         }
 
-        if (!Files.isReadable(getPath())) {
+        if (!isReadable()) {
             return;
         }
 
@@ -396,6 +310,10 @@ public class FXPath implements Comparable<FXPath> {
                 listRoots();
             } else {
                 list();
+            }
+
+            if (watchServiceRegister != null) {
+                watchServiceRegister.register(getPath(), watcher);
             }
         });
     }
@@ -432,13 +350,56 @@ public class FXPath implements Comparable<FXPath> {
 
     private static FXPath getFromCache(FXPath parent, Path path, boolean dir) {
 
-        var pd = CACHE.computeIfAbsent(path, k -> new WeakReference<>(new FXPath(parent, path, dir))).get();
+        var pd = getFromCache(path, k -> new WeakReference<>(new FXPath(parent, path, dir)), dir);
 
         if (parent != null) {
             pd.parents.add(parent);
         }
 
         return pd;
+    }
+
+    private static FXPath getFromCache(Path path, Function<Path, WeakReference<FXPath>> function, boolean dir) {
+
+        var fxpath = CACHE.computeIfAbsent(path, function).get();
+
+        return fxpath;
+    }
+
+    private static void removeFromCache(Path path) {
+        CACHE.remove(path);
+    }
+
+    private void watch(List<WatchEvent<?>> events) {
+        events.forEach(e -> {
+            if (e.context() instanceof Path) {
+                var contextPath = getPath().resolve((Path) e.context());
+
+                if (e.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+                    add(this, contextPath, Files.isDirectory(contextPath));
+                } else if (e.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
+                    var fxpath = CACHE.get(contextPath).get();
+
+                    if (fxpath != null) {
+                        try {
+                            fxpath.basicFileAttributes.setLastModifiedTime(Files.getLastModifiedTime(contextPath).toMillis());
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                } else if (e.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
+                    var fxpath = CACHE.get(contextPath).get();
+
+                    if (fxpath != null) {
+                        fxpath.delete();
+                    }
+                }
+            }
+        });
+    }
+
+    public FXBasicFileAttributes getBasicFileAttributes() {
+        return basicFileAttributes;
     }
 
     @Override
@@ -471,6 +432,8 @@ public class FXPath implements Comparable<FXPath> {
         return result;
     }
 
+    public static final StringComparator STRING_COMPARATOR = new StringComparator();
+
     public static class StringComparator implements Comparator<StringProperty> {
 
         @Override
@@ -487,6 +450,8 @@ public class FXPath implements Comparable<FXPath> {
             return result;
         }
     }
+
+    public static final LongComparator LONG_COMPARATOR = new LongComparator();
 
     public static class LongComparator implements Comparator<ReadOnlyLongProperty> {
 
@@ -508,38 +473,6 @@ public class FXPath implements Comparable<FXPath> {
 
             if (result == 0) {
                 result = o1.asObject().get().compareTo(o2.asObject().get());
-            }
-
-            return result;
-        }
-    }
-
-    public static class ObjectComparator<T extends Comparable<T>> implements Comparator<ReadOnlyObjectProperty<T>> {
-
-        @Override
-        public int compare(ReadOnlyObjectProperty<T> o1, ReadOnlyObjectProperty<T> o2) {
-
-            if (o1 == null && o2 == null) {
-                return 0;
-            } else if (o1 == null) {
-                return -1;
-            } else if (o2 == null) {
-                return 1;
-            }
-
-            FXPath desc1 = (FXPath) o1.getBean();
-            FXPath desc2 = (FXPath) o2.getBean();
-
-            int result = 0;
-
-            if (desc1.isDirectory() && !desc2.isDirectory()) {
-                result = -1;
-            } else if (!desc1.isDirectory() && desc2.isDirectory()) {
-                result = -1;
-            }
-
-            if (result == 0) {
-                result = o1.get().compareTo(o2.get());
             }
 
             return result;

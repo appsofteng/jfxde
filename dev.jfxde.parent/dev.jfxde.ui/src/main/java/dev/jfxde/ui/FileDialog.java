@@ -1,7 +1,6 @@
 package dev.jfxde.ui;
 
 import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +14,6 @@ import dev.jfxde.jfx.scene.control.InternalDialog;
 import dev.jfxde.logic.data.FXPath;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ReadOnlyLongProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -90,7 +88,7 @@ public class FileDialog extends InternalDialog {
         TableColumn<TreeItem<FXPath>, StringProperty> nameColumn = new TableColumn<>();
         nameColumn.setText("Name");
         nameColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().nameProperty()));
-        nameColumn.setComparator(new FXPath.StringComparator());
+        nameColumn.setComparator(FXPath.STRING_COMPARATOR);
         nameColumn.setPrefWidth(200);
         nameColumn.setCellFactory(c -> {
 
@@ -117,22 +115,22 @@ public class FileDialog extends InternalDialog {
             return cell;
         });
 
-        TableColumn<TreeItem<FXPath>, ReadOnlyObjectProperty<FileTime>> createdColumn = new TableColumn<>();
+        TableColumn<TreeItem<FXPath>, ReadOnlyLongProperty> createdColumn = new TableColumn<>();
         createdColumn.setText("Created");
-        createdColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().createdProperty()));
-        createdColumn.setComparator(new FXPath.ObjectComparator<>());
+        createdColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().getBasicFileAttributes().creationTimeProperty()));
+        createdColumn.setComparator(FXPath.LONG_COMPARATOR);
         createdColumn.setPrefWidth(120);
 
-        TableColumn<TreeItem<FXPath>, ReadOnlyObjectProperty<FileTime>> modifiedColumn = new TableColumn<>();
+        TableColumn<TreeItem<FXPath>, ReadOnlyLongProperty> modifiedColumn = new TableColumn<>();
         modifiedColumn.setText("Modified");
-        modifiedColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().modifiedProperty()));
-        modifiedColumn.setComparator(new FXPath.ObjectComparator<>());
+        modifiedColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().getBasicFileAttributes().lastModifiedTimeProperty()));
+        modifiedColumn.setComparator(FXPath.LONG_COMPARATOR);
         modifiedColumn.setPrefWidth(120);
 
         TableColumn<TreeItem<FXPath>, ReadOnlyLongProperty> sizeColumn = new TableColumn<>();
         sizeColumn.setText("Size");
-        sizeColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().sizeProperty()));
-        sizeColumn.setComparator(new FXPath.LongComparator());
+        sizeColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().getBasicFileAttributes().sizeProperty()));
+        sizeColumn.setComparator(FXPath.LONG_COMPARATOR);
         sizeColumn.getStyleClass().add("jd-table-column-numerical");
         sizeColumn.setPrefWidth(100);
 
