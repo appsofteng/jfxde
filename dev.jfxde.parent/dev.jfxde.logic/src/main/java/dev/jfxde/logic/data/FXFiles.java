@@ -14,39 +14,58 @@ public final class FXFiles {
     }
 
     public static FXPath createDirectory(FXPath parent, String name) {
+        FXPath pathDescriptor = null;
+        FXPath.getLock().lock();
+        try {
+            Path path = XFiles.createDirectory(parent.getPath(), name);
 
-        Path path = XFiles.createDirectory(parent.getPath(), name);
-
-        FXPath pathDescriptor = FXPath.createDirectory(parent, path);
+            pathDescriptor = FXPath.createDirectory(parent, path);
+        } finally {
+            FXPath.getLock().unlock();
+        }
 
         return pathDescriptor;
     }
 
     public static FXPath createFile(FXPath parent, String name) {
+        FXPath pathDescriptor = null;
+        FXPath.getLock().lock();
+        try {
+            Path path = XFiles.createFile(parent.getPath(), name);
 
-        Path path = XFiles.createFile(parent.getPath(), name);
-
-        FXPath pathDescriptor = FXPath.createFile(parent, path);
-
+            pathDescriptor = FXPath.createFile(parent, path);
+        } finally {
+            FXPath.getLock().unlock();
+        }
         return pathDescriptor;
     }
 
     public static CompletableFuture<Void> move(List<FXPath> pds, FXPath targetDir) {
         var future = CompletableFuture.runAsync(() -> {
-            pds.forEach(pd -> {
-                Path target = XFiles.move(pd.getPath(), targetDir.getPath());
-                pd.move(targetDir, target);
-            });
+            FXPath.getLock().lock();
+            try {
+                pds.forEach(pd -> {
+                    Path target = XFiles.move(pd.getPath(), targetDir.getPath());
+                    pd.move(targetDir, target);
+                });
+            } finally {
+                FXPath.getLock().unlock();
+            }
         });
         return future;
     }
 
     public static CompletableFuture<Void> copy(List<FXPath> pds, FXPath targetDir) {
         var future = CompletableFuture.runAsync(() -> {
-            pds.forEach(pd -> {
-                Path target = XFiles.copy(pd.getPath(), targetDir.getPath());
-                FXPath.copy(targetDir, target);
-            });
+            FXPath.getLock().lock();
+            try {
+                pds.forEach(pd -> {
+                    Path target = XFiles.copy(pd.getPath(), targetDir.getPath());
+                    FXPath.copy(targetDir, target);
+                });
+            } finally {
+                FXPath.getLock().unlock();
+            }
         });
         return future;
     }
@@ -54,10 +73,15 @@ public final class FXFiles {
     public static CompletableFuture<Void> delete(List<FXPath> pds) {
 
         var future = CompletableFuture.runAsync(() -> {
-            pds.forEach(pd -> {
-                XFiles.delete(pd.getPath());
-                pd.delete();
-            });
+            FXPath.getLock().lock();
+            try {
+                pds.forEach(pd -> {
+                    XFiles.delete(pd.getPath());
+                    pd.delete();
+                });
+            } finally {
+                FXPath.getLock().unlock();
+            }
         });
 
         return future;
@@ -67,12 +91,15 @@ public final class FXFiles {
         boolean renamed = false;
         var targetPath = pd.getPath().resolveSibling(name);
         if (Files.notExists(targetPath)) {
+            FXPath.getLock().lock();
             try {
                 Files.move(pd.getPath(), targetPath);
                 pd.rename(targetPath, name);
                 renamed = true;
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            } finally {
+                FXPath.getLock().unlock();
             }
         }
         return renamed;

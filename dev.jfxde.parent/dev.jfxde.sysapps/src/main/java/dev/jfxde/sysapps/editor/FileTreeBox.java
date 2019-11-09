@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import dev.jfxde.jfx.scene.control.AlertBuilder;
 import dev.jfxde.jfx.scene.control.TreeViewUtils;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.logic.data.FXFiles;
 import dev.jfxde.ui.PathTreeItem;
@@ -37,7 +38,6 @@ public class FileTreeBox extends VBox {
     private TreeView<FXPath> fileTreeView;
     private PathTreeItem root;
     private Map<StringProperty, String> stringProperties = new HashMap<>();
-    private Map<String, String> strings = new HashMap<>();
     private ObservableList<TreeItem<FXPath>> selectedItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> cutItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> copyItems = FXCollections.observableArrayList();
@@ -123,13 +123,13 @@ public class FileTreeBox extends VBox {
     }
 
     private void setContextMenu() {
-        MenuItem newDirectory = new MenuItem("New Directory");
-        stringProperties.put(newDirectory.textProperty(), "newDirectory");
+        MenuItem newDirectory = new MenuItem();
+        FXResourceBundle.getBundle().put(newDirectory.textProperty(), "newDirectory");
         newDirectory.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         newDirectory.setOnAction(e -> create(FXFiles::createDirectory));
 
-        MenuItem newFile = new MenuItem("New File");
-        stringProperties.put(newFile.textProperty(), "newFile");
+        MenuItem newFile = new MenuItem();
+        FXResourceBundle.getBundle().put(newFile.textProperty(), "newFile");
         newFile.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         newFile.setOnAction(e -> create(FXFiles::createFile));
 
@@ -162,6 +162,7 @@ public class FileTreeBox extends VBox {
         MenuItem paste = new MenuItem("Paste");
         stringProperties.put(paste.textProperty(), "paste");
         paste.disableProperty().bind(Bindings.isEmpty(cutItems).and(Bindings.isEmpty(copyItems))
+                .or(Bindings.createBooleanBinding(() -> cutItems.stream().anyMatch(i -> i.getParent() == fileTreeView.getSelectionModel().getSelectedItem()), cutItems, fileTreeView.getSelectionModel().selectedItemProperty()))
                 .or(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)));
         paste.setOnAction(e -> {
             var item = fileTreeView.getSelectionModel().getSelectedItem();
@@ -222,12 +223,22 @@ public class FileTreeBox extends VBox {
             cutItems.clear();
             copyItems.clear();
             var pds = selectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList());
+            var notToBeDeleted = pds.stream()
+                    .flatMap(p -> p.getNotToBeDeleted().stream())
+                    .map(p -> p.getPath().toString())
+                    .collect(Collectors.joining("\n"));
 
-            AlertBuilder.get(this, AlertType.CONFIRMATION)
-                    .title(strings.computeIfAbsent("confirmation", k -> "Confirmation"))
-                    .headerText(strings.computeIfAbsent("areYouSure", k -> "Are you sure you want to delete the selected items?"))
-                    .action(() -> FXFiles.delete(pds))
-                    .show();
+            var alert = AlertBuilder.get(this, AlertType.CONFIRMATION)
+                    .title(FXResourceBundle.getBundle().getString​("confirmation"))
+                    .headerText(FXResourceBundle.getBundle().getString​("areYouSureDeleteSelectedItems"))
+                    .action(() -> FXFiles.delete(pds));
+
+            if (!notToBeDeleted.isEmpty()) {
+                alert.contentText(FXResourceBundle.getBundle().getString​("itemsBeingModified"))
+                .expandableTextArea(notToBeDeleted);
+            }
+
+            alert.show();
         });
 
         ContextMenu menu = new ContextMenu(newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy, paste, new SeparatorMenuItem(),
@@ -243,7 +254,7 @@ public class FileTreeBox extends VBox {
         var parentItem = item.getValue().isFile() ? item.getParent() : item;
         var parentPahDescriptor = parentItem.getValue();
 
-        FXPath newPahDescriptor = create.apply(parentPahDescriptor, strings.computeIfAbsent("new", k -> "New"));
+        FXPath newPahDescriptor = create.apply(parentPahDescriptor, FXResourceBundle.getBundle().getString​("new"));
         TreeViewUtils.select(newPahDescriptor, parentItem, fileTreeView);
     }
 

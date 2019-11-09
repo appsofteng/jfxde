@@ -18,6 +18,7 @@ public class Editor extends StackPane {
 
     private FXPath path;
     private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
+    private final ReadOnlyBooleanWrapper deleted = new ReadOnlyBooleanWrapper();
     private final ReadOnlyStringWrapper title = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper tabTitle = new ReadOnlyStringWrapper();
     private final CodeArea area = new CodeArea();
@@ -41,7 +42,29 @@ public class Editor extends StackPane {
 
         getChildren().add(new VirtualizedScrollPane<>(area));
 
+        setListeners();
+
         AreaUtils.readText(area, path.getPath());
+    }
+
+    private void setListeners() {
+        path.getOnModified().add(p -> {
+            System.out.println("modified");
+        });
+
+        path.getOnToBeDeleted().add(p -> {
+            System.out.println("to be deleted");
+            return !isEdited();
+        });
+
+        path.getOnDeleted().add(p -> {
+            System.out.println("deleted");
+            setDeleted(true);
+        });
+
+        path.getOnExternalDeleted().add(p -> {
+            System.out.println("deleted externally");
+        });
     }
 
     public FXPath getPath() {
@@ -66,6 +89,18 @@ public class Editor extends StackPane {
 
     ReadOnlyBooleanProperty editedProperty() {
         return edited.getReadOnlyProperty();
+    }
+
+    boolean isDeleted() {
+        return deleted.get();
+    }
+
+    private void setDeleted(boolean value) {
+        deleted.set(value);
+    }
+
+    ReadOnlyBooleanProperty deletedProperty() {
+        return deleted.getReadOnlyProperty();
     }
 
     void save() {

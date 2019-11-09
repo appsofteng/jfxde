@@ -5,6 +5,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextArea;
 import javafx.stage.Modality;
 
 public final class AlertBuilder {
@@ -34,6 +35,13 @@ public final class AlertBuilder {
 
     public AlertBuilder contentText(String text) {
         alert.setContentText(text);
+        return this;
+    }
+
+    public AlertBuilder expandableTextArea(String content) {
+        TextArea area = new TextArea(content);
+        area.setEditable(false);
+        alert.getDialogPane().setExpandableContent(area);
         return this;
     }
 

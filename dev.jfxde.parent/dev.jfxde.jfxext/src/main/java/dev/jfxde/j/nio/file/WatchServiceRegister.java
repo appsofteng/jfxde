@@ -37,6 +37,7 @@ public class WatchServiceRegister {
             }
 
             if (sharedPath != path) {
+                sharedPath = path;
                 register.computeIfAbsent(path, k -> new ArrayList<>()).add(new WeakReference<>(consumer));
             }
 
@@ -57,7 +58,7 @@ public class WatchServiceRegister {
                     WatchKey key = null;
                     try {
                         key = watchService.take();
-                        Thread.sleep(50);
+                    //    Thread.sleep(1000);
                     } catch (InterruptedException | ClosedWatchServiceException e) {
                         break;
                     }

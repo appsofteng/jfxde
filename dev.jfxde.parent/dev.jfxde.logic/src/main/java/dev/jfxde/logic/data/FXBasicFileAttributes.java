@@ -88,6 +88,10 @@ public class FXBasicFileAttributes {
         return creationTime;
     }
 
+    long getLastModifiedTime() {
+        return getLastModifiedTimeProperty().get();
+    }
+
     void setLastModifiedTime(long value) {
         getLastModifiedTimeProperty().set(value);
     }
