@@ -1,5 +1,6 @@
 package dev.jfxde.jfx.util;
 
+import java.io.File;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
@@ -8,10 +9,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
@@ -23,8 +28,11 @@ import javafx.beans.property.StringProperty;
 public class FXResourceBundle {
     private static ObjectProperty<Locale> locale = new SimpleObjectProperty<>();
 
-    private static final String DEFAULT_BUNDLE_NAME = "strings";
-    private static final String DEFAULT_BASE_NAME = FXResourceBundle.class.getPackageName() + "." + DEFAULT_BUNDLE_NAME;
+    private static final String BUNDLE_DIR_NAME = "bundles";
+    private static final String BUNDLE_FILE_NAME = "strings";
+
+    private final String bundleDir;
+    private Class<?> caller;
     private String baseName;
     private Module module;
     private FXResourceBundle parent;
@@ -35,12 +43,14 @@ public class FXResourceBundle {
 
     private Map<StringProperty, List<Object>> stringProperties = new WeakHashMap<>();
 
-    private FXResourceBundle(String baseName, Module module, FXResourceBundle parent) {
+    private FXResourceBundle(Class<?> caller, String baseName, FXResourceBundle parent) {
+        this.caller = caller;
         this.baseName = baseName;
-        this.module = module;
+        this.module = caller.getModule();
         this.parent = parent;
 
-        cache.put(baseName, this);
+        String path = caller.getPackageName().replace(".", "/");
+        this.bundleDir = path + "/" + BUNDLE_DIR_NAME + "/";
 
         locale.addListener((v, o, n) -> {
             if (n != null) {
@@ -61,21 +71,16 @@ public class FXResourceBundle {
     }
 
     public static FXResourceBundle getBundle() {
-        return getBundle​(DEFAULT_BASE_NAME, null, null);
+        return getBundle​(FXResourceBundle.class, null);
     }
 
-    public static FXResourceBundle getBundle​(String baseName) {
-        return getBundle​(baseName, null, null);
+    public static FXResourceBundle getBundle​(Class<?> caller) {
+        return getBundle​(caller, getBundle());
     }
 
-    public static FXResourceBundle getBundle​(String baseName, Module module) {
-
-        return getBundle​(baseName, module, null);
-    }
-
-    public static FXResourceBundle getBundle​(String baseName, Module module, FXResourceBundle parent) {
-
-        FXResourceBundle bundle = cache.merge(baseName, new FXResourceBundle(baseName, module, parent), (o, n) -> o);
+    private static FXResourceBundle getBundle​(Class<?> caller, FXResourceBundle parent) {
+        String baseName = caller.getPackageName() + "." + BUNDLE_DIR_NAME + "." + BUNDLE_FILE_NAME;
+        FXResourceBundle bundle = cache.computeIfAbsent(baseName, k -> new FXResourceBundle(caller, baseName, parent));
 
         return bundle;
     }
@@ -141,10 +146,39 @@ public class FXResourceBundle {
         return MessageFormat.format(value, args);
     }
 
-    public String getStringtMaxWidth(String key, String arg, int maxWidth) {
+    public String getStringMaxWidth(String key, String arg, int maxWidth) {
         arg = arg.replaceAll("[\\n\\r]+", " ");
         String text = String.format("%." + maxWidth + "s%s", arg, arg.length() > maxWidth ? "..." : "");
 
         return getString​(key, text);
+    }
+
+    public Set<String> getLocales() {
+        Set<String> locales = Set.of();
+
+        try {
+
+            final File jarFile = new File(caller.getProtectionDomain().getCodeSource().getLocation().getPath());
+
+            if (jarFile.isFile()) {
+                final JarFile jar = new JarFile(jarFile);
+
+                locales = jar.stream()
+                        .map(JarEntry::getName)
+                        .filter(n -> n.startsWith(bundleDir))
+                        .filter(n -> n.length() > bundleDir.length())
+                        .map(n -> n.substring(bundleDir.length(), n.lastIndexOf(".")))
+                        .filter(n -> n.contains("_"))
+                        .map(n -> n.substring(n.indexOf("_") + 1).replace("_", "-"))
+                        .collect(Collectors.toSet());
+
+                jar.close();
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return locales;
     }
 }

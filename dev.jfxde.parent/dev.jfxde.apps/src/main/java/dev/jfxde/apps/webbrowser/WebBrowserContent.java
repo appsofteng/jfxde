@@ -24,7 +24,6 @@ public class WebBrowserContent extends Pane {
 
     public WebBrowserContent(AppContext context) {
         this.context = context;
-        getStylesheets().add(context.rc().getCss("browser"));
 
         tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);

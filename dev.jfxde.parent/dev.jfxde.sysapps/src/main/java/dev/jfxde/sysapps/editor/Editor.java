@@ -52,7 +52,7 @@ public class Editor extends StackPane {
             System.out.println("modified");
         });
 
-        path.getOnToBeDeleted().add(p -> {
+        path.getOnDelete().add(p -> {
             System.out.println("to be deleted");
             return !isEdited();
         });
@@ -62,7 +62,7 @@ public class Editor extends StackPane {
             setDeleted(true);
         });
 
-        path.getOnExternalDeleted().add(p -> {
+        path.getOnDeletedExternally().add(p -> {
             System.out.println("deleted externally");
         });
     }

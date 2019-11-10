@@ -20,6 +20,7 @@ import dev.jfxde.api.AppScope;
 import dev.jfxde.api.PermissionEntry;
 import dev.jfxde.api.Resource;
 import dev.jfxde.data.entity.AppProviderData;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.FileManager;
 import dev.jfxde.logic.ResourceManager;
 import dev.jfxde.logic.Sys;
@@ -66,7 +67,7 @@ public class AppProviderDescriptor implements Comparable<AppProviderDescriptor> 
         this.appManifest = appManifest;
         this.provider = provider;
         this.appProviderData = new AppProviderData(appManifest.name(), appManifest.fqn());
-        this.appProviderData.nameProperty().bind(resourceManager.getStringBinding(appManifest.name()));
+        FXResourceBundle.getBundle​(provider.type()).put(this.appProviderData.nameProperty(), appManifest.name());
 
         this.version.set(appManifest.version());
         this.vendor.set(appManifest.vendor());
@@ -88,6 +89,7 @@ public class AppProviderDescriptor implements Comparable<AppProviderDescriptor> 
     }
 
     public void setAppProviderData(AppProviderData appProviderData) {
+        FXResourceBundle.getBundle​(provider.type()).put(appProviderData.nameProperty(), appManifest.name());
         this.appProviderData = appProviderData;
     }
 
@@ -162,7 +164,7 @@ public class AppProviderDescriptor implements Comparable<AppProviderDescriptor> 
     public Set<String> getLocales() {
 
         if (locales == null) {
-            locales = new HashSet<>(resourceManager.getLocales());
+            locales = new HashSet<>(FXResourceBundle.getBundle​(provider.type()).getLocales());
             locales.add(appManifest.defaultLocale());
         }
 

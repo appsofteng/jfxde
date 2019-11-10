@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.controlsfx.control.BreadCrumbBar;
 
 import dev.jfxde.jfx.scene.control.InternalDialog;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ReadOnlyLongProperty;
@@ -50,8 +51,8 @@ public class FileDialog extends InternalDialog {
     private TableView<TreeItem<FXPath>> fileTable = new TableView<>();
     private ListView<TreeItem<FXPath>> selectionView = new ListView<>();
     private ButtonBar buttonBar = new ButtonBar();
-    private Button okButton = new Button("OK");
-    private Button cancelButton = new Button("Cancel");
+    private Button okButton = new Button();
+    private Button cancelButton = new Button();
 
     private Set<TreeItem<FXPath>> selection = new HashSet<>();
     private Consumer<List<Path>> selectionConsumer;
@@ -143,6 +144,8 @@ public class FileDialog extends InternalDialog {
         SplitPane splitPane = new SplitPane(fileTree, fileTable);
         splitPane.setDividerPositions(0.2f);
 
+        FXResourceBundle.getBundle().put(okButton.textProperty(), "ok");
+        FXResourceBundle.getBundle().put(cancelButton.textProperty(), "cancel");
         buttonBar.getButtons().addAll(okButton, cancelButton);
 
         GridPane gridpane = new GridPane();

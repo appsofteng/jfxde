@@ -1,6 +1,6 @@
 module dev.jfxde.logic {
     requires transitive javafx.controls;
-    requires dev.jfxde.api;
+    requires transitive dev.jfxde.api;
     requires transitive dev.jfxde.data;
     requires javafx.graphics;
     requires transitive java.logging;

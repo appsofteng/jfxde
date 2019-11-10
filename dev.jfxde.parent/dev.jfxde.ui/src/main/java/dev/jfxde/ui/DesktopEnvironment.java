@@ -5,6 +5,7 @@ import dev.jfxde.data.entity.Window;
 import dev.jfxde.data.entity.Window.State;
 import dev.jfxde.fonts.Fonts;
 import dev.jfxde.jfx.scene.control.AlertBuilder;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.Sys;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.HPos;
@@ -63,9 +64,9 @@ public class DesktopEnvironment extends Region {
         Sys.am().toBeStartedApp().addListener((v, o, appProviderDescriptor) -> {
             if (appProviderDescriptor != null) {
                 AlertBuilder.get(activeDesktopPane.getModalPane(), AlertType.CONFIRMATION)
-                        .title(Sys.rm().getString("confirmation"))
-                        .headerText(Sys.rm().getString("appPermissions", appProviderDescriptor.getName()))
-                        .contentText(Sys.rm().getString("appPermissionConfirmation"))
+                        .title(FXResourceBundle.getBundle().getString​("confirmation"))
+                        .headerText(FXResourceBundle.getBundle(Main.class).getString("appPermissions", appProviderDescriptor.getName()))
+                        .contentText(FXResourceBundle.getBundle(Main.class).getString("appPermissionConfirmation"))
                         .expandableContent(DataUtils.getAppPermissionTable(appProviderDescriptor))
                         .action(() -> Sys.am().allowAndStart(appProviderDescriptor))
                         .show();

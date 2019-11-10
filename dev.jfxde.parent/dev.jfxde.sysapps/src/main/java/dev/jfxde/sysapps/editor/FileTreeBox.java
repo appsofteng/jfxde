@@ -1,7 +1,5 @@
 package dev.jfxde.sysapps.editor;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -9,13 +7,12 @@ import java.util.stream.Collectors;
 import dev.jfxde.jfx.scene.control.AlertBuilder;
 import dev.jfxde.jfx.scene.control.TreeViewUtils;
 import dev.jfxde.jfx.util.FXResourceBundle;
-import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.logic.data.FXFiles;
+import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.ui.PathTreeItem;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
@@ -37,7 +34,6 @@ public class FileTreeBox extends VBox {
 
     private TreeView<FXPath> fileTreeView;
     private PathTreeItem root;
-    private Map<StringProperty, String> stringProperties = new HashMap<>();
     private ObservableList<TreeItem<FXPath>> selectedItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> cutItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> copyItems = FXCollections.observableArrayList();
@@ -133,8 +129,8 @@ public class FileTreeBox extends VBox {
         newFile.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         newFile.setOnAction(e -> create(FXFiles::createFile));
 
-        MenuItem rename = new MenuItem("Rename");
-        stringProperties.put(rename.textProperty(), "rename");
+        MenuItem rename = new MenuItem();
+        FXResourceBundle.getBundle().put(rename.textProperty(), "rename");
         rename.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         rename.setOnAction(e -> {
             cutItems.clear();
@@ -143,24 +139,24 @@ public class FileTreeBox extends VBox {
             fileTreeView.edit(fileTreeView.getSelectionModel().getSelectedItem());
         });
 
-        MenuItem cut = new MenuItem("Cut");
-        stringProperties.put(cut.textProperty(), "cut");
+        MenuItem cut = new MenuItem();
+        FXResourceBundle.getBundle().put(cut.textProperty(), "cut");
         cut.disableProperty().bind(Bindings.isEmpty(selectedItems));
         cut.setOnAction(e -> {
             copyItems.clear();
             cutItems.setAll(selectedItems);
         });
 
-        MenuItem copy = new MenuItem("Copy");
-        stringProperties.put(copy.textProperty(), "copy");
+        MenuItem copy = new MenuItem();
+        FXResourceBundle.getBundle().put(copy.textProperty(), "copy");
         copy.disableProperty().bind(Bindings.isEmpty(selectedItems));
         copy.setOnAction(e -> {
             cutItems.clear();
             copyItems.setAll(selectedItems);
         });
 
-        MenuItem paste = new MenuItem("Paste");
-        stringProperties.put(paste.textProperty(), "paste");
+        MenuItem paste = new MenuItem();
+        FXResourceBundle.getBundle().put(paste.textProperty(), "paste");
         paste.disableProperty().bind(Bindings.isEmpty(cutItems).and(Bindings.isEmpty(copyItems))
                 .or(Bindings.createBooleanBinding(() -> cutItems.stream().anyMatch(i -> i.getParent() == fileTreeView.getSelectionModel().getSelectedItem()), cutItems, fileTreeView.getSelectionModel().selectedItemProperty()))
                 .or(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)));
@@ -179,8 +175,8 @@ public class FileTreeBox extends VBox {
             }
         });
 
-        MenuItem addFavorite = new MenuItem("Add Favorite");
-        stringProperties.put(addFavorite.textProperty(), "addFavorite");
+        MenuItem addFavorite = new MenuItem();
+        FXResourceBundle.getBundle().put(addFavorite.textProperty(), "addFavorite");
         addFavorite.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)
                 .or(Bindings.createBooleanBinding(() -> fileTreeView.getSelectionModel().getSelectedItem() == null ||
                         fileTreeView.getSelectionModel().getSelectedItem().getValue().isFile() ||
@@ -192,8 +188,8 @@ public class FileTreeBox extends VBox {
             favoriteRoot.add(item.getValue());
         });
 
-        MenuItem removeFavorite = new MenuItem("Remove Favorite");
-        stringProperties.put(removeFavorite.textProperty(), "removeFavorite");
+        MenuItem removeFavorite = new MenuItem();
+        FXResourceBundle.getBundle().put(removeFavorite.textProperty(), "removeFavorite");
         removeFavorite.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)
                 .or(Bindings.createBooleanBinding(() -> fileTreeView.getSelectionModel().getSelectedItem() == null ||
                         fileTreeView.getSelectionModel().getSelectedItem().getValue().isFile() ||
@@ -205,8 +201,8 @@ public class FileTreeBox extends VBox {
             favoriteRoot.remove(item.getValue());
         });
 
-        MenuItem refresh = new MenuItem("Refresh");
-        stringProperties.put(refresh.textProperty(), "refresh");
+        MenuItem refresh = new MenuItem();
+        FXResourceBundle.getBundle().put(refresh.textProperty(), "refresh");
         refresh.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
         refresh.setOnAction(e -> {
             cutItems.clear();
@@ -216,8 +212,8 @@ public class FileTreeBox extends VBox {
 
         });
 
-        MenuItem delete = new MenuItem("Delete");
-        stringProperties.put(delete.textProperty(), "delete");
+        MenuItem delete = new MenuItem();
+        FXResourceBundle.getBundle().put(delete.textProperty(), "delete");
         delete.disableProperty().bind(Bindings.isEmpty(selectedItems));
         delete.setOnAction(e -> {
             cutItems.clear();

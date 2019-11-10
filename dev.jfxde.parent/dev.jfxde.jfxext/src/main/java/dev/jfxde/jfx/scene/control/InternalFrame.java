@@ -1,28 +1,22 @@
 package dev.jfxde.jfx.scene.control;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import dev.jfxde.jfx.animation.DropShadowTransition;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
-import javafx.scene.CacheHint;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.BorderStroke;
@@ -61,8 +55,6 @@ public abstract class InternalFrame extends Region {
     protected Bounds restoreBounds;
     protected Point2D pressDragPoint;
 
-    private Map<StringProperty, String> stringProperties = new HashMap<>();
-
     private Timeline modalTimeline;
 
     protected BooleanProperty active = new BooleanPropertyBase() {
@@ -91,8 +83,7 @@ public abstract class InternalFrame extends Region {
         close.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         close.setFocusTraversable(false);
         close.setTooltip(new Tooltip());
-        close.getTooltip().setText("Close");
-        stringProperties.put(close.getTooltip().textProperty(), "close");
+        FXResourceBundle.getBundle().put(close.getTooltip().textProperty(), "close");
     }
 
     protected void buildLayout(double width, double height) {

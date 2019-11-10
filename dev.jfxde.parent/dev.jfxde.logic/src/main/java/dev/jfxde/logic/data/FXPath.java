@@ -26,7 +26,6 @@ import java.util.stream.StreamSupport;
 
 import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
-import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -49,7 +48,7 @@ public class FXPath implements Comparable<FXPath> {
     private Consumer<List<WatchEvent<?>>> directoryWatcher;
     private List<Function<FXPath, Boolean>> onToBeDeleted = new ArrayList<>();
     private List<Consumer<FXPath>> onDeleted = new ArrayList<>();
-    private List<Consumer<FXPath>> onExternalDeleted = new ArrayList<>();
+    private List<Consumer<FXPath>> onDeletedExternally = new ArrayList<>();
     private List<Consumer<FXPath>> onModified = new ArrayList<>();
 
     private ObjectProperty<Path> path = new SimpleObjectProperty<Path>();
@@ -95,7 +94,7 @@ public class FXPath implements Comparable<FXPath> {
         return onModified;
     }
 
-    public List<Function<FXPath, Boolean>> getOnToBeDeleted() {
+    public List<Function<FXPath, Boolean>> getOnDelete() {
         return onToBeDeleted;
     }
 
@@ -103,8 +102,8 @@ public class FXPath implements Comparable<FXPath> {
         return onDeleted;
     }
 
-    public List<Consumer<FXPath>> getOnExternalDeleted() {
-        return onExternalDeleted;
+    public List<Consumer<FXPath>> getOnDeletedExternally() {
+        return onDeletedExternally;
     }
 
     public static FXPath getRoot() {
@@ -215,15 +214,15 @@ public class FXPath implements Comparable<FXPath> {
         paths.forEach(FXPath::deleted);
     }
 
-    private void deleteExternal() {
-        externalDeleted();
+    private void deleteExternally() {
+        deletedExternally();
         removeFromCache(getPath());
         new ArrayList<>(parents).forEach(p -> p.remove(this));
     }
 
-    private void externalDeleted() {
-        onExternalDeleted.forEach(c -> c.accept(this));
-        paths.forEach(FXPath::externalDeleted);
+    private void deletedExternally() {
+        onDeletedExternally.forEach(c -> c.accept(this));
+        paths.forEach(FXPath::deletedExternally);
     }
 
     public void add(FXPath pd) {
@@ -485,7 +484,7 @@ public class FXPath implements Comparable<FXPath> {
                         var fxpath = getFromCache(contextPath);
 
                         if (fxpath != null) {
-                            fxpath.deleteExternal();
+                            fxpath.deleteExternally();
                         }
                     }
                 }
