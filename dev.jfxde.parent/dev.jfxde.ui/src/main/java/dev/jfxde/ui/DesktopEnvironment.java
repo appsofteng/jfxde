@@ -68,7 +68,7 @@ public class DesktopEnvironment extends Region {
                         .headerText(FXResourceBundle.getBundle(Main.class).getString("appPermissions", appProviderDescriptor.getName()))
                         .contentText(FXResourceBundle.getBundle(Main.class).getString("appPermissionConfirmation"))
                         .expandableContent(DataUtils.getAppPermissionTable(appProviderDescriptor))
-                        .action(() -> Sys.am().allowAndStart(appProviderDescriptor))
+                        .ok(() -> Sys.am().allowAndStart(appProviderDescriptor))
                         .show();
             }
         });

@@ -104,4 +104,21 @@ public final class FXFiles {
         }
         return renamed;
     }
+
+    public static CompletableFuture<Void> save(FXPath path, String string) {
+
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            FXPath.getLock().lock();
+            try {
+                Files.writeString(path.getPath(), string);
+                path.setFileAttributes();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                FXPath.getLock().unlock();
+            }
+        });
+
+        return future;
+    }
 }

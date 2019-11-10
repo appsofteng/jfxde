@@ -1,5 +1,8 @@
 package dev.jfxde.jfx.scene.control;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -12,7 +15,7 @@ public final class AlertBuilder {
 
     private Alert alert;
     private InternalDialog dialog;
-    private Runnable action = () -> {};
+    private Map<ButtonType, Runnable> actions = new HashMap<>();
 
     private AlertBuilder(Node owner, Alert alert) {
        dialog = new InternalDialog(owner, Modality.WINDOW_MODAL);
@@ -50,8 +53,13 @@ public final class AlertBuilder {
         return this;
     }
 
-    public AlertBuilder action(Runnable action) {
-        this.action = action;
+    public AlertBuilder ok(Runnable action) {
+        this.actions.put(ButtonType.OK, action);
+        return this;
+    }
+
+    public AlertBuilder cancel(Runnable action) {
+        this.actions.put(ButtonType.CANCEL, action);
         return this;
     }
 
@@ -71,16 +79,17 @@ public final class AlertBuilder {
         dialog.setTitle(alert.getTitle());
         dialog.setUseComputedSize();
 
-        final Button ok = (Button) dialogPane.lookupButton(ButtonType.OK);
-        ok.setOnAction(e -> {
-            dialog.close();
-            action.run();
-        });
+        for (var buttonType: dialogPane.getButtonTypes()) {
+            Button button = (Button) dialogPane.lookupButton(buttonType);
 
-        final Button cancel = (Button) dialogPane.lookupButton(ButtonType.CANCEL);
-        cancel.setOnAction(e -> {
-            dialog.close();
-        });
+            button.setOnAction(e -> {
+                dialog.close();
+                var action = actions.get(buttonType);
+                if (action != null) {
+                    action.run();
+                }
+            });
+        }
 
         dialog.setContent(dialogPane).show();
     }

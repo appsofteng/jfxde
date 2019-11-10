@@ -1,6 +1,8 @@
 package dev.jfxde.sysapps.editor;
 
 import dev.jfxde.jfx.application.XPlatform;
+import dev.jfxde.jfx.scene.control.AlertBuilder;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -9,10 +11,12 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -30,6 +34,18 @@ public class EditorPane extends StackPane {
     private final FilteredList<Editor> closableEditors = editors.filtered(e -> !e.isEdited());
     private final ObjectProperty<Editor> selectedEditor = new SimpleObjectProperty<>();
     private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
+
+    private ChangeListener<Boolean> fileModifiedListener = (v, o, n) -> {
+        if (n) {
+            XPlatform.runFX(() -> AlertBuilder.get(this, AlertType.CONFIRMATION)
+                    .title(FXResourceBundle.getBundle().getString​("confirmation"))
+                    .headerText(FXResourceBundle.getBundle().getString​("fileModified"))
+                    .contentText(FXResourceBundle.getBundle().getString​("reloadFile"))
+                    .ok(() -> getSelectedEditor().load())
+                    .cancel(() -> getSelectedEditor().keep())
+                    .show());
+        }
+    };
 
     public EditorPane() {
         tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
@@ -70,9 +86,15 @@ public class EditorPane extends StackPane {
         });
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
+            if (getSelectedEditor() != null) {
+                getSelectedEditor().modifiedProperty().removeListener(fileModifiedListener);
+            }
+
             if (n != null) {
                 Editor editor = (Editor) n.getContent();
                 selectedEditor.set(editor);
+                getSelectedEditor().modifiedProperty().addListener(fileModifiedListener);
+                fileModifiedListener.changed(null, null, getSelectedEditor().isModified());
             } else {
                 selectedEditor.set(null);
             }

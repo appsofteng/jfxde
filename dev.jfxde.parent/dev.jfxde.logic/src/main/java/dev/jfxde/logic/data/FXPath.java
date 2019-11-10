@@ -79,7 +79,7 @@ public class FXPath implements Comparable<FXPath> {
         Path fileName = path.getFileName();
         setName(fileName == null ? path.toString() : fileName.toString());
 
-        basicFileAttributes = new FXBasicFileAttributes(this);
+        setFileAttributes();
     }
 
     public static void setWatchServiceRegister(WatchServiceRegister watchServiceRegister) {
@@ -474,7 +474,7 @@ public class FXPath implements Comparable<FXPath> {
                         try {
                             if (fxpath != null
                                     && fxpath.basicFileAttributes.getLastModifiedTime() != Files.getLastModifiedTime(contextPath).toMillis()) {
-                                fxpath.basicFileAttributes = new FXBasicFileAttributes(fxpath);
+                                fxpath.setFileAttributes();
                                 fxpath.onModified.forEach(c -> c.accept(fxpath));
                             }
                         } catch (IOException ex) {
@@ -496,6 +496,10 @@ public class FXPath implements Comparable<FXPath> {
 
     public FXBasicFileAttributes getBasicFileAttributes() {
         return basicFileAttributes;
+    }
+
+    public void setFileAttributes() {
+        basicFileAttributes = new FXBasicFileAttributes(this);
     }
 
     @Override

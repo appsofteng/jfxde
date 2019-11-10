@@ -227,7 +227,7 @@ public class FileTreeBox extends VBox {
             var alert = AlertBuilder.get(this, AlertType.CONFIRMATION)
                     .title(FXResourceBundle.getBundle().getString​("confirmation"))
                     .headerText(FXResourceBundle.getBundle().getString​("areYouSureDeleteSelectedItems"))
-                    .action(() -> FXFiles.delete(pds));
+                    .ok(() -> FXFiles.delete(pds));
 
             if (!notToBeDeleted.isEmpty()) {
                 alert.contentText(FXResourceBundle.getBundle().getString​("itemsBeingModified"))
