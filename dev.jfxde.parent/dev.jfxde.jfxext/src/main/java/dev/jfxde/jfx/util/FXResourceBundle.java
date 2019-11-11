@@ -56,7 +56,7 @@ public class FXResourceBundle {
             if (n != null) {
                 stringProperties.keySet().forEach(k -> {
                     var s = stringProperties.get(k);
-                    k.set(getString​(s.get(0).toString(), (Object[])s.get(1)));
+                    k.set(getString​(s.get(0).toString(), (Object[]) s.get(1)));
                 });
             }
         });
@@ -78,7 +78,7 @@ public class FXResourceBundle {
         return getBundle​(caller, getBundle());
     }
 
-    private static FXResourceBundle getBundle​(Class<?> caller, FXResourceBundle parent) {
+    public static FXResourceBundle getBundle​(Class<?> caller, FXResourceBundle parent) {
         String baseName = caller.getPackageName() + "." + BUNDLE_DIR_NAME + "." + BUNDLE_FILE_NAME;
         FXResourceBundle bundle = cache.computeIfAbsent(baseName, k -> new FXResourceBundle(caller, baseName, parent));
 
@@ -88,11 +88,22 @@ public class FXResourceBundle {
     public ResourceBundle getResourceBundle() {
 
         ResourceBundle bundle = AccessController.doPrivileged((PrivilegedAction<ResourceBundle>) () -> {
-            if (module == null) {
-                return ResourceBundle.getBundle(baseName, locale.get());
-            } else {
-                return ResourceBundle.getBundle(baseName, locale.get(), module);
+            ResourceBundle rbundle = null;
+            try {
+                if (module == null) {
+                    rbundle = ResourceBundle.getBundle(baseName, locale.get());
+                } else {
+                    rbundle = ResourceBundle.getBundle(baseName, locale.get(), module);
+                }
+            } catch (MissingResourceException e) {
+                if (parent != null) {
+                    rbundle = parent.getResourceBundle();
+                } else {
+                    LOGGER.log(Level.INFO, e.getMessage(), e);
+                }
             }
+
+            return rbundle;
         });
 
         return bundle;

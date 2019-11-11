@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,8 +60,18 @@ public final class ResourceManager extends Manager implements ResourceController
     }
 
     private FXResourceBundle getBundle() {
+        FXResourceBundle resourceBundle = null;
+        FXResourceBundle parentBundle = null;
 
-        FXResourceBundle resourceBundle = FXResourceBundle.getBundle​(caller);
+        if (parent != null) {
+            parentBundle = parent.getBundle();
+        }
+
+        if (parentBundle == null) {
+            resourceBundle = FXResourceBundle.getBundle​(caller);
+        } else {
+           resourceBundle = FXResourceBundle.getBundle​(caller, parentBundle);
+        }
 
         return resourceBundle;
     }
