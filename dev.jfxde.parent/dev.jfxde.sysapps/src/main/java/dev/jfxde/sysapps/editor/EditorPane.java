@@ -35,18 +35,6 @@ public class EditorPane extends StackPane {
     private final ObjectProperty<Editor> selectedEditor = new SimpleObjectProperty<>();
     private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
 
-    private ChangeListener<Boolean> fileModifiedListener = (v, o, n) -> {
-        if (n) {
-            XPlatform.runFX(() -> AlertBuilder.get(this, AlertType.CONFIRMATION)
-                    .title(FXResourceBundle.getBundle().getString​("confirmation"))
-                    .headerText(FXResourceBundle.getBundle().getString​("fileModified"))
-                    .contentText(FXResourceBundle.getBundle().getString​("reloadFile"))
-                    .ok(() -> getSelectedEditor().load())
-                    .cancel(() -> getSelectedEditor().keep())
-                    .show());
-        }
-    };
-
     public EditorPane() {
         tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
         tabPane.setTabDragPolicy(TabDragPolicy.REORDER);
@@ -86,15 +74,10 @@ public class EditorPane extends StackPane {
         });
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
-            if (getSelectedEditor() != null) {
-                getSelectedEditor().modifiedProperty().removeListener(fileModifiedListener);
-            }
 
             if (n != null) {
                 Editor editor = (Editor) n.getContent();
                 selectedEditor.set(editor);
-                getSelectedEditor().modifiedProperty().addListener(fileModifiedListener);
-                fileModifiedListener.changed(null, null, getSelectedEditor().isModified());
             } else {
                 selectedEditor.set(null);
             }
@@ -136,7 +119,9 @@ public class EditorPane extends StackPane {
         Editor editor = new Editor(path);
         tab.setContent(editor);
 
-        tab.closableProperty().bind(editor.editedProperty().not());
+        tab.closableProperty().bind(editor.editedProperty().not()
+                .and(editor.modifiedProperty().not()
+                        .and(editor.deletedExternallyProperty().not())));
         Label label = new Label();
         label.textProperty().bind(editor.tabTitleProperty());
         tab.setGraphic(label);

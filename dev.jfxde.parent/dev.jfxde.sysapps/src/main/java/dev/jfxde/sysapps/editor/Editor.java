@@ -23,19 +23,18 @@ public class Editor extends StackPane {
 
     private FXPath path;
     private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
+    private final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
     private final ReadOnlyBooleanWrapper deleted = new ReadOnlyBooleanWrapper();
+    private final ReadOnlyBooleanWrapper deletedExternally = new ReadOnlyBooleanWrapper();
     private final ReadOnlyStringWrapper title = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper tabTitle = new ReadOnlyStringWrapper();
-    private final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
     private final CodeArea area = new CodeArea();
 
     public Editor(FXPath path) {
         this.path = path;
 
         title.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
-        tabTitle.bind(Bindings.when(edited)
-                .then(Bindings.createStringBinding(() -> "*" + path.getName(), path.nameProperty()))
-                .otherwise(Bindings.createStringBinding(() -> path.getName(), path.nameProperty())));
+        tabTitle.bind(Bindings.createStringBinding(() -> getTabString(), path.nameProperty(), edited, modified, deletedExternally));
 
         area.setParagraphGraphicFactory(LineNumberFactory.get(area));
         area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
@@ -55,22 +54,40 @@ public class Editor extends StackPane {
 
     private void setListeners() {
         path.getOnModified().add(p -> {
-            setModified(true);
+            XPlatform.runFX(() -> setModified(true));
         });
 
         path.getOnDelete().add(p -> {
-            System.out.println("to be deleted");
             return !isEdited();
         });
 
         path.getOnDeleted().add(p -> {
-            System.out.println("deleted");
             setDeleted(true);
         });
 
         path.getOnDeletedExternally().add(p -> {
-            System.out.println("deleted externally");
+            XPlatform.runFX(() ->setDeletedExternally(true));
         });
+    }
+
+    private String getTabString() {
+        String str = "";
+
+        if (isEdited()) {
+            str += "*";
+        }
+
+        if (isModified()) {
+            str += "!";
+        }
+
+        if (isDeletedExternally()) {
+            str += "?";
+        }
+
+        str += path.getName();
+
+        return str;
     }
 
     public FXPath getPath() {
@@ -121,27 +138,35 @@ public class Editor extends StackPane {
         return deleted.getReadOnlyProperty();
     }
 
+    private void setDeletedExternally(boolean value) {
+        deletedExternally.set(value);
+    }
+
+    private boolean isDeletedExternally() {
+        return deletedExternally.get();
+    }
+
+    ReadOnlyBooleanProperty deletedExternallyProperty() {
+        return deletedExternally.getReadOnlyProperty();
+    }
+
     void load() {
+        setEdited(false);
         setModified(false);
         area.clear();
         CompletableFuture.supplyAsync(() -> LU.of(() -> Files.readString(path.getPath())))
-        .thenAccept(s -> XPlatform.runFX(() -> {
-            area.replaceText(0, 0, s);
-            area.getUndoManager().forgetHistory();
-            area.requestFocus();
-            area.moveTo(0);
-            area.requestFollowCaret();
-        }));
-    }
-
-    void keep() {
-        setModified(false);
-        setEdited(true);
+                .thenAccept(s -> XPlatform.runFX(() -> {
+                    area.replaceText(0, 0, s);
+                    area.getUndoManager().forgetHistory();
+                    area.requestFocus();
+                    area.moveTo(0);
+                    area.requestFollowCaret();
+                }));
     }
 
     void save() {
         if (isEdited()) {
-            FXFiles.save(path, area.getText()).thenRun(() -> XPlatform.runFX(() -> setEdited(false)));
+            FXFiles.save(path, area.getText()).thenRun(() -> XPlatform.runFX(() -> { setEdited(false); setModified(false);}));
         }
     }
 
