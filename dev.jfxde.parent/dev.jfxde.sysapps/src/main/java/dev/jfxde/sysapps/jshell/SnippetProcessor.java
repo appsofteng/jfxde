@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import dev.jfxde.jfxext.control.ConsoleModel;
-import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import dev.jfxde.fxmisc.richtext.TextStyleSpans;
+import dev.jfxde.jfx.scene.control.ConsoleModel;
 import jdk.jshell.DeclarationSnippet;
 import jdk.jshell.EvalException;
 import jdk.jshell.Snippet;

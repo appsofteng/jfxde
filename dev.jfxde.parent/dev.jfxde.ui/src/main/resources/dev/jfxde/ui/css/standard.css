@@ -20,6 +20,8 @@
 .root {
 
 	-jd-base-color: black;
+	-jd-base-color-alpha2: rgba(0%, 0%, 0%, 0.2);
+	-jd-base-color-alpha3: rgba(0%, 0%, 0%, 0.3);
 	-jd-base-color-alpha4: rgba(0%, 0%, 0%, 0.4);
 	-jd-base-color-alpha5: rgba(0%, 0%, 0%, 0.5);
 	-jd-base-color-alpha6: rgba(0%, 0%, 0%, 0.6);
@@ -241,8 +243,8 @@
 }
 
 .jd-frame:full .jd-frame-payload {
-	-fx-background-color: #fff;
-	-fx-border-color: #fff;
+	-fx-background-color: -jd-active-background-color;
+	-fx-border-color: -jd-active-background-color;
 	-fx-border-width: 0.0;
 	-fx-background-radius: 0.0;
 	-fx-border-radius: 0.0;

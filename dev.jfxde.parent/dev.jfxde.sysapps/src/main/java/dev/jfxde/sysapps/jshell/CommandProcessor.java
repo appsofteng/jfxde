@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import dev.jfxde.jfxext.control.ConsoleModel;
+import dev.jfxde.jfx.scene.control.ConsoleModel;
 import dev.jfxde.sysapps.jshell.commands.Commands;
 import dev.jfxde.sysapps.jshell.commands.DropCommand;
 import dev.jfxde.sysapps.jshell.commands.EnvCommand;

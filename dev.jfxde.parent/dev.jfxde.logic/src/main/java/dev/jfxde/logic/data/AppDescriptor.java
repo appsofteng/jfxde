@@ -4,6 +4,7 @@ import dev.jfxde.api.App;
 import dev.jfxde.api.AppContext;
 import dev.jfxde.api.AppScope;
 import dev.jfxde.data.entity.Window;
+import dev.jfxde.data.entity.WindowContent;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -13,7 +14,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Node;
 
-public class AppDescriptor implements Comparable<AppDescriptor> {
+public class AppDescriptor implements Comparable<AppDescriptor>, WindowContent {
 
     private final AppProviderDescriptor appProviderDescriptor;
     private final App app;
@@ -66,6 +67,11 @@ public class AppDescriptor implements Comparable<AppDescriptor> {
 
 	public boolean isSingleton() {
 		return getAppProviderDescriptor().getAppManifest().scope() == AppScope.SINGLETON;
+	}
+
+	@Override
+	public boolean isClosable() {
+	    return app.isStoppable();
 	}
 
 	@Override

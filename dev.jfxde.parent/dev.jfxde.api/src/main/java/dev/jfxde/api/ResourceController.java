@@ -22,8 +22,6 @@ public interface ResourceController {
 
     StringBinding getStringBinding(ReadOnlyObjectProperty<?> key, Object... args);
 
-    String getCss(String name);
-
     Map<String, String> getStrings(Set<String> keys);
 
     ResourceBundle getStringBundle();

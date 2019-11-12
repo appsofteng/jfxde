@@ -3,28 +3,26 @@ package dev.jfxde.logic;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.file.ClosedWatchServiceException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
 
+import dev.jfxde.j.nio.file.WatchServiceRegister;
 import javafx.application.Platform;
 
 public class FileLocker {
 
     private FileChannel lockFileChannel;
     private FileLock fileLock;
-    private WatchService watcher;
     private final Path lockFilePath;
     private final Path messageFilePath;
+    private Path messageDirPath;
 
     public FileLocker(Path lockFilePath, Path messagePath) {
         this.lockFilePath = lockFilePath;
         this.messageFilePath = messagePath;
+        this.messageDirPath = messageFilePath.getParent();
     }
 
     void lock() throws IOException {
@@ -46,48 +44,22 @@ public class FileLocker {
         }
     }
 
-    void watch(Runnable messageHandler) throws IOException {
-        watcher = FileSystems.getDefault().newWatchService();
+    void watch(Runnable messageHandler, WatchServiceRegister watchServiceRegister) throws IOException {
 
-        Path messageDirPath = messageFilePath.getParent();
-        WatchKey regKey = messageDirPath.register(watcher, StandardWatchEventKinds.ENTRY_CREATE);
-
-        Thread thread = new Thread(() -> {
-            while (true) {
-                WatchKey key = null;
+        messageDirPath = watchServiceRegister.register(messageDirPath, events -> {
+            if (events.stream().anyMatch(e -> e.kind() == StandardWatchEventKinds.ENTRY_CREATE &&
+                    messageDirPath.resolve(((Path) e.context())).equals(messageFilePath))) {
                 try {
-                	key = watcher.take();
-                } catch (InterruptedException|ClosedWatchServiceException e) {
-                    break;
+                    Files.deleteIfExists(messageFilePath);
+                } catch (IOException e) {
                 }
 
-                if (key != regKey) {
-                    continue;
-                }
-
-                if (key.pollEvents().stream().anyMatch(e -> e.kind() == StandardWatchEventKinds.ENTRY_CREATE &&
-                        messageDirPath.resolve(((Path) e.context())).equals(messageFilePath))) {
-                    try {
-                        Files.deleteIfExists(messageFilePath);
-                    } catch (IOException e) {
-                    }
-
-                    Platform.runLater(messageHandler);
-                }
-
-                boolean valid = key.reset();
-                if (!valid) {
-                    break;
-                }
+                Platform.runLater(messageHandler);
             }
         });
-
-        thread.setDaemon(true);
-        thread.start();
     }
 
     void stop() throws IOException {
-        watcher.close();
         fileLock.release();
         lockFileChannel.close();
         Files.delete(lockFilePath);

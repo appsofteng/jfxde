@@ -20,17 +20,26 @@ module dev.jfxde.jfxext {
 
     requires com.github.javaparser.core;
 
-    exports dev.jfxde.jfxext.animation to dev.jfxde.ui;
-    exports dev.jfxde.jfxext.control to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps, dev.jfxde.apps;
-    exports dev.jfxde.jfxext.control.cell to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
-    exports dev.jfxde.jfxext.descriptors to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
-    exports dev.jfxde.jfxext.richtextfx.features to dev.jfxde.sysapps;
-    exports dev.jfxde.jfxext.richtextfx to dev.jfxde.sysapps, dev.jfxde.logic;
-    exports dev.jfxde.jfxext.util to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
-    exports dev.jfxde.jfxext.concurrent to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
-    exports dev.jfxde.jfxext.util.prefs to dev.jfxde.logic;
-    exports dev.jfxde.jfxext.nio.file to dev.jfxde.apps;
 
-    opens dev.jfxde.jfxext.util.prefs to java.prefs;
-    opens dev.jfxde.jfxext.control to javafx.graphics;
+    exports dev.jfxde.fxmisc.richtext to dev.jfxde.sysapps, dev.jfxde.logic;
+
+    exports dev.jfxde.j.nio.file to dev.jfxde.logic, dev.jfxde.sysapps;
+    exports dev.jfxde.j.util to dev.jfxde.logic, dev.jfxde.sysapps;
+    exports dev.jfxde.j.util.prefs to dev.jfxde.logic;
+
+    exports dev.jfxde.jfx.animation to dev.jfxde.ui;
+    exports dev.jfxde.jfx.application to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
+    exports dev.jfxde.jfx.concurrent to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
+    exports dev.jfxde.jfx.embed.swing to dev.jfxde.ui, dev.jfxde.sysapps;
+    exports dev.jfxde.jfx.scene.control to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps, dev.jfxde.apps;
+    exports dev.jfxde.jfx.scene.control.cell to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
+    exports dev.jfxde.jfx.scene.layout to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
+    exports dev.jfxde.jfx.scene.web to dev.jfxde.apps;
+    exports dev.jfxde.jfx.util to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
+    exports dev.jfxde.jfx.util.converter to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
+
+    exports dev.jfxde.jx.tools to dev.jfxde.sysapps;
+
+    opens dev.jfxde.j.util.prefs to java.prefs;
+    opens dev.jfxde.jfx.scene.control to javafx.graphics;
 }

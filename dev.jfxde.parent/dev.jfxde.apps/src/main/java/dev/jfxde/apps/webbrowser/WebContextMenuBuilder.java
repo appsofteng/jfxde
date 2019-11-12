@@ -1,6 +1,7 @@
 package dev.jfxde.apps.webbrowser;
 
-import dev.jfxde.jfxext.util.JSUtils;
+import dev.jfxde.jfx.scene.web.JSUtils;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
@@ -72,11 +73,11 @@ public class WebContextMenuBuilder {
 		String url = (String) jsobject.getMember("href");
 
 		MenuItem linkInWindow = new MenuItem();
-		linkInWindow.textProperty().bind(view.getContext().rc().getStringBinding("linkInNewTab"));
+		FXResourceBundle.getBundle().put(linkInWindow.textProperty(), "linkInNewTab");
 		linkInWindow.setOnAction(e -> view.setLinkInNewTab(url));
 
 		MenuItem copyLink = new MenuItem();
-		copyLink.textProperty().bind(view.getContext().rc().getStringBinding("linkCopy"));
+		FXResourceBundle.getBundle().put(copyLink.textProperty(), "linkCopy");
 		copyLink.setOnAction(e -> {
 
 			Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -90,7 +91,7 @@ public class WebContextMenuBuilder {
 
     private void addCopyContextMenu(ContextMenu menu, String selectedText) {
         MenuItem copy = new MenuItem();
-        copy.textProperty().bind(view.getContext().rc().getStringBinding("copy"));
+        FXResourceBundle.getBundle().put(copy.textProperty(), "copy");
         copy.setOnAction(e -> {
             Clipboard clipboard = Clipboard.getSystemClipboard();
             ClipboardContent content = new ClipboardContent();
@@ -100,7 +101,7 @@ public class WebContextMenuBuilder {
         });
 
         MenuItem searchFor = new MenuItem();
-        searchFor.setText(view.getContext().rc().getStringMaxWidth("searchFor", selectedText, 15));
+        searchFor.setText(FXResourceBundle.getBundle().getStringMaxWidth("searchFor", selectedText, 15));
         searchFor.setOnAction(e -> view.setLinkInNewTab(view.getSearchEngine().getQueryUrl(selectedText)));
 
         menu.getItems().addAll(copy, searchFor);

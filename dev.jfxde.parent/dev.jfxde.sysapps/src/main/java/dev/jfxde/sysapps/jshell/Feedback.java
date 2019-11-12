@@ -3,8 +3,8 @@ package dev.jfxde.sysapps.jshell;
 import java.util.ArrayList;
 import java.util.List;
 
-import dev.jfxde.jfxext.control.ConsoleModel;
-import dev.jfxde.jfxext.richtextfx.TextStyleSpans;
+import dev.jfxde.fxmisc.richtext.TextStyleSpans;
+import dev.jfxde.jfx.scene.control.ConsoleModel;
 
 public class Feedback {
 

@@ -1,7 +1,7 @@
 package dev.jfxde.sysapps.preferences;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.control.LazyTreeItem;
+import dev.jfxde.jfx.scene.control.LazyTreeItem;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.Preference;
 import javafx.application.Platform;
@@ -19,9 +19,7 @@ public class PreferencesContent extends StackPane {
         // sometimes. When run later
         // the exception does not appear.
         Platform.runLater(() -> {
-            LazyTreeItem<Preference> root = new LazyTreeItem<>(new Preference())
-                    .leaf(i -> i.getValue().isLeaf())
-                    .childrenGetter(i -> Sys.pm().getPreferences(i.getValue(), p -> new LazyTreeItem<>(p, i), c -> i.add(c)));
+            LazyTreeItem<Preference> root = new LazyTreeItem<>(new Preference(), Preference::isLeaf, i -> Sys.pm().getPreferences(i));
             TreeTableView<Preference> table = new TreeTableView<>(root);
             table.setShowRoot(false);
 

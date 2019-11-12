@@ -1,13 +1,13 @@
 package dev.jfxde.logic;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
-import dev.jfxde.jfxext.util.prefs.FilePreferencesFactory;
+import dev.jfxde.j.util.prefs.FilePreferencesFactory;
 import dev.jfxde.logic.data.Preference;
 import dev.jfxde.logic.data.PropertyDescriptor;
 import javafx.collections.FXCollections;
@@ -24,10 +24,10 @@ public final class PreferencesManager extends Manager {
     @Override
     void init() throws Exception {
 
-        System.setProperty("dev.jfxde.jfxext.util.prefs.defaultSystemRoot", FileManager.DEFAULT_PREFS_FILE.toString());
-        System.setProperty("dev.jfxde.jfxext.util.prefs.systemRoot", FileManager.SYSTEM_PREFS_FILE.toString());
-        System.setProperty("dev.jfxde.jfxext.util.prefs.defaultUserRoot", FileManager.DEFAULT_PREFS_FILE.toString());
-        System.setProperty("dev.jfxde.jfxext.util.prefs.userRoot", FileManager.USER_PREFS_FILE.toString());
+        System.setProperty("dev.jfxde.j.util.prefs.defaultSystemRoot", FileManager.DEFAULT_PREFS_FILE.toString());
+        System.setProperty("dev.jfxde.j.util.prefs.systemRoot", FileManager.SYSTEM_PREFS_FILE.toString());
+        System.setProperty("dev.jfxde.j.util.prefs.defaultUserRoot", FileManager.DEFAULT_PREFS_FILE.toString());
+        System.setProperty("dev.jfxde.j.util.prefs.userRoot", FileManager.USER_PREFS_FILE.toString());
         System.setProperty("java.util.prefs.PreferencesFactory", FilePreferencesFactory.class.getName());
 
         ResourceManager.setLocale(getLocale());
@@ -57,35 +57,42 @@ public final class PreferencesManager extends Manager {
         return properties;
     }
 
-    public <T> void getPreferences(Preference parent, Function<Preference, T> mapper, Consumer<T> consumer) {
+    public List<Preference> getPreferences(Preference parent) {
+        List<Preference> preferences = new ArrayList<>();
 
         if (parent.getKey() == null) {
-            consumer.accept(mapper.apply(new Preference("system", false)));
-            consumer.accept(mapper.apply(new Preference("user", false)));
+            preferences.add(new Preference("system", false));
+            preferences.add(new Preference("user", false));
         } else if ("system".equals(parent.getKey())) {
-            getChildPreferences(Preferences.systemRoot(), mapper, consumer);
+            preferences = getChildPreferences(Preferences.systemRoot());
         } else if ("user".equals(parent.getKey())) {
-            getChildPreferences(Preferences.userRoot(), mapper, consumer);
+            preferences = getChildPreferences(Preferences.userRoot());
         } else {
             Preferences child = parent.getPreferences().node(parent.getKey());
-            getChildPreferences(child, mapper, consumer);
+            preferences = getChildPreferences(child);
         }
+
+        return preferences;
     }
 
-    private <T> void getChildPreferences(Preferences child, Function<Preference, T> mapper, Consumer<T> consumer) {
+    private List<Preference> getChildPreferences(Preferences child) {
+        List<Preference> preferences = new ArrayList<>();
 
         try {
             String[] chlidrenNames = child.childrenNames();
-
-            Arrays.stream(chlidrenNames).map(n -> mapper.apply(new Preference(child, n, false)))
-                    .forEach(consumer);
+            preferences.addAll(
+                    Arrays.stream(chlidrenNames).map(n -> new Preference(child, n, false))
+                            .collect(Collectors.toList()));
             String[] keys = child.keys();
 
-            Arrays.stream(keys).map(n -> mapper.apply(new Preference(child, n, true)))
-                    .forEach(consumer);
+            preferences.addAll(
+                    Arrays.stream(keys).map(n -> new Preference(child, n, true))
+                            .collect(Collectors.toList()));
 
         } catch (BackingStoreException e) {
             new RuntimeException(e);
         }
+
+        return preferences;
     }
 }

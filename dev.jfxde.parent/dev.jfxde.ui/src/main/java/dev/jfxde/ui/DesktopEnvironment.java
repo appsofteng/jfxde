@@ -4,6 +4,8 @@ import dev.jfxde.data.entity.Desktop;
 import dev.jfxde.data.entity.Window;
 import dev.jfxde.data.entity.Window.State;
 import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfx.scene.control.AlertBuilder;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.Sys;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.HPos;
@@ -22,6 +24,7 @@ public class DesktopEnvironment extends Region {
     private MenuBar menuBar = new MenuBar();
     private ControlBar controlBar = new ControlBar();
     private DesktopPane activeDesktopPane;
+    private ModalPane modalPane = new ModalPane(this);
 
     static final Duration SHOW_HIDE_DURATION = Duration.millis(800);
     private static final double DESKTOP_EXITED_Y_DIFF = 30;
@@ -29,7 +32,7 @@ public class DesktopEnvironment extends Region {
     private double desktopStackExitedY;
 
     public DesktopEnvironment() {
-        getChildren().addAll(desktopStack, menuBar, controlBar);
+        getChildren().addAll(desktopStack, menuBar, controlBar, modalPane);
         setThemeColor(Sys.pm().getThemeColor());
         getStyleClass().add("jd-desktop-environment");
         setDesktopHandlers();
@@ -40,16 +43,28 @@ public class DesktopEnvironment extends Region {
     public void setThemeColor(String color) {
 
         String style = "-jd-base-color: " + color + ";";
-        for (int i = 4; i < 8; i++) {
+        for (int i = 2; i < 8; i++) {
             style += "-jd-base-color-alpha" + i + ": " + Color.web(color, i / 10.0).toString().replace("0x", "#") + ";";
         }
 
         setStyle(style);
     }
 
+    void setFreeze(boolean value) {
+        desktopStack.setDisable(value);
+        menuBar.setDisable(value);
+        controlBar.setDisable(value);
+        modalPane.setVisible(value);
+    }
+
+    public ModalPane getModalPane() {
+        return modalPane;
+    }
+
     @Override
     protected void layoutChildren() {
-        layoutInArea(desktopStack, 0, 0, getWidth(), getHeight(), 0, new Insets(2, 2, 2, 2), HPos.CENTER, VPos.CENTER);
+        layoutInArea(modalPane, 0, 0, getWidth(), getHeight(), 0, new Insets(0), HPos.CENTER, VPos.CENTER);
+        layoutInArea(desktopStack, 0, 0, getWidth(), getHeight(), 0, new Insets(2, 2, 2, 3), HPos.CENTER, VPos.CENTER);
         layoutInArea(controlBar, -controlBar.getWidth() - 2, 0, 250, getHeight(), 0, new Insets(1, 0, 1, 2), HPos.LEFT,
                 VPos.TOP);
         double menuBarWidth = menuBar.isDefaultMenuBar() ? menuBar.getWidth() : getWidth();
@@ -61,12 +76,12 @@ public class DesktopEnvironment extends Region {
     private void setDialogListener() {
         Sys.am().toBeStartedApp().addListener((v, o, appProviderDescriptor) -> {
             if (appProviderDescriptor != null) {
-                AlertBuilder.get(activeDesktopPane.getModalPane(), AlertType.CONFIRMATION)
-                        .title(Sys.rm().getString("confirmation"))
-                        .headerText(Sys.rm().getString("appPermissions", appProviderDescriptor.getName()))
-                        .contentText(Sys.rm().getString("appPermissionConfirmation"))
+                AlertBuilder.get(modalPane, AlertType.CONFIRMATION)
+                        .title(FXResourceBundle.getBundle().getString​("confirmation"))
+                        .headerText(FXResourceBundle.getBundle(Main.class).getString("appPermissions", appProviderDescriptor.getName()))
+                        .contentText(FXResourceBundle.getBundle(Main.class).getString("appPermissionConfirmation"))
                         .expandableContent(DataUtils.getAppPermissionTable(appProviderDescriptor))
-                        .action(() -> Sys.am().allowAndStart(appProviderDescriptor))
+                        .ok(() -> Sys.am().allowAndStart(appProviderDescriptor))
                         .show();
             }
         });
@@ -129,8 +144,6 @@ public class DesktopEnvironment extends Region {
             activeDesktopPane = new DesktopPane(activeDesktop);
             desktopStack.getChildren().add(activeDesktopPane);
         }
-
-        controlBar.bindDesktop(activeDesktopPane);
 
         activeDesktopPane.toFront();
     }

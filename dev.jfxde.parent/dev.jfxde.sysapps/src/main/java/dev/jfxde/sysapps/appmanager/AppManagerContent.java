@@ -4,7 +4,8 @@ import java.util.List;
 
 import dev.jfxde.api.App;
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.util.LayoutUtils;
+import dev.jfxde.jfx.scene.layout.LayoutUtils;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.AppDescriptor;
 import dev.jfxde.logic.data.AppProviderDescriptor;
@@ -52,7 +53,7 @@ public class AppManagerContent extends TabPane {
     @SuppressWarnings("unchecked")
     private Tab createAppTab() {
         Tab tab = new Tab();
-        tab.textProperty().bind(context.rc().getStringBinding("apps"));
+        tab.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("apps"));
         tab.setClosable(false);
 
         appProviderDescriptorTable = new TableView<>();
@@ -62,28 +63,28 @@ public class AppManagerContent extends TabPane {
         appProviderDescriptorTable.setItems(Sys.am().getAppProviderDescriptors());
 
         TableColumn<AppProviderDescriptor, Label> nameColumn = new TableColumn<>();
-        nameColumn.textProperty().bind(context.rc().getStringBinding("name"));
+        nameColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("name"));
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("iconName"));
 
         TableColumn<AppProviderDescriptor, String> fqnColumn = new TableColumn<>();
-        fqnColumn.textProperty().bind(context.rc().getStringBinding("fqn"));
+        fqnColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("fqn"));
         fqnColumn.setCellValueFactory(new PropertyValueFactory<>("fqn"));
 
         TableColumn<AppProviderDescriptor, String> versionColumn = new TableColumn<>();
-        versionColumn.textProperty().bind(context.rc().getStringBinding("version"));
+        versionColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("version"));
         versionColumn.setCellValueFactory(new PropertyValueFactory<>("version"));
 
         TableColumn<AppProviderDescriptor, String> vendorColumn = new TableColumn<>();
-        vendorColumn.textProperty().bind(context.rc().getStringBinding("vendor"));
+        vendorColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("vendor"));
         vendorColumn.setCellValueFactory(new PropertyValueFactory<>("vendor"));
 
         TableColumn<AppProviderDescriptor, String> websiteColumn = new TableColumn<>();
-        websiteColumn.textProperty().bind(context.rc().getStringBinding("website"));
+        websiteColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("website"));
         websiteColumn.setCellValueFactory(new PropertyValueFactory<>("website"));
         websiteColumn.setCellFactory(HyperlinkTableCell.forTableColumn(url -> context.ac().start(url)));
 
         TableColumn<AppProviderDescriptor, Boolean> allowedColumn = new TableColumn<>();
-        allowedColumn.textProperty().bind(context.rc().getStringBinding("allowed"));
+        allowedColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("allowed"));
         allowedColumn.setCellValueFactory(new PropertyValueFactory<>("allowed"));
         allowedColumn.setCellFactory(c -> {
             CheckBoxTableCell<AppProviderDescriptor, Boolean> cb = new CheckBoxTableCell<>();
@@ -103,22 +104,22 @@ public class AppManagerContent extends TabPane {
     @SuppressWarnings("unchecked")
     private Tab createPermissionTab() {
         Tab tab = new Tab();
-        tab.textProperty().bind(context.rc().getStringBinding("permissions"));
+        tab.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("permissions"));
         tab.setClosable(false);
 
         TableView<PermissionDescriptor> table = new TableView<>();
         tab.setContent(table);
 
         TableColumn<PermissionDescriptor, String> typeColumn = new TableColumn<>();
-        typeColumn.textProperty().bind(context.rc().getStringBinding("type"));
+        typeColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("type"));
         typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
 
         TableColumn<PermissionDescriptor, String> targetColumn = new TableColumn<>();
-        targetColumn.textProperty().bind(context.rc().getStringBinding("target"));
+        targetColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("target"));
         targetColumn.setCellValueFactory(new PropertyValueFactory<>("target"));
 
         TableColumn<PermissionDescriptor, String> actionsColumn = new TableColumn<>();
-        actionsColumn.textProperty().bind(context.rc().getStringBinding("actions"));
+        actionsColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("actions"));
         actionsColumn.setCellValueFactory(new PropertyValueFactory<>("actions"));
 
         table.getColumns().addAll(typeColumn, targetColumn, actionsColumn);
@@ -132,22 +133,22 @@ public class AppManagerContent extends TabPane {
     @SuppressWarnings("unchecked")
     private Tab createStartedAppTab() {
         Tab tab = new Tab();
-        tab.textProperty().bind(context.rc().getStringBinding("started"));
+        tab.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("started"));
         tab.setClosable(false);
 
         TableView<AppDescriptor> table = new TableView<>();
         table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         TableColumn<AppDescriptor, String> nameColumn = new TableColumn<>();
-        nameColumn.textProperty().bind(context.rc().getStringBinding("name"));
+        nameColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("name"));
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         TableColumn<AppDescriptor, String> titleColumn = new TableColumn<>();
-        titleColumn.textProperty().bind(context.rc().getStringBinding("title"));
+        titleColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("title"));
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("display"));
 
         TableColumn<AppDescriptor, Integer> desktopColumn = new TableColumn<>();
-        desktopColumn.textProperty().bind(context.rc().getStringBinding("desktop"));
+        desktopColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("desktop"));
         desktopColumn.setCellValueFactory(c -> c.getValue().getWindow().getDesktop().idProperty().asObject());
 
         table.getColumns().addAll(nameColumn, titleColumn, desktopColumn);
@@ -156,7 +157,7 @@ public class AppManagerContent extends TabPane {
 
         Button activate = new Button();
         activate.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        activate.textProperty().bind(context.rc().getStringBinding("activate"));
+        activate.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("activate"));
         activate.disableProperty().bind(Bindings.createBooleanBinding(() -> table.getSelectionModel().getSelectedItems().size() != 1
                 || table.getSelectionModel().getSelectedItem().getApp() == app, table.getSelectionModel().getSelectedItems()));
 
@@ -168,8 +169,9 @@ public class AppManagerContent extends TabPane {
 
         Button stop = new Button();
         stop.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        stop.textProperty().bind(context.rc().getStringBinding("stop"));
-        stop.disableProperty().bind(Bindings.isEmpty(table.getSelectionModel().getSelectedItems()));
+        stop.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("stop"));
+        stop.disableProperty().bind(Bindings.isEmpty(table.getSelectionModel().getSelectedItems())
+                .or(Bindings.createBooleanBinding(() -> table.getSelectionModel().getSelectedItems().parallelStream().anyMatch(a -> !a.getApp().isStoppable()), table.getSelectionModel().getSelectedItems(), Sys.am().getAppDescriptors())));
 
         stop.setOnAction(e -> {
             ObservableList<AppDescriptor> selectedItems = FXCollections.observableArrayList(table.getSelectionModel().getSelectedItems());
@@ -190,29 +192,29 @@ public class AppManagerContent extends TabPane {
 	@SuppressWarnings("unchecked")
 	private Tab createTaskTab() {
 		Tab tab = new Tab();
-		tab.textProperty().bind(context.rc().getStringBinding("tasks"));
+		tab.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("tasks"));
 		tab.setClosable(false);
 
 		TableView<TaskDescriptor<?>> table = new TableView<>();
 		table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
 		TableColumn<TaskDescriptor<?>, String> appColumn = new TableColumn<>();
-		appColumn.textProperty().bind(context.rc().getStringBinding("app"));
+		appColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("app"));
 		appColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
 		TableColumn<TaskDescriptor<?>, String> titleColumn = new TableColumn<>();
-		titleColumn.textProperty().bind(context.rc().getStringBinding("title"));
+		titleColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("title"));
 		titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
 		addCellToolip(titleColumn);
 
 		TableColumn<TaskDescriptor<?>, Double> progressColumn = new TableColumn<>();
-		progressColumn.textProperty().bind(context.rc().getStringBinding("progress"));
+		progressColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("progress"));
 		progressColumn.setCellValueFactory(c -> c.getValue().getTask().progressProperty().asObject());
 		progressColumn.setCellFactory(ProgressBarTableCell.forTableColumn());
 
 		TableColumn<TaskDescriptor<?>, String> stateColumn = new TableColumn<>();
-		stateColumn.textProperty().bind(context.rc().getStringBinding("state"));
-		stateColumn.setCellValueFactory(c -> context.rc().getStringBinding(c.getValue().getTask().stateProperty()));
+		stateColumn.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("state"));
+		stateColumn.setCellValueFactory(c -> FXResourceBundle.getBundle().getStringBinding(c.getValue().getTask().stateProperty()));
 
 		table.getColumns().addAll(appColumn, titleColumn, progressColumn, stateColumn);
 
@@ -220,7 +222,7 @@ public class AppManagerContent extends TabPane {
 
 		Button cancel = new Button();
 		cancel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-		cancel.textProperty().bind(context.rc().getStringBinding("cancel"));
+		cancel.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("cancel"));
 		cancel.disableProperty().bind(Bindings.createBooleanBinding(() -> {
 
 			return table.getSelectionModel().getSelectedItems().size() != 1
@@ -234,7 +236,7 @@ public class AppManagerContent extends TabPane {
 
 		Button remove = new Button();
 		remove.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-		remove.textProperty().bind(context.rc().getStringBinding("remove"));
+		remove.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("remove"));
 		remove.disableProperty().bind(Bindings.isEmpty(table.getSelectionModel().getSelectedItems()));
 
 		remove.setOnAction(e -> {
@@ -269,5 +271,4 @@ public class AppManagerContent extends TabPane {
             return cell;
         });
     }
-
 }

@@ -7,6 +7,7 @@ import org.controlsfx.control.textfield.TextFields;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
@@ -40,14 +41,14 @@ public class WebMenuBar extends BorderPane {
 	private void initControls() {
 		back.getStyleClass().addAll("jd-font-awesome-solid");
 		back.setTooltip(new Tooltip());
-		back.getTooltip().textProperty().bind(context.rc().getStringBinding("back"));
+		FXResourceBundle.getBundle().put(back.getTooltip().textProperty(), "back");
 		back.setOnAction(e -> webPageView.back());
 		back.disableProperty().bind(webPageView.backDisableProperty());
 		back.setFocusTraversable(false);
 
 		forward.getStyleClass().addAll("jd-font-awesome-solid");
 		forward.setTooltip(new Tooltip());
-		forward.getTooltip().textProperty().bind(context.rc().getStringBinding("forward"));
+		FXResourceBundle.getBundle().put(forward.getTooltip().textProperty(), "forward");
 		forward.setOnAction(e -> webPageView.forward());
 		forward.disableProperty().bind(webPageView.forwardDisableProperty());
 		forward.setFocusTraversable(false);
@@ -57,7 +58,7 @@ public class WebMenuBar extends BorderPane {
 		reload.textProperty().bind(Bindings.when(webPageView.runningProperty()).then(Fonts.FontAwesome.TIMES)
 				.otherwise(Fonts.FontAwesome.REDO));
 		reload.getTooltip().textProperty().bind(Bindings.when(webPageView.runningProperty())
-				.then(context.rc().getStringBinding("stop")).otherwise(context.rc().getStringBinding("reload")));
+				.then(FXResourceBundle.getBundle().getStringBinding("stop")).otherwise(FXResourceBundle.getBundle().getStringBinding("reload")));
 		reload.setFocusTraversable(false);
 
 		TilePane buttonPane = new TilePane();

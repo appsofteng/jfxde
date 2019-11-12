@@ -10,13 +10,13 @@ import javafx.beans.property.SimpleObjectProperty;
 public class Window {
 
     private Desktop desktop;
-    private Object appDescriptor;
+    private WindowContent content;
     private final BooleanProperty active = new SimpleBooleanProperty();
     private final ObjectProperty<State> state = new SimpleObjectProperty<>(State.RESTORED);
     private final ObjectProperty<State> previousState = new SimpleObjectProperty<>(State.RESTORED);
 
-    public Window(Object appDescriptor) {
-    	this.appDescriptor = appDescriptor;
+    public Window(WindowContent content) {
+    	this.content = content;
     	state.addListener((v, o, n) -> previousState.set(o));
 	}
 
@@ -33,8 +33,8 @@ public class Window {
 		this.desktop = desktop;
 	}
 
-	public <T> T getAppDescriptor() {
-		return (T) appDescriptor;
+	public <T extends WindowContent> T getContent() {
+		return (T) content;
 	}
 
     public ReadOnlyBooleanProperty activeProperty() {

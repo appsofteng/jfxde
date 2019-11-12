@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
 
+import dev.jfxde.j.nio.file.WatchServiceRegister;
 import  dev.jfxde.logic.Constants;
+import dev.jfxde.logic.data.FXPath;
 
 public final class FileManager extends Manager {
 
@@ -35,6 +37,8 @@ public final class FileManager extends Manager {
     private static final String LOCK_DIR = HOME_DIR + "lock/";
     private static final String LOCK_FILE = LOCK_DIR + "lock.lck";
     private static final String MESSAGE_FILE = LOCK_DIR + "message";
+
+    private final WatchServiceRegister watchServiceRegister = new WatchServiceRegister();
     private final FileLocker fileLocker = new FileLocker(Paths.get(LOCK_FILE), Paths.get(MESSAGE_FILE));
 
     private static final Logger LOGGER = Logger.getLogger(FileManager.class.getName());
@@ -52,15 +56,18 @@ public final class FileManager extends Manager {
     	Files.createDirectories(USER_CONF_DIR);
     	Files.createDirectories(DB_DIR);
     	Files.createDirectories(Paths.get(LOCK_DIR));
+    	watchServiceRegister.start();
         fileLocker.lock();
+        FXPath.setWatchServiceRegister(watchServiceRegister);
         LOGGER.exiting(FileManager.class.getName(), "init");
     }
 
     public void watch(Runnable messageHandler) throws IOException {
-        fileLocker.watch(messageHandler);
+        fileLocker.watch(messageHandler, watchServiceRegister);
     }
 
     void stop() throws Exception {
+        watchServiceRegister.stop();
     	fileLocker.stop();
     }
 }

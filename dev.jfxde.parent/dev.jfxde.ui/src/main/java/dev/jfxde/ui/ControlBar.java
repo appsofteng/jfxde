@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.jfxde.data.entity.Desktop;
-import dev.jfxde.jfxext.util.LayoutUtils;
+import dev.jfxde.jfx.scene.layout.LayoutUtils;
 import dev.jfxde.logic.Sys;
 import dev.jfxde.logic.data.AppDescriptor;
 import dev.jfxde.logic.data.AppProviderDescriptor;
@@ -62,14 +62,6 @@ public class ControlBar extends VBox {
 		}
 	}
 
-	void bindDesktop(DesktopPane desktopPane) {
-	    appPane.disableProperty().unbind();
-	    startedAppPane.disableProperty().unbind();
-
-	    appPane.disableProperty().bind(desktopPane.frozenProperty());
-	    startedAppPane.disableProperty().bind(desktopPane.frozenProperty());
-	}
-
 	private TitledPane createAppPane() {
 
 		TextField search = new TextField();
@@ -100,7 +92,7 @@ public class ControlBar extends VBox {
 		appView.setCellFactory(v -> new AppListCell());
 		Sys.dm().activeWindowProperty().addListener((v, o, n) -> {
 			if (n != null) {
-				appView.getSelectionModel().select(n.getAppDescriptor());
+				appView.getSelectionModel().select(n.getContent());
 			} else {
 				appView.getSelectionModel().clearSelection();
 			}

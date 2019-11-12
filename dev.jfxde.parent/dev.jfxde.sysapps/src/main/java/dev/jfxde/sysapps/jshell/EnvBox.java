@@ -16,10 +16,11 @@ import java.util.stream.Collectors;
 import org.controlsfx.control.ListSelectionView;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.control.cell.AutoCompleteTextFieldTableCell;
-import dev.jfxde.jfxext.control.cell.CheckComboBoxTableCell;
-import dev.jfxde.jfxext.util.CollectionStringConverter;
-import dev.jfxde.jfxext.util.LU;
+import dev.jfxde.j.util.LU;
+import dev.jfxde.jfx.scene.control.cell.AutoCompleteTextFieldTableCell;
+import dev.jfxde.jfx.scene.control.cell.CheckComboBoxTableCell;
+import dev.jfxde.jfx.util.FXResourceBundle;
+import dev.jfxde.jfx.util.converter.CollectionStringConverter;
 import dev.jfxde.ui.FileDialog;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.adapter.JavaBeanObjectPropertyBuilder;
@@ -91,7 +92,7 @@ public class EnvBox extends VBox {
         HBox envBox = new HBox(envCombo, addEnv, removeEnv);
         HBox.setMargin(addEnv, new Insets(0, 5, 0, 5));
 
-        Label classpath = new Label(context.rc().getString("classpath"));
+        Label classpath = new Label(FXResourceBundle.getBundle​(JShellApp.class).getString​("classpath"));
         classpathView = new ListView<>();
         classpathView.setPrefWidth(400);
         classpathView.setPrefHeight(100);
@@ -100,7 +101,7 @@ public class EnvBox extends VBox {
         classpathView.setMaxHeight(100);
         classpathView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        Label modulepath = new Label(context.rc().getString("modulepath"));
+        Label modulepath = new Label(FXResourceBundle.getBundle​(JShellApp.class).getString("modulepath"));
         modulepathView = new ListView<>();
         modulepathView.setPrefWidth(400);
         modulepathView.setPrefHeight(100);
@@ -109,14 +110,14 @@ public class EnvBox extends VBox {
         modulepathView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         addModuleView = new ListSelectionView<>();
-        Label sourceHeader = new Label(context.rc().getString("availableModules"));
+        Label sourceHeader = new Label(FXResourceBundle.getBundle​(JShellApp.class).getString("availableModules"));
         addModuleView.setSourceHeader(sourceHeader);
-        Label targetHeader = new Label(context.rc().getString("addModules"));
+        Label targetHeader = new Label(FXResourceBundle.getBundle​(JShellApp.class).getString("addModules"));
         addModuleView.setTargetHeader(targetHeader);
         addModuleView.setPrefWidth(400);
         addModuleView.setPrefHeight(100);
 
-        Label addExports = new Label(context.rc().getString("addExports"));
+        Label addExports = new Label(FXResourceBundle.getBundle​(JShellApp.class).getString("addExports"));
         exportView = new TableView<>();
         exportView.setPrefWidth(400);
         exportView.setPrefHeight(100);
@@ -126,7 +127,7 @@ public class EnvBox extends VBox {
         exportView.setEditable(true);
 
         TableColumn<ExportItem, String> sourceColumn = new TableColumn<>();
-        sourceColumn.textProperty().bind(context.rc().getStringBinding("sourceModule"));
+        sourceColumn.textProperty().bind(FXResourceBundle.getBundle​(JShellApp.class).getStringBinding("sourceModule"));
         sourceColumn.setCellValueFactory(
                 f -> LU.of((() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("sourceModule").build())));
         sourceColumn.setCellFactory(f -> {
@@ -149,7 +150,7 @@ public class EnvBox extends VBox {
         });
 
         TableColumn<ExportItem, String> packageColumn = new TableColumn<>();
-        packageColumn.textProperty().bind(context.rc().getStringBinding("package"));
+        packageColumn.textProperty().bind(FXResourceBundle.getBundle​(JShellApp.class).getStringBinding("package"));
         packageColumn.setCellValueFactory(
                 f -> LU.of(() -> JavaBeanStringPropertyBuilder.create().bean(f.getValue()).name("packageName").build()));
         packageColumn.setCellFactory(c -> {
@@ -168,7 +169,7 @@ public class EnvBox extends VBox {
         });
 
         TableColumn<ExportItem, Collection<String>> targetColumn = new TableColumn<>();
-        targetColumn.textProperty().bind(context.rc().getStringBinding("targetModules"));
+        targetColumn.textProperty().bind(FXResourceBundle.getBundle​(JShellApp.class).getStringBinding("targetModules"));
         targetColumn.setCellValueFactory(
                 f -> LU.of(() -> JavaBeanObjectPropertyBuilder.create().bean(f.getValue()).name("targetModules").build()));
         targetColumn.setCellFactory(CheckComboBoxTableCell.forTableColumn(new CollectionStringConverter(), exportModules));
@@ -243,21 +244,21 @@ public class EnvBox extends VBox {
     }
 
     private void setClassPathContextMenu() {
-        MenuItem add = new MenuItem(context.rc().getString("add"));
+        MenuItem add = new MenuItem(FXResourceBundle.getBundle​(JShellApp.class).getString("add"));
         add.setOnAction(e -> {
             new FileDialog(this)
-            .setTitle(context.rc().getString("classpath"))
+            .setTitle(FXResourceBundle.getBundle​(JShellApp.class).getString("classpath"))
                     .showOpenDialog(paths -> classpathView.getItems()
                             .addAll(paths.stream().map(f -> f.toString()).filter(p -> !env.getClassPath().contains(p)).collect(Collectors.toList())));
         });
 
-        MenuItem removeSelection = new MenuItem(context.rc().getString("removeSelection"));
+        MenuItem removeSelection = new MenuItem(FXResourceBundle.getBundle​(JShellApp.class).getString("removeSelection"));
         removeSelection.disableProperty().bind(classpathView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
         removeSelection.setOnAction(e -> {
             classpathView.getItems().removeAll(classpathView.getSelectionModel().getSelectedItems());
         });
 
-        MenuItem copySelection = new MenuItem(context.rc().getString("copyPathToClipboard"));
+        MenuItem copySelection = new MenuItem(FXResourceBundle.getBundle​(JShellApp.class).getString("copyPathToClipboard"));
         copySelection.disableProperty().bind(Bindings.size(classpathView.getSelectionModel().getSelectedIndices()).isNotEqualTo(1));
         copySelection.setOnAction(e -> {
             Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -272,23 +273,23 @@ public class EnvBox extends VBox {
 
     private void setModulePathContextMenu() {
 
-        MenuItem addDirectory = new MenuItem(context.rc().getString("addDirectory"));
+        MenuItem addDirectory = new MenuItem(FXResourceBundle.getBundle​(JShellApp.class).getString("addDirectory"));
         addDirectory.setOnAction(e -> {
             new FileDialog(this)
-            .setTitle(context.rc().getString("modulepath"))
+            .setTitle(FXResourceBundle.getBundle​(JShellApp.class).getString("modulepath"))
                     .directoriesOnly()
                     .showOpenDialog(paths -> modulepathView.getItems()
                             .addAll(paths.stream().map(f -> f.toString()).filter(p -> !env.getModulePath().contains(p))
                                     .collect(Collectors.toList())));
         });
 
-        MenuItem removeSelection = new MenuItem(context.rc().getString("removeSelection"));
+        MenuItem removeSelection = new MenuItem(FXResourceBundle.getBundle​(JShellApp.class).getString("removeSelection"));
         removeSelection.disableProperty().bind(modulepathView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
         removeSelection.setOnAction(e -> {
             modulepathView.getItems().removeAll(modulepathView.getSelectionModel().getSelectedItems());
         });
 
-        MenuItem copySelection = new MenuItem(context.rc().getString("copyPathToClipboard"));
+        MenuItem copySelection = new MenuItem(FXResourceBundle.getBundle​(JShellApp.class).getString("copyPathToClipboard"));
         copySelection.disableProperty().bind(Bindings.size(modulepathView.getSelectionModel().getSelectedIndices()).isNotEqualTo(1));
         copySelection.setOnAction(e -> {
             Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -303,7 +304,7 @@ public class EnvBox extends VBox {
 
     private void setExportContextMenu() {
 
-        MenuItem add = new MenuItem(context.rc().getString("addExport"));
+        MenuItem add = new MenuItem(FXResourceBundle.getBundle​(JShellApp.class).getString("addExport"));
         add.disableProperty().bind(javafx.beans.binding.Bindings.size(exportModules).lessThan(2));
         add.setOnAction(e -> {
             exportView.getItems().add(
@@ -311,7 +312,7 @@ public class EnvBox extends VBox {
                             exportModules.get(1)));
         });
 
-        MenuItem removeSelection = new MenuItem(context.rc().getString("removeSelection"));
+        MenuItem removeSelection = new MenuItem(FXResourceBundle.getBundle​(JShellApp.class).getString("removeSelection"));
         removeSelection.disableProperty().bind(exportView.getSelectionModel().selectedIndexProperty().isEqualTo(-1));
         removeSelection.setOnAction(e -> {
             exportView.getItems().removeAll(exportView.getSelectionModel().getSelectedItems());
@@ -372,7 +373,7 @@ public class EnvBox extends VBox {
     }
 
     private void addEnv() {
-        env = new Env(context.rc().getString("new"));
+        env = new Env(FXResourceBundle.getBundle​(JShellApp.class).getString("new"));
         envs.add(env);
         setEnv();
         envCombo.getSelectionModel().select(env);

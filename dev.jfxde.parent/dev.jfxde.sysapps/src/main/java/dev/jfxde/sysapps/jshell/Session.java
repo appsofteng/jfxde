@@ -13,8 +13,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.control.ConsoleModel;
-import dev.jfxde.jfxext.control.SplitConsoleView;
+import dev.jfxde.jfx.scene.control.ConsoleModel;
+import dev.jfxde.jfx.scene.control.SplitConsoleView;
 import dev.jfxde.sysapps.jshell.Feedback.Mode;
 import javafx.stage.Window;
 import jdk.jshell.JShell;

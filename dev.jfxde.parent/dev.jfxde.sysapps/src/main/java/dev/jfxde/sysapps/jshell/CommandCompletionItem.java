@@ -4,8 +4,8 @@ import java.util.function.Function;
 
 import org.fxmisc.richtext.CodeArea;
 
-import dev.jfxde.jfxext.richtextfx.features.CompletionItem;
-import dev.jfxde.jfxext.richtextfx.features.DocRef;
+import dev.jfxde.fxmisc.richtext.CompletionItem;
+import dev.jfxde.fxmisc.richtext.DocRef;
 
 public class CommandCompletionItem extends CompletionItem {
 

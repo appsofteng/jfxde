@@ -3,7 +3,8 @@ package dev.jfxde.apps.webbrowser;
 import java.util.Objects;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.jfxext.util.JSUtils;
+import dev.jfxde.jfx.scene.web.JSUtils;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -56,7 +57,7 @@ public class WebPageView extends StackPane {
 	}
 
 	private void setListeners() {
-		title.bind(context.rc().getStringBinding("new"));
+		FXResourceBundle.getBundle().put(title, "new");
 		backDisable.bind(Bindings.equal(engine.getHistory().currentIndexProperty(), 0));
 		forwardDisable.bind(Bindings.isEmpty(engine.getHistory().getEntries()).or(engine.getHistory()
 				.currentIndexProperty().isEqualTo(Bindings.size(engine.getHistory().getEntries()).subtract(1))));
@@ -108,10 +109,6 @@ public class WebPageView extends StackPane {
 		});
 
 		WebContextMenuBuilder.register(this);
-	}
-
-	public AppContext getContext() {
-		return context;
 	}
 
 	public WebView getWebView() {

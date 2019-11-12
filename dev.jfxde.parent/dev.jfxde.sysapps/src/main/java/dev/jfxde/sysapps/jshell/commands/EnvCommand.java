@@ -3,11 +3,11 @@ package dev.jfxde.sysapps.jshell.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev.jfxde.jfx.scene.control.InternalDialog;
 import dev.jfxde.sysapps.jshell.CommandProcessor;
 import dev.jfxde.sysapps.jshell.Env;
 import dev.jfxde.sysapps.jshell.EnvBox;
 import dev.jfxde.sysapps.jshell.Session;
-import dev.jfxde.ui.InternalDialog;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

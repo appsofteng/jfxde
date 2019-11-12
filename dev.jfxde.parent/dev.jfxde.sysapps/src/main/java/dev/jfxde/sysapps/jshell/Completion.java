@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 
 import org.fxmisc.richtext.CodeArea;
 
-import dev.jfxde.jfxext.richtextfx.features.CompletionItem;
-import dev.jfxde.jfxext.richtextfx.features.DocRef;
-import dev.jfxde.jfxext.util.JavadocUtils;
+import dev.jfxde.fxmisc.richtext.CompletionItem;
+import dev.jfxde.fxmisc.richtext.DocRef;
+import dev.jfxde.jx.tools.JavadocUtils;
 import jdk.jshell.SourceCodeAnalysis.Documentation;
 import jdk.jshell.SourceCodeAnalysis.QualifiedNames;
 import picocli.AutoComplete;
