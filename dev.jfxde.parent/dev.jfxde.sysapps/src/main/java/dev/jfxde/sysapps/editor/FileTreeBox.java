@@ -122,12 +122,12 @@ public class FileTreeBox extends VBox {
         MenuItem newDirectory = new MenuItem();
         FXResourceBundle.getBundle().put(newDirectory.textProperty(), "newDirectory");
         newDirectory.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
-        newDirectory.setOnAction(e -> create(FXFiles::createDirectory));
+        newDirectory.setOnAction(e -> create(FXFiles::createDirectory, "directory"));
 
         MenuItem newFile = new MenuItem();
         FXResourceBundle.getBundle().put(newFile.textProperty(), "newFile");
         newFile.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
-        newFile.setOnAction(e -> create(FXFiles::createFile));
+        newFile.setOnAction(e -> create(FXFiles::createFile, "file"));
 
         MenuItem rename = new MenuItem();
         FXResourceBundle.getBundle().put(rename.textProperty(), "rename");
@@ -243,14 +243,14 @@ public class FileTreeBox extends VBox {
         fileTreeView.setContextMenu(menu);
     }
 
-    private void create(BiFunction<FXPath, String, FXPath> create) {
+    private void create(BiFunction<FXPath, String, FXPath> create, String key) {
         cutItems.clear();
         copyItems.clear();
         var item = fileTreeView.getSelectionModel().getSelectedItem();
         var parentItem = item.getValue().isFile() ? item.getParent() : item;
         var parentPahDescriptor = parentItem.getValue();
 
-        FXPath newPahDescriptor = create.apply(parentPahDescriptor, FXResourceBundle.getBundle().getString​("new"));
+        FXPath newPahDescriptor = create.apply(parentPahDescriptor, FXResourceBundle.getBundle().getString​(key));
         TreeViewUtils.select(newPahDescriptor, parentItem, fileTreeView);
     }
 

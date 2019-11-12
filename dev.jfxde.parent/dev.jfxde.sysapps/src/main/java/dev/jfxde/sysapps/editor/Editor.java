@@ -26,6 +26,7 @@ public class Editor extends StackPane {
     private final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
     private final ReadOnlyBooleanWrapper deleted = new ReadOnlyBooleanWrapper();
     private final ReadOnlyBooleanWrapper deletedExternally = new ReadOnlyBooleanWrapper();
+    private final ReadOnlyBooleanWrapper changed = new ReadOnlyBooleanWrapper();
     private final ReadOnlyStringWrapper title = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper tabTitle = new ReadOnlyStringWrapper();
     private final CodeArea area = new CodeArea();
@@ -53,6 +54,8 @@ public class Editor extends StackPane {
     }
 
     private void setListeners() {
+        changed.bind(edited.or(modified).or(deletedExternally));
+
         path.getOnModified().add(p -> {
             XPlatform.runFX(() -> setModified(true));
         });
@@ -66,7 +69,7 @@ public class Editor extends StackPane {
         });
 
         path.getOnDeletedExternally().add(p -> {
-            XPlatform.runFX(() ->setDeletedExternally(true));
+            XPlatform.runFX(() -> setDeletedExternally(true));
         });
     }
 
@@ -150,6 +153,20 @@ public class Editor extends StackPane {
         return deletedExternally.getReadOnlyProperty();
     }
 
+    boolean isChanged() {
+        return changed.get();
+    }
+
+    void unchange() {
+        setEdited(false);
+        setModified(false);
+        setDeletedExternally(false);
+    }
+
+    ReadOnlyBooleanProperty changedProperty() {
+        return changed.getReadOnlyProperty();
+    }
+
     void load() {
         setEdited(false);
         setModified(false);
@@ -165,8 +182,8 @@ public class Editor extends StackPane {
     }
 
     void save() {
-        if (isEdited()) {
-            FXFiles.save(path, area.getText()).thenRun(() -> XPlatform.runFX(() -> { setEdited(false); setModified(false);}));
+        if (isChanged()) {
+            FXFiles.save(path, area.getText()).thenRun(() -> XPlatform.runFX(() -> unchange()));
         }
     }
 

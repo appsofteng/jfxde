@@ -3,6 +3,7 @@ package dev.jfxde.j.nio.file;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
@@ -107,6 +108,33 @@ public final class XFiles {
         return target;
     }
 
+    public static Path save(Path path, String string) {
+
+        if (Files.notExists(path.getParent())) {
+            Path newPath = Paths.get(System.getProperty("user.home")).resolve(path.getFileName());
+            path = getUniquePath(newPath);
+        }
+
+        try {
+            Files.writeString(path, string);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return path;
+    }
+
+    private static Path getUniquePath(Path path) {
+        Path result = null;
+        Path fileName = path.getFileName();
+
+        if (fileName != null) {
+            result = getUniquePath(path, fileName.toString());
+        }
+
+        return result;
+    }
+
     private static Path getUniquePath(Path path, String name) {
         Path result = null;
         if (!Files.isDirectory(path)) {
@@ -117,7 +145,7 @@ public final class XFiles {
         int i = 1;
 
         while (Files.exists(result)) {
-            result = path.resolve(String.format("%s (%d)", name, i++));
+            result = path.resolve(String.format("%s%d", name, i++));
         }
 
         return result;

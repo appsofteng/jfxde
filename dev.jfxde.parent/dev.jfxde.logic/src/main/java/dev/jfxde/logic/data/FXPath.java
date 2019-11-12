@@ -12,6 +12,7 @@ import java.nio.file.WatchEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import javax.xml.xpath.XPath;
 
 import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
@@ -46,7 +49,7 @@ public class FXPath implements Comparable<FXPath> {
     private static final ReentrantLock LOCK = new ReentrantLock();
 
     private Consumer<List<WatchEvent<?>>> directoryWatcher;
-    private List<Function<FXPath, Boolean>> onToBeDeleted = new ArrayList<>();
+    private List<Function<FXPath, Boolean>> onDelete = new ArrayList<>();
     private List<Consumer<FXPath>> onDeleted = new ArrayList<>();
     private List<Consumer<FXPath>> onDeletedExternally = new ArrayList<>();
     private List<Consumer<FXPath>> onModified = new ArrayList<>();
@@ -95,7 +98,7 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     public List<Function<FXPath, Boolean>> getOnDelete() {
-        return onToBeDeleted;
+        return onDelete;
     }
 
     public List<Consumer<FXPath>> getOnDeleted() {
@@ -132,16 +135,11 @@ public class FXPath implements Comparable<FXPath> {
 
     static FXPath createDirectory(FXPath parent, Path path) {
         var pathDescriptor = add(parent, path, true);
-        parent.dirLeaf = false;
-        parent.leaf = false;
-        parent.setLoaded(true);
         return pathDescriptor;
     }
 
     static FXPath createFile(FXPath parent, Path path) {
         var pathDescriptor = add(parent, path, false);
-        parent.leaf = false;
-        parent.setLoaded(true);
         return pathDescriptor;
     }
 
@@ -194,7 +192,7 @@ public class FXPath implements Comparable<FXPath> {
 
     public List<FXPath> getNotToBeDeleted() {
         List<FXPath> result = new ArrayList<>();
-        if (onToBeDeleted.stream().anyMatch(f -> !f.apply(this))) {
+        if (onDelete.stream().anyMatch(f -> !f.apply(this))) {
             result.add(this);
         }
 
@@ -204,25 +202,30 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     void delete() {
-        deleted();
-        removeFromCache(getPath());
-        new ArrayList<>(parents).forEach(p -> p.remove(this));
-    }
 
-    private void deleted() {
-        onDeleted.forEach(c -> c.accept(this));
-        paths.forEach(FXPath::deleted);
+        parents.forEach(p -> p.paths.remove(this));
+
+        deletePaths(onDeleted);
     }
 
     private void deleteExternally() {
-        deletedExternally();
-        removeFromCache(getPath());
-        new ArrayList<>(parents).forEach(p -> p.remove(this));
+        parents.forEach(p -> p.paths.remove(this));
+
+        deletePaths(onDeletedExternally);
     }
 
-    private void deletedExternally() {
-        onDeletedExternally.forEach(c -> c.accept(this));
-        paths.forEach(FXPath::deletedExternally);
+    private void deletePaths(List<Consumer<FXPath>> consumer) {
+        consumer.forEach(c -> c.accept(this));
+        removeFromCache(getPath());
+
+        parents.clear();
+        Iterator<FXPath> i = paths.iterator();
+
+        while (i.hasNext()) {
+            var p = i.next();
+            p.delete();
+            i.remove();
+        }
     }
 
     public void add(FXPath pd) {
@@ -422,6 +425,10 @@ public class FXPath implements Comparable<FXPath> {
             parent.paths.add(pd);
         }
 
+        parent.dirLeaf = !directory;
+        parent.leaf = false;
+        parent.setLoaded(true);
+
         return pd;
     }
 
@@ -445,6 +452,11 @@ public class FXPath implements Comparable<FXPath> {
         }
 
         return fxpath;
+    }
+
+    private static FXPath putToCache(Path path, FXPath fxpath) {
+
+        return getFromCache(path, p -> new WeakReference<>(fxpath));
     }
 
     private static FXPath getFromCache(Path path) {
@@ -472,7 +484,7 @@ public class FXPath implements Comparable<FXPath> {
                     } else if (e.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
                         var fxpath = getFromCache(contextPath);
                         try {
-                            if (fxpath != null
+                            if (fxpath != null && Files.exists(contextPath)
                                     && fxpath.basicFileAttributes.getLastModifiedTime() != Files.getLastModifiedTime(contextPath).toMillis()) {
                                 fxpath.setFileAttributes();
                                 fxpath.onModified.forEach(c -> c.accept(fxpath));
@@ -500,6 +512,25 @@ public class FXPath implements Comparable<FXPath> {
 
     public void setFileAttributes() {
         basicFileAttributes = new FXBasicFileAttributes(this);
+    }
+
+    void saved(Path newPath) {
+        if (!getPath().equals(newPath)) {
+            removeFromCache(getPath());
+            setPath(newPath);
+        }
+
+        putToCache(newPath, this);
+
+        if (parents.isEmpty()) {
+            var parent = getFromCache(getPath().getParent());
+            if (parent != null) {
+                parent.paths.add(this);
+                this.parents.add(parent);
+            }
+        }
+
+        setFileAttributes();
     }
 
     @Override

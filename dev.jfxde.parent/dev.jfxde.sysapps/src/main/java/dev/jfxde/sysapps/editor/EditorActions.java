@@ -17,12 +17,12 @@ public class EditorActions {
     }
 
     private void setListeners() {
-        saveAllDisable.bind(content.getEditorPane().editedProperty().not());
+        saveAllDisable.bind(content.getEditorPane().changedProperty().not());
 
         content.getEditorPane().selectedEditorProperty().addListener((v,o,n) -> {
             saveDisable.unbind();
             if (n != null) {
-                saveDisable.bind(n.editedProperty().not());
+                saveDisable.bind(n.changedProperty().not());
             } else {
                 saveDisable.set(true);
             }

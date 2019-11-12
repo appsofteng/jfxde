@@ -3,6 +3,7 @@ package dev.jfxde.logic.data;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -110,10 +111,8 @@ public final class FXFiles {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             FXPath.getLock().lock();
             try {
-                Files.writeString(path.getPath(), string);
-                path.setFileAttributes();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                Path newPath = XFiles.save(path.getPath(), string);
+                path.saved(newPath);
             } finally {
                 FXPath.getLock().unlock();
             }

@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import javax.swing.ImageIcon;
 import javax.swing.filechooser.FileSystemView;
 
-import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;

@@ -21,19 +21,21 @@ public class WatchServiceRegister {
 
     private Map<Watchable, List<WeakReference<Consumer<List<WatchEvent<?>>>>>> register =  Collections.synchronizedMap(new WeakHashMap<>());
     private Map<Watchable, WatchKey> keys = new WeakHashMap<>();
-    private Map<Watchable, Path> paths = new WeakHashMap<>();
+    private Map<Watchable, WeakReference<Path>> paths = new WeakHashMap<>();
     private WatchService watchService;
     private volatile boolean started;
 
     public synchronized Path register(Path path, Consumer<List<WatchEvent<?>>> consumer) {
 
-        Path sharedPath = paths.get(path);
+        var ref = paths.get(path);
+
+        Path sharedPath = ref == null ? null : ref.get();
         try {
             if (!register.containsKey(path)) {
                 WatchKey key = path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE,
                         StandardWatchEventKinds.ENTRY_MODIFY);
                 keys.put(path, key);
-                paths.put(path, path);
+                paths.put(path, new WeakReference<>(path));
             }
 
             if (sharedPath != path) {

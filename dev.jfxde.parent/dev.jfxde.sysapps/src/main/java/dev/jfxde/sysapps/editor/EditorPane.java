@@ -33,7 +33,7 @@ public class EditorPane extends StackPane {
             .observableArrayList(e -> new Observable[] { e.editedProperty(), e.deletedProperty() });
     private final FilteredList<Editor> closableEditors = editors.filtered(e -> !e.isEdited());
     private final ObjectProperty<Editor> selectedEditor = new SimpleObjectProperty<>();
-    private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
+    private final ReadOnlyBooleanWrapper changed = new ReadOnlyBooleanWrapper();
 
     public EditorPane() {
         tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
@@ -44,7 +44,7 @@ public class EditorPane extends StackPane {
     }
 
     private void setListeners() {
-        edited.bind(Bindings.createBooleanBinding(() -> editors.stream().anyMatch(Editor::isEdited), editors));
+        changed.bind(Bindings.createBooleanBinding(() -> editors.stream().anyMatch(Editor::isChanged), editors));
 
         tabPane.getTabs().addListener((Change<? extends Tab> c) -> {
             while (c.next()) {
@@ -84,8 +84,8 @@ public class EditorPane extends StackPane {
         });
     }
 
-    ReadOnlyBooleanProperty editedProperty() {
-        return edited;
+    ReadOnlyBooleanProperty changedProperty() {
+        return changed;
     }
 
     ReadOnlyObjectProperty<Editor> selectedEditorProperty() {
