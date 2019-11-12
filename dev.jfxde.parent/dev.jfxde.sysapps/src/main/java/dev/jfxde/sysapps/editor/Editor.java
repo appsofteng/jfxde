@@ -57,7 +57,7 @@ public class Editor extends StackPane {
         changed.bind(edited.or(modified).or(deletedExternally));
 
         path.getOnModified().add(p -> {
-            XPlatform.runFX(() -> setModified(true));
+            XPlatform.runFX(() -> { setModified(true); setDeletedExternally(false);});
         });
 
         path.getOnDelete().add(p -> {
@@ -69,7 +69,7 @@ public class Editor extends StackPane {
         });
 
         path.getOnDeletedExternally().add(p -> {
-            XPlatform.runFX(() -> setDeletedExternally(true));
+            XPlatform.runFX(() -> { setDeletedExternally(true); setModified(false);});
         });
     }
 
