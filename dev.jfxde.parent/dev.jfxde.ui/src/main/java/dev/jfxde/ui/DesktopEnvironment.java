@@ -24,6 +24,7 @@ public class DesktopEnvironment extends Region {
     private MenuBar menuBar = new MenuBar();
     private ControlBar controlBar = new ControlBar();
     private DesktopPane activeDesktopPane;
+    private ModalPane modalPane = new ModalPane(this);
 
     static final Duration SHOW_HIDE_DURATION = Duration.millis(800);
     private static final double DESKTOP_EXITED_Y_DIFF = 30;
@@ -31,7 +32,7 @@ public class DesktopEnvironment extends Region {
     private double desktopStackExitedY;
 
     public DesktopEnvironment() {
-        getChildren().addAll(desktopStack, menuBar, controlBar);
+        getChildren().addAll(desktopStack, menuBar, controlBar, modalPane);
         setThemeColor(Sys.pm().getThemeColor());
         getStyleClass().add("jd-desktop-environment");
         setDesktopHandlers();
@@ -49,9 +50,21 @@ public class DesktopEnvironment extends Region {
         setStyle(style);
     }
 
+    void setFreeze(boolean value) {
+        desktopStack.setDisable(value);
+        menuBar.setDisable(value);
+        controlBar.setDisable(value);
+        modalPane.setVisible(value);
+    }
+
+    public ModalPane getModalPane() {
+        return modalPane;
+    }
+
     @Override
     protected void layoutChildren() {
-        layoutInArea(desktopStack, 0, 0, getWidth(), getHeight(), 0, new Insets(2, 2, 2, 2), HPos.CENTER, VPos.CENTER);
+        layoutInArea(modalPane, 0, 0, getWidth(), getHeight(), 0, new Insets(0), HPos.CENTER, VPos.CENTER);
+        layoutInArea(desktopStack, 0, 0, getWidth(), getHeight(), 0, new Insets(2, 2, 2, 3), HPos.CENTER, VPos.CENTER);
         layoutInArea(controlBar, -controlBar.getWidth() - 2, 0, 250, getHeight(), 0, new Insets(1, 0, 1, 2), HPos.LEFT,
                 VPos.TOP);
         double menuBarWidth = menuBar.isDefaultMenuBar() ? menuBar.getWidth() : getWidth();
@@ -63,7 +76,7 @@ public class DesktopEnvironment extends Region {
     private void setDialogListener() {
         Sys.am().toBeStartedApp().addListener((v, o, appProviderDescriptor) -> {
             if (appProviderDescriptor != null) {
-                AlertBuilder.get(activeDesktopPane.getModalPane(), AlertType.CONFIRMATION)
+                AlertBuilder.get(modalPane, AlertType.CONFIRMATION)
                         .title(FXResourceBundle.getBundle().getString​("confirmation"))
                         .headerText(FXResourceBundle.getBundle(Main.class).getString("appPermissions", appProviderDescriptor.getName()))
                         .contentText(FXResourceBundle.getBundle(Main.class).getString("appPermissionConfirmation"))
@@ -131,8 +144,6 @@ public class DesktopEnvironment extends Region {
             activeDesktopPane = new DesktopPane(activeDesktop);
             desktopStack.getChildren().add(activeDesktopPane);
         }
-
-        controlBar.bindDesktop(activeDesktopPane);
 
         activeDesktopPane.toFront();
     }

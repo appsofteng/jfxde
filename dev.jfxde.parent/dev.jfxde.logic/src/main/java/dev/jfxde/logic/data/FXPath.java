@@ -25,8 +25,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.xml.xpath.XPath;
-
 import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
 import javafx.beans.property.BooleanProperty;
@@ -73,14 +71,19 @@ public class FXPath implements Comparable<FXPath> {
         if (parent != null) {
             this.parents.add(parent);
         }
+
+        this.path.addListener((v,o,n) -> {
+            if (n != null) {
+                Path fileName = n.getFileName();
+                setName(fileName == null ? n.toString() : fileName.toString());
+            }
+        });
+
         setPath(path);
         setDirectory(dir);
         if (dir) {
             directoryWatcher = this::watchDirectory;
         }
-
-        Path fileName = path.getFileName();
-        setName(fileName == null ? path.toString() : fileName.toString());
 
         setFileAttributes();
     }
@@ -176,8 +179,6 @@ public class FXPath implements Comparable<FXPath> {
         newParent.leaf = false;
         newParent.setLoaded(true);
 
-        Path fileName = getPath().getFileName();
-        setName(fileName == null ? getPath().toString() : fileName.toString());
         parents.add(newParent);
         newParent.paths.add(this);
     }
@@ -202,28 +203,36 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     void delete() {
+        onDeleted.forEach(c -> c.accept(this));
+        removeFromCache(getPath());
 
-        parents.forEach(p -> p.paths.remove(this));
-
-        deletePaths(onDeleted);
+        delete(p -> p.delete());
     }
 
     private void deleteExternally() {
-        parents.forEach(p -> p.paths.remove(this));
+        onDeletedExternally.forEach(c -> c.accept(this));
+        // Keep in cache if listened to, e.g. file in an editor can be saved again.
+        if (onDeletedExternally.isEmpty()) {
+            removeFromCache(getPath());
+        }
 
-        deletePaths(onDeletedExternally);
+        delete(p -> p.deleteExternally());
     }
 
-    private void deletePaths(List<Consumer<FXPath>> consumer) {
-        consumer.forEach(c -> c.accept(this));
-        removeFromCache(getPath());
-
-        parents.clear();
+    private void delete(Consumer<FXPath> delete) {
+        // Only first path in tree will have parents.
+        // Next paths' parents will be cleared before.
+        new ArrayList<>(parents).forEach(p -> p.remove(this));
+        setLoaded(false);
+        loading = false;
+        dirLeaf = true;
+        leaf = true;
         Iterator<FXPath> i = paths.iterator();
 
         while (i.hasNext()) {
             var p = i.next();
-            p.delete();
+            p.parents.clear();
+            delete.accept(p);
             i.remove();
         }
     }
@@ -272,14 +281,6 @@ public class FXPath implements Comparable<FXPath> {
         nameProperty().set(value);
     }
 
-    public String getNewName() {
-        return newName;
-    }
-
-    public void setNewName(String newName) {
-        this.newName = newName;
-    }
-
     public StringProperty nameProperty() {
 
         if (name == null) {
@@ -297,6 +298,14 @@ public class FXPath implements Comparable<FXPath> {
         }
 
         return name;
+    }
+
+    public String getNewName() {
+        return newName;
+    }
+
+    public void setNewName(String newName) {
+        this.newName = newName;
     }
 
     public boolean isDirectory() {
@@ -518,19 +527,11 @@ public class FXPath implements Comparable<FXPath> {
         if (!getPath().equals(newPath)) {
             removeFromCache(getPath());
             setPath(newPath);
-        }
-
-        putToCache(newPath, this);
-
-        if (parents.isEmpty()) {
-            var parent = getFromCache(getPath().getParent());
-            if (parent != null) {
-                parent.paths.add(this);
-                this.parents.add(parent);
-            }
+            putToCache(newPath, this);
         }
 
         setFileAttributes();
+        onModified.forEach(c -> c.accept(this));
     }
 
     @Override

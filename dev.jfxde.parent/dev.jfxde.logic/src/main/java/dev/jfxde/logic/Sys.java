@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import dev.jfxde.logic.security.CustomPolicy;
 import dev.jfxde.logic.security.CustomSecurityManager;
+import javafx.application.Platform;
 
 public final class Sys {
 
@@ -82,6 +83,11 @@ public final class Sys {
         }
 
         LOGGER.exiting(Sys.class.getName(), "init");
+    }
+
+    public void forceStop() {
+        appManager.forceStop();
+        Platform.exit();
     }
 
     public void stop() throws Exception {

@@ -62,14 +62,6 @@ public class ControlBar extends VBox {
 		}
 	}
 
-	void bindDesktop(DesktopPane desktopPane) {
-	    appPane.disableProperty().unbind();
-	    startedAppPane.disableProperty().unbind();
-
-	    appPane.disableProperty().bind(desktopPane.frozenProperty());
-	    startedAppPane.disableProperty().bind(desktopPane.frozenProperty());
-	}
-
 	private TitledPane createAppPane() {
 
 		TextField search = new TextField();
@@ -100,7 +92,7 @@ public class ControlBar extends VBox {
 		appView.setCellFactory(v -> new AppListCell());
 		Sys.dm().activeWindowProperty().addListener((v, o, n) -> {
 			if (n != null) {
-				appView.getSelectionModel().select(n.getAppDescriptor());
+				appView.getSelectionModel().select(n.getContent());
 			} else {
 				appView.getSelectionModel().clearSelection();
 			}

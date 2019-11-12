@@ -26,6 +26,7 @@ import org.fxmisc.wellbehaved.event.Nodes;
 import org.fxmisc.richtext.model.StyleSpan;
 
 import dev.jfxde.j.nio.file.XFiles;
+import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -86,7 +87,7 @@ public final class CodeAreaExtender {
         }
 
         var blockEndWrapper = new BlockEndWrapper<>(area);
-        var highlightWrappr = new HighlightWrapper(area, getLexer());
+        var highlightWrapper = new HighlightWrapper(area, getLexer());
 
         area.richChanges()
                 .filter(ch -> !ch.toPlainTextChange().getInserted().equals(ch.toPlainTextChange().getRemoved()))
@@ -104,7 +105,7 @@ public final class CodeAreaExtender {
 
                     var end = getLexer().tokenize(area.getText(), caretPosition, (lastEnd, t) -> {
                         spans.add(new StyleSpan<>(Collections.emptyList(), t.getStart() - lastEnd));
-                        spans.add(highlightWrappr.getStyleSpan(t));
+                        spans.add(highlightWrapper.getStyleSpan(t));
                     });
 
                     StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
@@ -118,7 +119,7 @@ public final class CodeAreaExtender {
                 });
 
         area.caretPositionProperty().addListener((v, o, n) -> {
-            highlightWrappr.highlightDelimiters(n);
+            Platform.runLater(() -> highlightWrapper.highlightDelimiters(n));
         });
 
         return this;

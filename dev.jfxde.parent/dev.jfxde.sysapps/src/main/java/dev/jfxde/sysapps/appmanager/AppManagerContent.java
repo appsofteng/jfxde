@@ -170,7 +170,8 @@ public class AppManagerContent extends TabPane {
         Button stop = new Button();
         stop.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         stop.textProperty().bind(FXResourceBundle.getBundle().getStringBinding("stop"));
-        stop.disableProperty().bind(Bindings.isEmpty(table.getSelectionModel().getSelectedItems()));
+        stop.disableProperty().bind(Bindings.isEmpty(table.getSelectionModel().getSelectedItems())
+                .or(Bindings.createBooleanBinding(() -> table.getSelectionModel().getSelectedItems().parallelStream().anyMatch(a -> !a.getApp().isStoppable()), table.getSelectionModel().getSelectedItems(), Sys.am().getAppDescriptors())));
 
         stop.setOnAction(e -> {
             ObservableList<AppDescriptor> selectedItems = FXCollections.observableArrayList(table.getSelectionModel().getSelectedItems());

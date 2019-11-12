@@ -31,10 +31,10 @@ public class WindowPane extends Pane {
 		this.desktop = desktop;
         setPickOnBounds(false);
         getStyleClass().add("jd-desktop-window-pane");
-        windows = FXCollections.observableArrayList(w -> new Observable[] { w.visibleProperty() });
+        windows = FXCollections.observableArrayList(w -> new Observable[] { w.visibleProperty(), w.closableProperty() });
 
         visibleWindows = windows.filtered(w -> w.isVisible());
-        closableWindows = visibleWindows;
+        closableWindows = windows.filtered(w -> w.isClosable());
 
         tileCols.bind(Bindings.when(Bindings.size(tiledWindows).greaterThan(1)).then(2).otherwise(1));
         tileRows.bind(Bindings.createIntegerBinding(() -> tiledWindows.size() / tileCols.get() + (int) Math.signum(tiledWindows.size() % tileCols.get()), Bindings.size(tiledWindows), tileCols));

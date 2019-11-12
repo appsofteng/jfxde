@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import dev.jfxde.api.AppContext;
 import dev.jfxde.logic.data.FXPath;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.collections.ListChangeListener.Change;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
@@ -19,8 +21,12 @@ public class EditorContent extends BorderPane {
     private EditorBar editorBar;
     private EditorPane editorPane = new EditorPane();
     private SplitPane splitPane;
+    private ReadOnlyBooleanWrapper stoppable = new ReadOnlyBooleanWrapper();
 
-    public EditorContent(AppContext context) {
+    public EditorContent() {
+    }
+
+    EditorContent init(AppContext context) {
         this.context = context;
         List<String> favorites = context.dc().fromJson(FAVORITES, List.class, List.of());
         fileTreePane = new FileTreePane(favorites, p -> editorPane.setEditor(p));
@@ -35,9 +41,13 @@ public class EditorContent extends BorderPane {
 
         setTop(editorBar);
         setCenter(splitPane);
+
+        return this;
     }
 
     private void setListeners() {
+        stoppable.bind(editorPane.changedProperty().not());
+
         fileTreePane.getFavorites().addListener((Change<? extends FXPath> c) -> {
 
             while (c.next()) {
@@ -45,6 +55,10 @@ public class EditorContent extends BorderPane {
                 context.dc().toJson(favorites, FAVORITES);
             }
         });
+    }
+
+    ReadOnlyBooleanProperty stoppableProperty() {
+        return stoppable.getReadOnlyProperty();
     }
 
     public EditorPane getEditorPane() {

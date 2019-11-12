@@ -14,7 +14,7 @@ public class AppWindow extends InternalWindow {
 
     public AppWindow(WindowPane pane, Window window) {
         super(pane, window);
-        this.appDescriptor = window.getAppDescriptor();
+        this.appDescriptor = window.getContent();
 
         titleLabel.textProperty().bind(appDescriptor.displayProperty());
         titleLabel.setGraphic(appDescriptor.getAppProviderDescriptor().getSmallIcon());
@@ -34,6 +34,7 @@ public class AppWindow extends InternalWindow {
                 }
 
                 setContent(n);
+                close.disableProperty().bind(appDescriptor.getApp().stoppableProperty().not());
 
             }
         });
@@ -54,5 +55,10 @@ public class AppWindow extends InternalWindow {
     @Override
     protected void onClose() {
         Sys.am().stop(appDescriptor);
+    }
+
+    @Override
+    protected void forceClose() {
+        Sys.am().forceStop(appDescriptor);
     }
 }

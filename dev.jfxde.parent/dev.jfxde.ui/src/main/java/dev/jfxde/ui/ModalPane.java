@@ -5,10 +5,10 @@ import javafx.scene.layout.Pane;
 
 public class ModalPane extends Pane {
 
-    private DesktopPane desktopPane;
+    private DesktopEnvironment desktopEnvironment;
 
-    public ModalPane(DesktopPane desktopPane) {
-        this.desktopPane = desktopPane;
+    public ModalPane(DesktopEnvironment desktopPane) {
+        this.desktopEnvironment = desktopPane;
         setVisible(false);
 
         setOnMousePressed(e -> {
@@ -20,13 +20,13 @@ public class ModalPane extends Pane {
 
     @Override
     public void toFront() {
-        desktopPane.setFreeze(true);
+        desktopEnvironment.setFreeze(true);
         super.toFront();
     }
 
     @Override
     public void toBack() {
-        desktopPane.setFreeze(false);
+        desktopEnvironment.setFreeze(false);
         super.toBack();
     }
 }

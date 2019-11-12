@@ -193,12 +193,19 @@ public class Desktop extends DataObj {
     }
 
     public void closeOthers() {
-        List<Window> toBeRemoved = getWindows().stream().filter(w -> w != getActiveWindow()).collect(Collectors.toList());
+        List<Window> toBeRemoved = getWindows().stream()
+        .filter(w -> w != getActiveWindow())
+        .filter(w -> w.getContent().isClosable())
+        .collect(Collectors.toList());
+
         toBeRemoved.forEach(Window::close);
     }
 
     public void closeAll() {
-        List<Window> toBeRemoved = new ArrayList<>(getWindows());
+        List<Window> toBeRemoved = getWindows().stream()
+        .filter(w -> w.getContent().isClosable())
+        .collect(Collectors.toList());
+
         toBeRemoved.forEach(Window::close);
     }
 

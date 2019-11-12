@@ -3,6 +3,7 @@ package dev.jfxde.logic;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -50,9 +51,9 @@ public final class AppManager extends Manager {
 
     private final Map<App, AppDescriptor> appDescriptorMap = new HashMap<>();
     private final ObservableList<AppDescriptor> appDescriptors = FXCollections
-            .observableArrayList((ad) -> new Observable[] { ad.displayProperty() });
-    private final FilteredList<AppDescriptor> filteredAppDescriptors = new FilteredList<>(
-            new SortedList<>(appDescriptors));
+            .observableArrayList((ad) -> new Observable[] { ad.displayProperty(), ad.getApp().stoppableProperty() });
+    private final FilteredList<AppDescriptor> filteredAppDescriptors = new FilteredList<>(appDescriptors);
+    private final SortedList<AppDescriptor> sortedAppDescriptors = new SortedList<>(filteredAppDescriptors, Comparator.comparing(a -> a.getDisplay()));
     private final StringProperty appFilter = new SimpleStringProperty();
     private ObjectProperty<AppProviderDescriptor> toBeStartedApp = new SimpleObjectProperty<>();
     private Set<String> locales = new TreeSet<>();
@@ -177,7 +178,7 @@ public final class AppManager extends Manager {
     }
 
     public ObservableList<AppDescriptor> getFilteredAppDescriptors() {
-        return filteredAppDescriptors;
+        return sortedAppDescriptors;
     }
 
     public ObservableList<AppProviderDescriptor> getAppProviderDescriptors() {
@@ -290,6 +291,19 @@ public final class AppManager extends Manager {
 
     public void stop(AppDescriptor appDescriptor) {
 
+        if (!appDescriptor.getApp().isStoppable()) {
+            return;
+        }
+
+        forceStop(appDescriptor);
+    }
+
+    public void forceStop() {
+        new ArrayList<>(appDescriptors).forEach(ad -> forceStop(ad));
+    }
+
+    public void forceStop(AppDescriptor appDescriptor) {
+
         CTask<Void> task = CTask.create(() -> appDescriptor.getApp().stop())
                 .onFinished(t -> {
                     if (appDescriptors.remove(appDescriptor)) {
@@ -334,6 +348,5 @@ public final class AppManager extends Manager {
 
     public void sortApp() {
         FXCollections.sort(appProviderDescriptors);
-        FXCollections.sort(appDescriptors);
     }
 }

@@ -1,7 +1,6 @@
 package dev.jfxde.sysapps.editor;
 
 import dev.jfxde.jfx.application.XPlatform;
-import dev.jfxde.jfx.scene.control.AlertBuilder;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
 import javafx.beans.Observable;
@@ -11,13 +10,14 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
@@ -30,8 +30,8 @@ public class EditorPane extends StackPane {
 
     private TabPane tabPane = new TabPane();
     private final ObservableList<Editor> editors = FXCollections
-            .observableArrayList(e -> new Observable[] { e.editedProperty(), e.deletedProperty() });
-    private final FilteredList<Editor> closableEditors = editors.filtered(e -> !e.isEdited());
+            .observableArrayList(e -> new Observable[] { e.changedProperty(), e.deletedProperty() });
+    private final FilteredList<Editor> closableEditors = editors.filtered(e -> !e.isChanged());
     private final ObjectProperty<Editor> selectedEditor = new SimpleObjectProperty<>();
     private final ReadOnlyBooleanWrapper changed = new ReadOnlyBooleanWrapper();
 
@@ -119,9 +119,7 @@ public class EditorPane extends StackPane {
         Editor editor = new Editor(path);
         tab.setContent(editor);
 
-        tab.closableProperty().bind(editor.editedProperty().not()
-                .and(editor.modifiedProperty().not()
-                        .and(editor.deletedExternallyProperty().not())));
+        tab.closableProperty().bind(editor.changedProperty().not());
         Label label = new Label();
         label.textProperty().bind(editor.tabTitleProperty());
         tab.setGraphic(label);
@@ -137,6 +135,26 @@ public class EditorPane extends StackPane {
 
     private void addContextMenu(Tab tab) {
 
+        MenuItem reload = new MenuItem();
+        FXResourceBundle.getBundle().put(reload.textProperty(), "reload");
+        reload.setOnAction(e -> ((Editor)tab.getContent()).load());
+
+        MenuItem closeOthers = new MenuItem();
+        FXResourceBundle.getBundle().put(closeOthers.textProperty(), "closeOthers");
+        closeOthers.disableProperty().bind(Bindings.isEmpty(closableEditors).or(Bindings.size(closableEditors).isEqualTo(1).and(tab.closableProperty())));
+        closeOthers.setOnAction(e -> tabPane.getTabs().removeIf(t -> t != tab && !((Editor)t.getContent()).isChanged()));
+
+        MenuItem closeAll = new MenuItem();
+        FXResourceBundle.getBundle().put(closeAll.textProperty(), "closeAll");
+        closeAll.disableProperty().bind(Bindings.isEmpty(closableEditors));
+        closeAll.setOnAction(e -> tabPane.getTabs().removeIf(t -> !((Editor)t.getContent()).isChanged()));
+
+        MenuItem close = new MenuItem();
+        FXResourceBundle.getBundle().put(close.textProperty(), "closeWithoutSaving");
+        close.setOnAction(e -> tabPane.getTabs().remove(tab));
+
+        ContextMenu menu = new ContextMenu(reload, new SeparatorMenuItem(), closeOthers, closeAll, new SeparatorMenuItem(), close);
+        tab.setContextMenu(menu);
     }
 
     void save() {

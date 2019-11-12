@@ -11,6 +11,9 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.css.PseudoClass;
 import javafx.geometry.BoundingBox;
@@ -18,6 +21,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -30,6 +34,7 @@ public class InternalWindow extends InternalFrame {
 
     private WindowPane windowPane;
     private Window windowModel;
+    private BooleanProperty closable = new SimpleBooleanProperty();
 
     protected Button newWindow = new Button(Fonts.Unicode.TWO_JOINED_SQUARES);
     private Button tile = new Button(Fonts.FontAwesome.TH_LARGE);
@@ -149,7 +154,7 @@ public class InternalWindow extends InternalFrame {
         MenuItem closeOthers = new MenuItem();
         closeOthers.textProperty().bind(Sys.rm().getStringBinding("closeOthers"));
         closeOthers.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows())
-                .or(Bindings.size(windowPane.getClosableWindows()).lessThan(2)));
+                .or(Bindings.size(windowPane.getClosableWindows()).isEqualTo(1).and(close.disabledProperty().not())));
         closeOthers.setOnAction(e -> windowModel.getDesktop().closeOthers());
 
         MenuItem closeAll = new MenuItem();
@@ -157,7 +162,11 @@ public class InternalWindow extends InternalFrame {
         closeAll.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows()));
         closeAll.setOnAction(e -> windowModel.getDesktop().closeAll());
 
-        ContextMenu titleContextMenu = new ContextMenu(minimizeOthers, minimizeAll, closeOthers, closeAll);
+        MenuItem forceClose = new MenuItem();
+        forceClose.textProperty().bind(Sys.rm().getStringBinding("forceClose"));
+        forceClose.setOnAction(e -> forceClose());
+
+        ContextMenu titleContextMenu = new ContextMenu(minimizeOthers, minimizeAll, closeOthers, closeAll, new SeparatorMenuItem(), forceClose);
         titleLabel.setContextMenu(titleContextMenu);
     }
 
@@ -228,6 +237,7 @@ public class InternalWindow extends InternalFrame {
         full.setOnAction(e -> windowModel.full());
 
         close.setOnAction(e -> windowModel.close());
+        closable.bind(close.disabledProperty().not());
 
         windowModel.activeProperty().addListener(activateListener);
 
@@ -238,12 +248,23 @@ public class InternalWindow extends InternalFrame {
 
     }
 
+    boolean isClosable() {
+        return closable.get();
+    }
+
+    ReadOnlyBooleanProperty closableProperty() {
+        return closable;
+    }
+
     protected void close() {
         super.close();
         onClose();
     }
 
     protected void onClose() {
+    }
+
+    protected void forceClose() {
     }
 
     protected void activateRoot() {

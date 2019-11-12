@@ -3,15 +3,20 @@ package dev.jfxde.ui;
 import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfx.scene.control.AlertBuilder;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.FileManager;
 import dev.jfxde.logic.Sys;
+import dev.jfxde.logic.data.FXFiles;
 import javafx.application.Application;
 import javafx.application.Preloader.ProgressNotification;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.text.Font;
 import javafx.stage.Screen;
@@ -50,6 +55,26 @@ public class Main extends Application {
         Scene scene = new Scene(desktopEnvironment, screen.getWidth() * 0.7 , screen.getHeight() * 0.7, false, SceneAntialiasing.BALANCED);
         scene.getStylesheets().add(Sys.rm().getCss("standard"));
         stage.setScene(scene);
+
+        stage.setOnCloseRequest(e -> {
+            if (!Sys.am().getAppDescriptors().isEmpty()) {
+
+                var startedApps = Sys.am().getAppDescriptors().stream()
+                        .map(p -> p.getDisplay())
+                        .sorted()
+                        .collect(Collectors.joining("\n"));
+
+                AlertBuilder.get(desktopEnvironment.getModalPane(), AlertType.CONFIRMATION)
+                .title(FXResourceBundle.getBundle().getString​("confirmation"))
+                .headerText(FXResourceBundle.getBundle().getString​("someAppsStarted"))
+                .contentText(FXResourceBundle.getBundle().getString​("stopApps"))
+                .expandableTextArea(startedApps)
+                .ok(() -> Sys.get().forceStop())
+                .show();
+
+                e.consume();
+            }
+        });
 
         stage.show();
 
