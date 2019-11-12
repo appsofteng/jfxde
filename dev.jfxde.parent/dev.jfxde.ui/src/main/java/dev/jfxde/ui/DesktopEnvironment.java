@@ -64,7 +64,7 @@ public class DesktopEnvironment extends Region {
     @Override
     protected void layoutChildren() {
         layoutInArea(modalPane, 0, 0, getWidth(), getHeight(), 0, new Insets(0), HPos.CENTER, VPos.CENTER);
-        layoutInArea(desktopStack, 0, 0, getWidth(), getHeight(), 0, new Insets(2, 2, 2, 3), HPos.CENTER, VPos.CENTER);
+        layoutInArea(desktopStack, 0, 0, getWidth(), getHeight(), 0, new Insets(2, 2, 2, 2), HPos.CENTER, VPos.CENTER);
         layoutInArea(controlBar, -controlBar.getWidth() - 2, 0, 250, getHeight(), 0, new Insets(1, 0, 1, 2), HPos.LEFT,
                 VPos.TOP);
         double menuBarWidth = menuBar.isDefaultMenuBar() ? menuBar.getWidth() : getWidth();
@@ -91,7 +91,7 @@ public class DesktopEnvironment extends Region {
 
         desktopStack.setOnMouseEntered(e -> {
 
-            if (e.getX() >= 0 && e.getX() <= controlBar.getWidth()
+            if (e.getX() >= -5 && e.getX() <= controlBar.getWidth()
                     && Math.abs(e.getY() - desktopStackExitedY) > DESKTOP_EXITED_Y_DIFF && desktopStackExitedX <= 0
                     && desktopStackExitedY > 0 && e.getY() > menuBar.getHeight()) {
                 controlBar.show();
