@@ -27,6 +27,7 @@ import javafx.beans.property.StringProperty;
 
 public class FXResourceBundle {
     private static ObjectProperty<Locale> locale = new SimpleObjectProperty<>();
+    private static Class<?> defaultCaller;
 
     private static final String BUNDLE_DIR_NAME = "bundles";
     private static final String BUNDLE_FILE_NAME = "strings";
@@ -70,8 +71,20 @@ public class FXResourceBundle {
         locale.set(Locale.forLanguageTag(value));
     }
 
+    public static void setDefaultCaller(Class<?> defaultCaller) {
+        FXResourceBundle.defaultCaller = defaultCaller;
+    }
+
     public static FXResourceBundle getBundle() {
-        return getBundle​(FXResourceBundle.class, null);
+        Class<?> cls = FXResourceBundle.class;
+        FXResourceBundle parent = null;
+
+        if (defaultCaller != null) {
+            cls = defaultCaller;
+            parent = getBundle​(FXResourceBundle.class, null);
+        }
+
+        return getBundle​(cls, parent);
     }
 
     public static FXResourceBundle getBundle​(Class<?> caller) {
