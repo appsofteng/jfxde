@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import dev.jfxde.api.AppContext;
-import dev.jfxde.fxmisc.richtext.CodeAreaExtender;
+import dev.jfxde.fxmisc.richtext.CodeAreaWrappers;
 import dev.jfxde.fxmisc.richtext.CompletionItem;
 import dev.jfxde.fxmisc.richtext.TextStyleSpans;
 import dev.jfxde.jfx.concurrent.CTask;
@@ -67,13 +67,13 @@ public class JShellContent extends BorderPane {
             }
         });
 
-        CodeAreaExtender.get(consoleView.getInputArea(), "java")
+        CodeAreaWrappers.get(consoleView.getInputArea(), "java")
                 .style()
                 .highlighting(consoleView.getConsoleModel().getReadFromPipe())
                 .completion(this::codeCompletion, completion::loadDocumentation)
                 .indentation();
 
-        CodeAreaExtender.get(consoleView.getOutputArea(), "java")
+        CodeAreaWrappers.get(consoleView.getOutputArea(), "java")
                 .style();
 
     }

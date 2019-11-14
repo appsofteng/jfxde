@@ -2,7 +2,7 @@ package dev.jfxde.fxmisc.richtext;
 
 import org.fxmisc.richtext.GenericStyledArea;
 
-public class BlockEndWrapper<T extends GenericStyledArea<?, ?, ?>> extends AreaWrapper<T> {
+public class BlockEndWrapper<T extends GenericStyledArea<?, ?, ?>> extends GenericStyledAreaWrapper<T> {
 
     public BlockEndWrapper(T area) {
         super(area);

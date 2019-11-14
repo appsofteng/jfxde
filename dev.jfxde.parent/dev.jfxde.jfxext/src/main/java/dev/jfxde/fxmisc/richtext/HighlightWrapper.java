@@ -6,7 +6,7 @@ import java.util.List;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.model.StyleSpan;
 
-public class HighlightWrapper extends AreaWrapper<CodeArea> {
+public class HighlightWrapper extends GenericStyledAreaWrapper<CodeArea> {
 
     private Token token;
     private Lexer lexer;
