@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -60,8 +61,8 @@ public class FXPath implements Comparable<FXPath> {
     private ObservableList<FXPath> paths = FXCollections.observableArrayList();
     private volatile boolean loading;
     private volatile boolean loaded;
-    private Boolean dirLeaf;
-    private Boolean leaf;
+    private AtomicBoolean dirLeaf;
+    private AtomicBoolean leaf;
     private FXBasicFileAttributes basicFileAttributes;
 
     private FXPath() {
@@ -72,7 +73,7 @@ public class FXPath implements Comparable<FXPath> {
             this.parents.add(parent);
         }
 
-        this.path.addListener((v,o,n) -> {
+        this.path.addListener((v, o, n) -> {
             if (n != null) {
                 Path fileName = n.getFileName();
                 setName(fileName == null ? n.toString() : fileName.toString());
@@ -128,8 +129,8 @@ public class FXPath implements Comparable<FXPath> {
 
         pseudoRoot.setName("");
         pseudoRoot.setDirectory(!pds.isEmpty());
-        pseudoRoot.leaf = !pseudoRoot.isDirectory();
-        pseudoRoot.dirLeaf = !pseudoRoot.isDirectory();
+        pseudoRoot.setLeaf(!pseudoRoot.isDirectory());
+        pseudoRoot.setDirLeaf(!pseudoRoot.isDirectory());
         pseudoRoot.setLoaded(true);
         pseudoRoot.paths.setAll(pds);
 
@@ -137,12 +138,12 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     static FXPath createDirectory(FXPath parent, Path path) {
-        var pathDescriptor = add(parent, path, true);
+        var pathDescriptor = addInParent(parent, path, true);
         return pathDescriptor;
     }
 
     static FXPath createFile(FXPath parent, Path path) {
-        var pathDescriptor = add(parent, path, false);
+        var pathDescriptor = addInParent(parent, path, false);
         return pathDescriptor;
     }
 
@@ -175,8 +176,8 @@ public class FXPath implements Comparable<FXPath> {
 
         paths.forEach(p -> p.rename(oldPath, getPath()));
 
-        newParent.dirLeaf = !isDirectory();
-        newParent.leaf = false;
+        newParent.setDirLeaf(!isDirectory());
+        newParent.setLeaf(false);
         newParent.setLoaded(true);
 
         parents.add(newParent);
@@ -184,10 +185,8 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     static FXPath copy(FXPath newParent, Path newPath) {
-        var fxpath = add(newParent, newPath, Files.isDirectory(newPath));
-        newParent.dirLeaf = !fxpath.isDirectory();
-        newParent.leaf = false;
-        newParent.setLoaded(true);
+        var fxpath = addInParent(newParent, newPath, Files.isDirectory(newPath));
+
         return fxpath;
     }
 
@@ -225,8 +224,8 @@ public class FXPath implements Comparable<FXPath> {
         new ArrayList<>(parents).forEach(p -> p.remove(this));
         setLoaded(false);
         loading = false;
-        dirLeaf = true;
-        leaf = true;
+        setDirLeaf(true);
+        setLeaf(true);
         Iterator<FXPath> i = paths.iterator();
 
         while (i.hasNext()) {
@@ -241,8 +240,8 @@ public class FXPath implements Comparable<FXPath> {
         paths.add(pd);
         pd.parents.add(this);
 
-        dirLeaf = !pd.isDirectory();
-        leaf = false;
+        setDirLeaf(!pd.isDirectory());
+        setLeaf(false);
         setLoaded(true);
     }
 
@@ -251,8 +250,8 @@ public class FXPath implements Comparable<FXPath> {
         pd.parents.remove(this);
 
         if (paths.isEmpty()) {
-            dirLeaf = true;
-            leaf = true;
+            setDirLeaf(true);
+            setLeaf(true);
             setLoaded(false);
         }
     }
@@ -331,19 +330,35 @@ public class FXPath implements Comparable<FXPath> {
     public boolean isDirLeaf() {
 
         if (dirLeaf == null) {
-            dirLeaf = !isDirectory() || !Files.isReadable(getPath()) || !isRoot() && !XFiles.hasSubDirs(getPath());
+            setDirLeaf(!isDirectory() || !Files.isReadable(getPath()) || !isRoot() && !XFiles.hasSubDirs(getPath()));
         }
 
-        return dirLeaf;
+        return dirLeaf.get();
+    }
+
+    private void setDirLeaf(boolean value) {
+        if (dirLeaf == null) {
+            dirLeaf = new AtomicBoolean();
+        }
+
+        dirLeaf.set(value);
     }
 
     public boolean isLeaf() {
 
         if (leaf == null) {
-            leaf = !isDirectory() || !Files.isReadable(getPath()) || !isRoot() && !XFiles.isEmpty(getPath());
+            setLeaf(!isDirectory() || !Files.isReadable(getPath()) || !isRoot() && !XFiles.isEmpty(getPath()));
         }
 
-        return leaf;
+        return leaf.get();
+    }
+
+    private void setLeaf(boolean value) {
+        if (leaf == null) {
+            leaf = new AtomicBoolean();
+        }
+
+        leaf.set(value);
     }
 
     boolean isRoot() {
@@ -428,15 +443,20 @@ public class FXPath implements Comparable<FXPath> {
         }
     }
 
+    private static FXPath addInParent(FXPath parent, Path p, boolean directory) {
+        var pd = add(parent, p, directory);
+        parent.setDirLeaf(!directory);
+        parent.setLeaf(false);
+        parent.setLoaded(true);
+
+        return pd;
+    }
+
     private static FXPath add(FXPath parent, Path p, boolean directory) {
         var pd = getFromCache(parent, p, directory);
         if (!parent.paths.contains(pd)) {
             parent.paths.add(pd);
         }
-
-        parent.dirLeaf = !directory;
-        parent.leaf = false;
-        parent.setLoaded(true);
 
         return pd;
     }
@@ -489,7 +509,7 @@ public class FXPath implements Comparable<FXPath> {
                     var contextPath = getPath().resolve((Path) e.context());
 
                     if (e.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                        add(this, contextPath, Files.isDirectory(contextPath));
+                        addInParent(this, contextPath, Files.isDirectory(contextPath));
                     } else if (e.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
                         var fxpath = getFromCache(contextPath);
                         try {
