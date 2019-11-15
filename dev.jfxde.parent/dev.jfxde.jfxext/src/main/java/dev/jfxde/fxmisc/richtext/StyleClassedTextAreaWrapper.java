@@ -65,6 +65,10 @@ public class StyleClassedTextAreaWrapper extends GenericStyledAreaWrapper<StyleC
             i += step;
         }
 
+        if (i < 0) {
+            i = 0;
+        }
+
         return i;
     }
 }
