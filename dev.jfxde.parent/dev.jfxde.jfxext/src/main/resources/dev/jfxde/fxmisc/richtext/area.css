@@ -1,6 +1,8 @@
 .styled-text-area .selection {
- /*   -fx-fill: rgba(102, 204, 255, 0.3);*/
-    /*    -fx-fill: rgba(30,144,255,0.3); */
-     -fx-fill: rgba(147, 147, 147, 0.5);
+    -fx-fill: rgba(147, 147, 147, 0.5);
 
+}
+
+.styled-text-area .jd-find {
+    -rtfx-background-color: rgba(255, 0, 255, 0.5);
 }

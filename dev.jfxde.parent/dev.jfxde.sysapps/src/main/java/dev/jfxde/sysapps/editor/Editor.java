@@ -7,7 +7,7 @@ import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
-import dev.jfxde.fxmisc.richtext.CodeAreaExtender;
+import dev.jfxde.fxmisc.richtext.CodeAreaWrappers;
 import dev.jfxde.j.util.LU;
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.logic.data.FXFiles;
@@ -41,10 +41,11 @@ public class Editor extends StackPane {
         area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
         area.textProperty().addListener((v, o, n) -> setEdited(true));
 
-        CodeAreaExtender.get(area, path.getPath())
+        CodeAreaWrappers.get(area, path.getPath())
                 .style()
                 .highlighting()
-                .indentation();
+                .indentation()
+                .find();
 
         getChildren().add(new VirtualizedScrollPane<>(area));
 

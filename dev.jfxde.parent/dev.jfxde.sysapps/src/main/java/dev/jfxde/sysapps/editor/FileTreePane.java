@@ -19,7 +19,7 @@ public class FileTreePane extends VBox {
 
     public FileTreePane(List<String> favoritePaths, Consumer<FXPath> fileSelectedHandler) {
         favoriteRoot = FXPath.getPseudoRoot(favoritePaths);
-        accordion.getPanes().addAll(createFilesPane(fileSelectedHandler), createFavoritePane(fileSelectedHandler));
+        accordion.getPanes().addAll(createRootPane(fileSelectedHandler), createFavoritePane(fileSelectedHandler));
         accordion.setMaxHeight(Double.MAX_VALUE);
         VBox.setVgrow(accordion, Priority.ALWAYS);
         getChildren().add(accordion);
@@ -29,7 +29,7 @@ public class FileTreePane extends VBox {
         return favoriteRoot.getPaths();
     }
 
-    private TitledPane createFilesPane(Consumer<FXPath> fileSelectedHandler) {
+    private TitledPane createRootPane(Consumer<FXPath> fileSelectedHandler) {
 
         PathTreeItem root = new PathTreeItem(FXPath.getRoot());
 
@@ -37,7 +37,7 @@ public class FileTreePane extends VBox {
 
         TitledPane pane = new TitledPane();
         pane.setMinWidth(0);
-        FXResourceBundle.getBundle().put(pane.textProperty(), "files");
+        FXResourceBundle.getBundle().put(pane.textProperty(), "roots");
         pane.setContent(fileTree);
 
         return pane;

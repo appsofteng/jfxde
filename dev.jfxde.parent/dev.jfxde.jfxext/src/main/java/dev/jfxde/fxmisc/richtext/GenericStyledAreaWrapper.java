@@ -10,11 +10,11 @@ import javafx.scene.control.IndexRange;
 
 import static org.fxmisc.richtext.model.TwoDimensional.Bias.Forward;
 
-public abstract class AreaWrapper<T extends GenericStyledArea<?, ?, ?>> {
+public abstract class GenericStyledAreaWrapper<T extends GenericStyledArea<?, ?, ?>> {
 
     protected T area;
 
-    public AreaWrapper(T area) {
+    public GenericStyledAreaWrapper(T area) {
         this.area = area;
     }
 

@@ -4,8 +4,9 @@ import org.fxmisc.richtext.GenericStyledArea;
 
 import javafx.scene.control.IndexRange;
 
-public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends AreaWrapper<T> {
+public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends GenericStyledAreaWrapper<T> {
 
+    private static final String INDENTATION = "    ";
     private Lexer lexer;
 
     IndentationWrapper(T area, Lexer lexer) {
@@ -13,23 +14,17 @@ public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends Area
         this.lexer = lexer;
     }
 
-    private static final String INDENTATION = "    ";
-
     String getIndentation() {
         return INDENTATION;
     }
 
     void insertNewLineIndentation() {
 
-        if (lexer == null) {
-            return;
-        }
-
         String paragraph = getCurrentParagraphText();
 
         String indentation = getParagraphIndentation(getArea().getCurrentParagraph());
 
-        if (paragraph.substring(0, area.getCaretColumn()).matches(".*" + lexer.getOpenTokenPattern() + " *$")) {
+        if (lexer != null && paragraph.substring(0, area.getCaretColumn()).matches(".*" + lexer.getOpenTokenPattern() + " *$")) {
             indentation += getIndentation();
         }
 
