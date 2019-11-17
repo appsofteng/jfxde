@@ -29,7 +29,7 @@ public class EditorContent extends BorderPane {
     EditorContent init(AppContext context) {
         this.context = context;
         List<String> favorites = context.dc().fromJson(FAVORITES, List.class, List.of());
-        fileTreePane = new FileTreePane(favorites, p -> editorPane.setEditor(p));
+        fileTreePane = new FileTreePane(favorites, p -> editorPane.open(p));
         splitPane = new SplitPane(fileTreePane, editorPane);
         splitPane.setDividerPositions(0.3);
         SplitPane.setResizableWithParent(fileTreePane, false);

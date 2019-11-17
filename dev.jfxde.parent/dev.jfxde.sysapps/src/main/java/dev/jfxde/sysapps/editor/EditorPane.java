@@ -1,5 +1,7 @@
 package dev.jfxde.sysapps.editor;
 
+import java.util.List;
+
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
@@ -94,6 +96,10 @@ public class EditorPane extends StackPane {
 
     Editor getSelectedEditor() {
         return selectedEditor.get();
+    }
+
+    void open(List<FXPath> paths) {
+        paths.forEach(p -> setEditor(p));
     }
 
     void setEditor(FXPath path) {

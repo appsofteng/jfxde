@@ -1,5 +1,6 @@
 package dev.jfxde.sysapps.editor;
 
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -38,9 +39,9 @@ public class FileTreeBox extends VBox {
     private ObservableList<TreeItem<FXPath>> cutItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> copyItems = FXCollections.observableArrayList();
     private FXPath favoriteRoot;
-    private ObjectProperty<Consumer<FXPath>> fileSelectedHandler = new SimpleObjectProperty<>();
+    private ObjectProperty<Consumer<List<FXPath>>> fileSelectedHandler = new SimpleObjectProperty<>();
 
-    public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<FXPath> fileSelectedHandler) {
+    public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<List<FXPath>> fileSelectedHandler) {
         this.root = root;
         this.favoriteRoot = favorites;
         setFileSelectedHandler(fileSelectedHandler);
@@ -50,11 +51,11 @@ public class FileTreeBox extends VBox {
         setListeners();
     }
 
-    private Consumer<FXPath> getFileSelectedHandler() {
+    private Consumer<List<FXPath>> getFileSelectedHandler() {
         return fileSelectedHandler.get();
     }
 
-    private void setFileSelectedHandler(Consumer<FXPath> value) {
+    private void setFileSelectedHandler(Consumer<List<FXPath>> value) {
         fileSelectedHandler.set(value);
     }
 
@@ -112,13 +113,19 @@ public class FileTreeBox extends VBox {
 
                 var path = item.getValue();
                 if (e.getClickCount() == 2 && path.isFile()) {
-                    getFileSelectedHandler().accept(path);
+                    getFileSelectedHandler().accept(List.of(path));
                 }
             }
         });
     }
 
     private void setContextMenu() {
+
+        MenuItem findFile = new MenuItem();
+        FXResourceBundle.getBundle().put(findFile.textProperty(), "findFiles");
+        findFile.disableProperty().bind(Bindings.isEmpty(selectedItems));
+        findFile.setOnAction(e -> new FindFileDialog(this).show());
+
         MenuItem newDirectory = new MenuItem();
         FXResourceBundle.getBundle().put(newDirectory.textProperty(), "newDirectory");
         newDirectory.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
@@ -237,7 +244,7 @@ public class FileTreeBox extends VBox {
             alert.show();
         });
 
-        ContextMenu menu = new ContextMenu(newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy, paste, new SeparatorMenuItem(),
+        ContextMenu menu = new ContextMenu(findFile, new SeparatorMenuItem(), newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy, paste, new SeparatorMenuItem(),
                 addFavorite, removeFavorite, new SeparatorMenuItem(), refresh,
                 new SeparatorMenuItem(), delete);
         fileTreeView.setContextMenu(menu);
