@@ -272,7 +272,7 @@ public class InternalWindow extends InternalFrame {
     }
 
     public void activate() {
-        active.set(true);
+        setActive(true);
         subframes.forEach(InternalFrame::deactivateAll);
         requestFocus();
         focusOwner.requestFocus();
@@ -285,7 +285,7 @@ public class InternalWindow extends InternalFrame {
             modalFrame.activate();
         } else {
 
-            active.set(true);
+            setActive(true);
 
             if (windowModel.isMinimized()) {
                 restoreTransition(MINIMALIZATION_DURATION);

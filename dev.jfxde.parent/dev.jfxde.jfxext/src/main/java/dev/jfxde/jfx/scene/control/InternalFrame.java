@@ -57,22 +57,7 @@ public abstract class InternalFrame extends Region {
 
     private Timeline modalTimeline;
 
-    protected BooleanProperty active = new BooleanPropertyBase() {
-        @Override
-        protected void invalidated() {
-            pseudoClassStateChanged(ACTIVE_PSEUDO_CLASS, get());
-        }
-
-        @Override
-        public String getName() {
-            return "activePseudoClass";
-        }
-
-        @Override
-        public Object getBean() {
-            return InternalFrame.this;
-        }
-    };
+    protected BooleanProperty active;
 
     public InternalFrame(Pane windowPane) {
         this.windowPane = windowPane;
@@ -219,7 +204,7 @@ public abstract class InternalFrame extends Region {
     void deactivate() {
         setCursor(Cursor.DEFAULT);
         if (isActive()) {
-            active.set(false);
+            setActive(false);
             focusOwner = getScene().getFocusOwner();
         }
     }
@@ -252,7 +237,34 @@ public abstract class InternalFrame extends Region {
     }
 
     boolean isActive() {
-        return active.get();
+        return active == null ? false : activeProperty().get();
+    }
+
+    protected void setActive(boolean value) {
+        activeProperty().set(value);
+    }
+
+    BooleanProperty activeProperty() {
+        if (active == null) {
+            active = new BooleanPropertyBase() {
+                @Override
+                protected void invalidated() {
+                    pseudoClassStateChanged(ACTIVE_PSEUDO_CLASS, get());
+                }
+
+                @Override
+                public String getName() {
+                    return "activePseudoClass";
+                }
+
+                @Override
+                public Object getBean() {
+                    return InternalFrame.this;
+                }
+            };
+        }
+
+        return active;
     }
 
     @Override
@@ -311,7 +323,8 @@ public abstract class InternalFrame extends Region {
             modalTimeline.stop();
         } else {
 
-            var b1 = new Border(new BorderStroke(Color.rgb(255, 255, 255, 0.5), BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(4), new Insets(-4)));
+            var b1 = new Border(new BorderStroke(Color.rgb(255, 255, 255, 0.5), BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(4),
+                    new Insets(-4)));
             var b2 = getBorder();
             modalTimeline = new Timeline();
             modalTimeline.setCycleCount(5);

@@ -171,7 +171,7 @@ public class InternalDialog extends InternalFrame {
                 root.deactivate();
             }
             deactivateFront();
-            active.set(true);
+            setActive(true);
             toFront();
             focusOwner.requestFocus();
         } else {
@@ -180,7 +180,7 @@ public class InternalDialog extends InternalFrame {
     }
 
     public void activate() {
-        active.set(true);
+        setActive(true);
         toFront();
         focusOwner.requestFocus();
     }
