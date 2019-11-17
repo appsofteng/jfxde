@@ -98,15 +98,15 @@ public class EditorPane extends StackPane {
         return selectedEditor.get();
     }
 
-    void open(List<FXPath> paths) {
-        paths.forEach(p -> setEditor(p));
+    void open(List<FilePointer> pointers) {
+        pointers.forEach(p -> setEditor(p));
     }
 
-    void setEditor(FXPath path) {
-        Tab tab = findEditorTab(path);
+    void setEditor(FilePointer filePointer) {
+        Tab tab = findEditorTab(filePointer.getPath());
 
         if (tab == null) {
-            tab = createEditorTab(path);
+            tab = createEditorTab(filePointer);
             tabPane.getTabs().add(tab);
         }
 
@@ -120,9 +120,9 @@ public class EditorPane extends StackPane {
                 .orElse(null);
     }
 
-    private Tab createEditorTab(FXPath path) {
+    private Tab createEditorTab(FilePointer filePointer) {
         Tab tab = new Tab();
-        Editor editor = new Editor(path);
+        Editor editor = new Editor(filePointer);
         tab.setContent(editor);
 
         tab.closableProperty().bind(editor.changedProperty().not());

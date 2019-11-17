@@ -21,6 +21,7 @@ import javafx.scene.layout.StackPane;
 
 public class Editor extends StackPane {
 
+    private FilePointer filePointer;
     private FXPath path;
     private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
     private final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
@@ -31,8 +32,9 @@ public class Editor extends StackPane {
     private final ReadOnlyStringWrapper tabTitle = new ReadOnlyStringWrapper();
     private final CodeArea area = new CodeArea();
 
-    public Editor(FXPath path) {
-        this.path = path;
+    public Editor(FilePointer filePointer) {
+        this.filePointer = filePointer;
+        this.path = filePointer.getPath();
 
         title.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
         tabTitle.bind(Bindings.createStringBinding(() -> getTabString(), path.nameProperty(), edited, modified, deletedExternally));

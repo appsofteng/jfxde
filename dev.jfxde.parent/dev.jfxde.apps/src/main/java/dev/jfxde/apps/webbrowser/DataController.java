@@ -1,11 +1,11 @@
 package dev.jfxde.apps.webbrowser;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class DataController {
 
-	private Set<String> locations = new HashSet<>();
+	private Set<String> locations = new TreeSet<>();
 
 	public SearchEngine getDefaultSearchEngine() {
 

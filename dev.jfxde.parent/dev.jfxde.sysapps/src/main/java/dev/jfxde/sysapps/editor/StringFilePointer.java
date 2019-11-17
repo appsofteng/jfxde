@@ -1,27 +1,39 @@
 package dev.jfxde.sysapps.editor;
 
+import java.util.List;
+
 import dev.jfxde.logic.data.FXPath;
 
-public class LinePointer extends FilePointer {
+public class StringFilePointer extends FilePointer {
 
-    private PathPointer pathPointer;
+    private PathFilePointer pathPointer;
     private int line;
     private int column;
     private String text = "";
 
-    public LinePointer(int line, int column, String text) {
+    public StringFilePointer(int line, int column, String text) {
         this.line = line;
         this.column = column;
         this.text = text;
     }
 
-    public void setPathPointer(PathPointer pathPointer) {
+    public void setPathFilePointer(PathFilePointer pathPointer) {
         this.pathPointer = pathPointer;
+    }
+
+    @Override
+    public List<StringFilePointer> getStringFilePointers() {
+        return pathPointer.getStringFilePointers();
     }
 
     @Override
     public FXPath getPath() {
         return pathPointer.getPath();
+    }
+
+    @Override
+    public StringFilePointer current() {
+        return this;
     }
 
     @Override

@@ -235,7 +235,10 @@ public abstract class InternalFrame extends Region {
     }
 
     protected void close() {
-        subframes.forEach(InternalFrame::close);
+        subframes.forEach(f -> {
+            f.parent = null;
+            f.close();
+        });
 
         if (parent != null) {
             parent.subframes.remove(this);

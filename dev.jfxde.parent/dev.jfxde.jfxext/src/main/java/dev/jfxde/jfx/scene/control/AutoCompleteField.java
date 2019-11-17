@@ -1,14 +1,14 @@
 package dev.jfxde.jfx.scene.control;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
 
 import javafx.application.Platform;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.VPos;
@@ -26,7 +26,7 @@ public class AutoCompleteField<T> extends Region {
     private Consumer<T> consumer;
 
     public AutoCompleteField() {
-        this(new HashSet<>());
+        this(new TreeSet<>());
     }
 
     public AutoCompleteField(Collection<T> suggestions) {
@@ -45,8 +45,14 @@ public class AutoCompleteField<T> extends Region {
 
     private void onSelected() {
 
+        if (store()) {
+            onCompleted();
+        }
+    }
+
+    public boolean store() {
         if (textField.getText().isBlank()) {
-            return;
+            return false;
         }
 
         suggestions.add(converter.fromString(textField.getText()));
@@ -56,7 +62,7 @@ public class AutoCompleteField<T> extends Region {
 
         bindAutoCompletion();
 
-        onCompleted();
+        return true;
     }
 
     public void setOnCompleted(Consumer<T> consumer) {
@@ -69,12 +75,20 @@ public class AutoCompleteField<T> extends Region {
         }
     }
 
+    public StringProperty textProperty() {
+        return textField.textProperty();
+    }
+
     public String getText() {
         return textField.getText();
     }
 
     public void setText(String value) {
         textField.setText(value);
+    }
+
+    public StringProperty promptTextProperty() {
+        return textField.promptTextProperty();
     }
 
     @Override

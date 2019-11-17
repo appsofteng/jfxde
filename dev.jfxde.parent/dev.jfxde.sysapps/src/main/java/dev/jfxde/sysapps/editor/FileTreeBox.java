@@ -39,9 +39,9 @@ public class FileTreeBox extends VBox {
     private ObservableList<TreeItem<FXPath>> cutItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> copyItems = FXCollections.observableArrayList();
     private FXPath favoriteRoot;
-    private ObjectProperty<Consumer<List<FXPath>>> fileSelectedHandler = new SimpleObjectProperty<>();
+    private ObjectProperty<Consumer<List<FilePointer>>> fileSelectedHandler = new SimpleObjectProperty<>();
 
-    public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<List<FXPath>> fileSelectedHandler) {
+    public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<List<FilePointer>> fileSelectedHandler) {
         this.root = root;
         this.favoriteRoot = favorites;
         setFileSelectedHandler(fileSelectedHandler);
@@ -51,11 +51,11 @@ public class FileTreeBox extends VBox {
         setListeners();
     }
 
-    private Consumer<List<FXPath>> getFileSelectedHandler() {
+    private Consumer<List<FilePointer>> getFileSelectedHandler() {
         return fileSelectedHandler.get();
     }
 
-    private void setFileSelectedHandler(Consumer<List<FXPath>> value) {
+    private void setFileSelectedHandler(Consumer<List<FilePointer>> value) {
         fileSelectedHandler.set(value);
     }
 
@@ -113,7 +113,7 @@ public class FileTreeBox extends VBox {
 
                 var path = item.getValue();
                 if (e.getClickCount() == 2 && path.isFile()) {
-                    getFileSelectedHandler().accept(List.of(path));
+                    getFileSelectedHandler().accept(List.of(new PathFilePointer(path)));
                 }
             }
         });
@@ -122,9 +122,9 @@ public class FileTreeBox extends VBox {
     private void setContextMenu() {
 
         MenuItem findFile = new MenuItem();
-        FXResourceBundle.getBundle().put(findFile.textProperty(), "findFiles");
+        FXResourceBundle.getBundle().put(findFile.textProperty(), "search");
         findFile.disableProperty().bind(Bindings.isEmpty(selectedItems));
-        findFile.setOnAction(e -> new FindFileDialog(this).show());
+        findFile.setOnAction(e -> new SearchFileDialog(this).show());
 
         MenuItem newDirectory = new MenuItem();
         FXResourceBundle.getBundle().put(newDirectory.textProperty(), "newDirectory");
