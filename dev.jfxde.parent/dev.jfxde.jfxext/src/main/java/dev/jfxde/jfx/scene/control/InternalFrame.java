@@ -6,6 +6,7 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
@@ -38,6 +39,8 @@ public abstract class InternalFrame extends Region {
     protected static final double CURSOR_BORDER_WIDTH = 5;
     private static final PseudoClass ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("active");
 
+    private BooleanProperty closable = new SimpleBooleanProperty(true);
+
     protected Modality modality = Modality.NONE;
 
     protected ObservableList<InternalFrame> subframes = FXCollections.observableArrayList();
@@ -50,7 +53,7 @@ public abstract class InternalFrame extends Region {
     protected ContentRegion contentRegion = new ContentRegion();
     protected Node focusOwner = contentRegion;
 
-    protected Button close = new Button("x");
+    private Button close = new Button("x");
 
     protected Bounds restoreBounds;
     protected Point2D pressDragPoint;
@@ -69,6 +72,10 @@ public abstract class InternalFrame extends Region {
         close.setFocusTraversable(false);
         close.setTooltip(new Tooltip());
         FXResourceBundle.getBundle().put(close.getTooltip().textProperty(), "close");
+        close.setOnAction(e -> onClose());
+        close.disableProperty().bind(closable.not());
+
+        buttonBox.getChildren().addAll(close);
     }
 
     protected void buildLayout(double width, double height) {
@@ -217,6 +224,18 @@ public abstract class InternalFrame extends Region {
 
     protected void setSubFramesVisible(boolean value) {
         subframes.forEach(s -> s.setSubFramesVisible(value));
+    }
+
+    public boolean isClosable() {
+        return closable.get();
+    }
+
+    public BooleanProperty closableProperty() {
+        return closable;
+    }
+
+    protected void onClose() {
+        close();
     }
 
     protected void close() {

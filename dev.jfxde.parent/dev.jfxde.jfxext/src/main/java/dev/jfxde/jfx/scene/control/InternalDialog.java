@@ -62,12 +62,6 @@ public class InternalDialog extends InternalFrame {
         return this;
     }
 
-    protected void addButtons() {
-        super.addButtons();
-
-        buttonBox.getChildren().addAll(close);
-    }
-
     private void setMoveable() {
         LayoutUtils.makeDragable(this, titleBar, e -> {
             if (isMaximized()) {
@@ -109,8 +103,6 @@ public class InternalDialog extends InternalFrame {
                 close();
             }
         });
-
-        close.setOnAction(e -> close());
     }
 
     private boolean isMaximized() {
