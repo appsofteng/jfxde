@@ -12,6 +12,7 @@ import dev.jfxde.j.util.LU;
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.logic.data.FXFiles;
 import dev.jfxde.logic.data.FXPath;
+import dev.jfxde.logic.data.FilePointer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;

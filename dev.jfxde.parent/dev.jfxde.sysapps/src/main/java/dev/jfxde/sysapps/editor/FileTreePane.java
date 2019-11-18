@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
+import dev.jfxde.logic.data.FilePointer;
 import dev.jfxde.ui.PathTreeItem;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Accordion;

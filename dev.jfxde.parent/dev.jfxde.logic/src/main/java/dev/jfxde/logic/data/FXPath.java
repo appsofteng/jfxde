@@ -476,6 +476,12 @@ public class FXPath implements Comparable<FXPath> {
 
         var fxpath = CACHE.computeIfAbsent(path, function).get();
 
+        if (fxpath == null) {
+            var ref = function.apply(path);
+            fxpath = ref.get();
+            CACHE.put(path, ref);
+        }
+
         if (watchServiceRegister != null && fxpath.isDirectory() && fxpath.isLoaded()) {
             fxpath.setPath(watchServiceRegister.register(path, fxpath.directoryWatcher));
         }

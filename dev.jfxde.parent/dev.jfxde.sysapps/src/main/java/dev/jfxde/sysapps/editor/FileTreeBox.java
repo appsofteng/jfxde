@@ -10,6 +10,8 @@ import dev.jfxde.jfx.scene.control.TreeViewUtils;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXFiles;
 import dev.jfxde.logic.data.FXPath;
+import dev.jfxde.logic.data.FilePointer;
+import dev.jfxde.logic.data.PathFilePointer;
 import dev.jfxde.ui.PathTreeItem;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -124,7 +126,7 @@ public class FileTreeBox extends VBox {
         MenuItem findFile = new MenuItem();
         FXResourceBundle.getBundle().put(findFile.textProperty(), "search");
         findFile.disableProperty().bind(Bindings.isEmpty(selectedItems));
-        findFile.setOnAction(e -> new SearchFileDialog(this).show());
+        findFile.setOnAction(e -> new SearchFileDialog(this, selectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList())).show());
 
         MenuItem newDirectory = new MenuItem();
         FXResourceBundle.getBundle().put(newDirectory.textProperty(), "newDirectory");

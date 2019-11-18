@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import dev.jfxde.j.nio.file.XFiles;
 
@@ -118,5 +119,9 @@ public final class FXFiles {
         });
 
         return future;
+    }
+
+    public static void search(List<FXPath> searchPaths, String pathRegex, String textRegex, Consumer<FilePointer> consumer) {
+
     }
 }

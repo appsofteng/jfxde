@@ -1,8 +1,14 @@
 package dev.jfxde.sysapps.editor;
 
+import java.util.List;
+
+import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.scene.control.AutoCompleteField;
 import dev.jfxde.jfx.scene.control.InternalDialog;
 import dev.jfxde.jfx.util.FXResourceBundle;
+import dev.jfxde.logic.data.FXFiles;
+import dev.jfxde.logic.data.FXPath;
+import dev.jfxde.logic.data.FilePointer;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -15,17 +21,22 @@ import javafx.scene.layout.VBox;
 
 public class SearchFileDialog extends InternalDialog {
 
-    public SearchFileDialog(Node node) {
+    private AutoCompleteField<String> pathField;
+    private AutoCompleteField<String> textField;
+    private TreeItem<FilePointer> root;
+
+    public SearchFileDialog(Node node, List<FXPath> searchPaths) {
         super(node);
+
         setTitle(FXResourceBundle.getBundle().getString​("search"));
 
-        AutoCompleteField<String> pathField = new AutoCompleteField<String>();
+        pathField = new AutoCompleteField<String>();
         FXResourceBundle.getBundle().put(pathField.promptTextProperty(), "pathRegex");
 
-        AutoCompleteField<String> textField = new AutoCompleteField<String>();
+        textField = new AutoCompleteField<String>();
         FXResourceBundle.getBundle().put(textField.promptTextProperty(), "textRegex");
 
-        TreeItem<FilePointer> root = new TreeItem<>();
+        root = new TreeItem<>();
         TreeView<FilePointer> filePointers = new TreeView<>(root);
         filePointers.setPrefHeight(200);
         filePointers.setShowRoot(false);
@@ -35,7 +46,7 @@ public class SearchFileDialog extends InternalDialog {
         searchButton.setOnAction(e -> {
             pathField.store();
             textField.store();
-            search();
+            FXFiles.search(searchPaths, pathField.getText(), textField.getText(), this::found);
         });
 
         Button closeButton = new Button();
@@ -59,7 +70,9 @@ public class SearchFileDialog extends InternalDialog {
         setContent(pane);
     }
 
-    private void search() {
-
+    private void found(FilePointer filePointer) {
+        XPlatform.runFX(() -> {
+            root.getChildren().add(new TreeItem<>(filePointer));
+        });
     }
 }

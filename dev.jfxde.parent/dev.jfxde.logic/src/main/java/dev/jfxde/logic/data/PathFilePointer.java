@@ -1,9 +1,7 @@
-package dev.jfxde.sysapps.editor;
+package dev.jfxde.logic.data;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import dev.jfxde.logic.data.FXPath;
 
 public class PathFilePointer extends FilePointer {
 

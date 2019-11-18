@@ -1,8 +1,6 @@
-package dev.jfxde.sysapps.editor;
+package dev.jfxde.logic.data;
 
 import java.util.List;
-
-import dev.jfxde.logic.data.FXPath;
 
 public abstract class FilePointer {
 

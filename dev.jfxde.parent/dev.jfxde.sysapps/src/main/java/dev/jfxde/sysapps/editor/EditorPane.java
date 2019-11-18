@@ -5,6 +5,7 @@ import java.util.List;
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
+import dev.jfxde.logic.data.FilePointer;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
