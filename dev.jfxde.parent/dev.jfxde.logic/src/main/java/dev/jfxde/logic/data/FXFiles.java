@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import dev.jfxde.j.nio.file.XFiles;
@@ -121,7 +122,20 @@ public final class FXFiles {
         return future;
     }
 
-    public static void search(List<FXPath> searchPaths, String pathRegex, String textRegex, Consumer<FilePointer> consumer) {
+    public static CompletableFuture<Void> search(List<FXPath> searchPaths, String pathWildcards, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            FXPath.getLock().lock();
+            try {
+                searchPaths.forEach(p -> p.search(pathWildcards, textRegex, consumer, stop));
+            } catch(Exception e) {
+                stop.set(true);
+                throw new RuntimeException(e);
+            }
+            finally {
+                FXPath.getLock().unlock();
+            }
+        });
 
+        return future;
     }
 }

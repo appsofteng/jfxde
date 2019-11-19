@@ -407,35 +407,41 @@ public class FXPath implements Comparable<FXPath> {
         ForkJoinPool.commonPool().execute(() -> {
             getLock().lock();
             try {
-                if (isRoot()) {
-                    listRoots();
-                } else {
-                    list();
-                }
+                loadSync(getPaths());
+                setLoaded(true);
             } finally {
+                loading = false;
                 getLock().unlock();
             }
-            loading = false;
-            setLoaded(true);
         });
     }
 
-    private void listRoots() {
+    private List<FXPath> loadSync(List<FXPath> loadedPaths) {
+        if (isRoot()) {
+            listRoots(loadedPaths);
+        } else {
+            list(loadedPaths);
+        }
+
+        return loadedPaths;
+    }
+
+    private void listRoots(List<FXPath> loadedPaths) {
         try (var stream = StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false)) {
             stream.forEach(p -> {
-                add(this, p, true);
+                add(loadedPaths, this, p, true);
             });
         }
     }
 
-    private void list() {
+    private void list(List<FXPath> loadedPaths) {
         try (var stream = Files.newDirectoryStream(getPath())) {
             var iterator = stream.iterator();
 
             while (iterator.hasNext()) {
                 var p = iterator.next();
                 boolean directory = Files.isDirectory(p);
-                add(this, p, directory);
+                add(loadedPaths, this, p, directory);
             }
 
         } catch (Exception e) {
@@ -444,7 +450,7 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     private static FXPath addInParent(FXPath parent, Path p, boolean directory) {
-        var pd = add(parent, p, directory);
+        var pd = add(parent.getPaths(), parent, p, directory);
         parent.setDirLeaf(!directory);
         parent.setLeaf(false);
         parent.setLoaded(true);
@@ -452,11 +458,9 @@ public class FXPath implements Comparable<FXPath> {
         return pd;
     }
 
-    private static FXPath add(FXPath parent, Path p, boolean directory) {
+    private static FXPath add(List<FXPath> loadedPaths, FXPath parent, Path p, boolean directory) {
         var pd = getFromCache(parent, p, directory);
-        if (!parent.paths.contains(pd)) {
-            parent.paths.add(pd);
-        }
+        loadedPaths.add(pd);
 
         return pd;
     }
@@ -558,6 +562,54 @@ public class FXPath implements Comparable<FXPath> {
 
         setFileAttributes();
         onModified.forEach(c -> c.accept(this));
+    }
+
+    void search(String pathWildcards, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+
+        if (!isReadable()) {
+            return;
+        }
+
+        if (stop.get()) {
+            return;
+        }
+
+        if (isFile()) {
+            searchFile(pathWildcards, textRegex, consumer, stop);
+        } else {
+
+            List<FXPath> loadedPaths = isLoaded() ? paths : loadSync(new ArrayList<>());
+
+            loadedPaths.parallelStream().sorted(Comparator.reverseOrder()).forEach(p -> p.search(pathWildcards, textRegex, consumer, stop));
+        }
+    }
+
+    private void searchFile(String pathWildcards, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+        if (stop.get()) {
+            return;
+        }
+        if (getName().matches(wildcardsToRegex(pathWildcards))) {
+            PathFilePointer pathPointer = new PathFilePointer(this);
+            consumer.accept(pathPointer);
+        }
+    }
+
+    private String wildcardsToRegex(String wildcards) {
+        String[] parts = wildcards.split("((?<=[*?])|(?=[*?]))");
+
+        StringBuilder sb = new StringBuilder();
+
+        for (String p : parts) {
+            if (p.equals("*")) {
+                sb.append(".*");
+            } else if (p.equals("?")) {
+                sb.append(".");
+            } else {
+                sb.append("\\Q" + p + "\\E");
+            }
+        }
+
+        return sb.toString();
     }
 
     @Override

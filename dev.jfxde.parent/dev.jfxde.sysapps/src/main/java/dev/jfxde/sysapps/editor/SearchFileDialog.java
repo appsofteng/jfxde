@@ -1,6 +1,7 @@
 package dev.jfxde.sysapps.editor;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.scene.control.AutoCompleteField;
@@ -24,6 +25,8 @@ public class SearchFileDialog extends InternalDialog {
     private AutoCompleteField<String> pathField;
     private AutoCompleteField<String> textField;
     private TreeItem<FilePointer> root;
+    private boolean searching;
+    private AtomicBoolean stop;
 
     public SearchFileDialog(Node node, List<FXPath> searchPaths) {
         super(node);
@@ -31,7 +34,7 @@ public class SearchFileDialog extends InternalDialog {
         setTitle(FXResourceBundle.getBundle().getString​("search"));
 
         pathField = new AutoCompleteField<String>();
-        FXResourceBundle.getBundle().put(pathField.promptTextProperty(), "pathRegex");
+        FXResourceBundle.getBundle().put(pathField.promptTextProperty(), "pathWildcards");
 
         textField = new AutoCompleteField<String>();
         FXResourceBundle.getBundle().put(textField.promptTextProperty(), "textRegex");
@@ -42,17 +45,38 @@ public class SearchFileDialog extends InternalDialog {
         filePointers.setShowRoot(false);
 
         Button searchButton = new Button();
-        searchButton.disableProperty().bind(Bindings.createBooleanBinding(() -> pathField.getText().isBlank() && textField.getText().isBlank(), pathField.textProperty(), textField.textProperty()));
+        searchButton.disableProperty().bind(Bindings.createBooleanBinding(() -> pathField.getText().isBlank() && textField.getText().isBlank(),
+                pathField.textProperty(), textField.textProperty()));
+
         searchButton.setOnAction(e -> {
-            pathField.store();
-            textField.store();
-            FXFiles.search(searchPaths, pathField.getText(), textField.getText(), this::found);
+
+            if (searching) {
+                stop.set(true);
+                FXResourceBundle.getBundle().put(searchButton.textProperty(), "search");
+                searching = false;
+            } else {
+                pathField.store();
+                textField.store();
+                root.getChildren().clear();
+                stop = new AtomicBoolean();
+                FXFiles.search(searchPaths, pathField.getText(), textField.getText(), this::found, stop)
+                        .thenRun(() -> XPlatform.runFX(() -> {
+                            FXResourceBundle.getBundle().put(searchButton.textProperty(), "search");
+                            searching = false;
+                        }));
+                searching = true;
+                FXResourceBundle.getBundle().put(searchButton.textProperty(), "stop");
+            }
         });
 
         Button closeButton = new Button();
-        closeButton.setOnAction(e -> close());
+        closeButton.setOnAction(e -> {
+            stop.set(true);
+            close();
+        });
 
         FXResourceBundle.getBundle().put(searchButton.textProperty(), "search");
+
         FXResourceBundle.getBundle().put(closeButton.textProperty(), "close");
 
         ButtonBar buttonBar = new ButtonBar();
