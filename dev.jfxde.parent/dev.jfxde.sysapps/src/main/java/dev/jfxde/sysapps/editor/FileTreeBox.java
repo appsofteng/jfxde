@@ -42,6 +42,8 @@ public class FileTreeBox extends VBox {
     private ObservableList<TreeItem<FXPath>> copyItems = FXCollections.observableArrayList();
     private FXPath favoriteRoot;
     private ObjectProperty<Consumer<List<FilePointer>>> fileSelectedHandler = new SimpleObjectProperty<>();
+    private ObservableList<Search> searches = FXCollections.observableArrayList();
+    private SearchFileDialog searchFileDialog;
 
     public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<List<FilePointer>> fileSelectedHandler) {
         this.root = root;
@@ -121,12 +123,30 @@ public class FileTreeBox extends VBox {
         });
     }
 
+    private void showSearchFileDialog() {
+
+        searches.add(0, new Search(selectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList())));
+
+        if (searchFileDialog == null || !searchFileDialog.isVisible()) {
+            searchFileDialog = new SearchFileDialog(this,searches);
+            searchFileDialog.parentProperty().addListener((v,o,n) -> {
+                if (n == null) {
+                    searchFileDialog = null;
+                }
+            });
+        } else {
+            searchFileDialog.update();
+        }
+
+        searchFileDialog.show();
+    }
+
     private void setContextMenu() {
 
         MenuItem findFile = new MenuItem();
         FXResourceBundle.getBundle().put(findFile.textProperty(), "search");
         findFile.disableProperty().bind(Bindings.isEmpty(selectedItems));
-        findFile.setOnAction(e -> new SearchFileDialog(this, selectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList())).show());
+        findFile.setOnAction(e -> showSearchFileDialog());
 
         MenuItem newDirectory = new MenuItem();
         FXResourceBundle.getBundle().put(newDirectory.textProperty(), "newDirectory");
@@ -167,7 +187,9 @@ public class FileTreeBox extends VBox {
         MenuItem paste = new MenuItem();
         FXResourceBundle.getBundle().put(paste.textProperty(), "paste");
         paste.disableProperty().bind(Bindings.isEmpty(cutItems).and(Bindings.isEmpty(copyItems))
-                .or(Bindings.createBooleanBinding(() -> cutItems.stream().anyMatch(i -> i.getParent() == fileTreeView.getSelectionModel().getSelectedItem()), cutItems, fileTreeView.getSelectionModel().selectedItemProperty()))
+                .or(Bindings.createBooleanBinding(
+                        () -> cutItems.stream().anyMatch(i -> i.getParent() == fileTreeView.getSelectionModel().getSelectedItem()), cutItems,
+                        fileTreeView.getSelectionModel().selectedItemProperty()))
                 .or(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)));
         paste.setOnAction(e -> {
             var item = fileTreeView.getSelectionModel().getSelectedItem();
@@ -189,7 +211,8 @@ public class FileTreeBox extends VBox {
         addFavorite.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)
                 .or(Bindings.createBooleanBinding(() -> fileTreeView.getSelectionModel().getSelectedItem() == null ||
                         fileTreeView.getSelectionModel().getSelectedItem().getValue().isFile() ||
-                        favoriteRoot.getPaths().contains(fileTreeView.getSelectionModel().getSelectedItem().getValue()), fileTreeView.getSelectionModel().getSelectedItems(), favoriteRoot.getPaths())));
+                        favoriteRoot.getPaths().contains(fileTreeView.getSelectionModel().getSelectedItem().getValue()),
+                        fileTreeView.getSelectionModel().getSelectedItems(), favoriteRoot.getPaths())));
         addFavorite.setOnAction(e -> {
             cutItems.clear();
             copyItems.clear();
@@ -202,7 +225,8 @@ public class FileTreeBox extends VBox {
         removeFavorite.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)
                 .or(Bindings.createBooleanBinding(() -> fileTreeView.getSelectionModel().getSelectedItem() == null ||
                         fileTreeView.getSelectionModel().getSelectedItem().getValue().isFile() ||
-                        !favoriteRoot.getPaths().contains(fileTreeView.getSelectionModel().getSelectedItem().getValue()), fileTreeView.getSelectionModel().getSelectedItems(), favoriteRoot.getPaths())));
+                        !favoriteRoot.getPaths().contains(fileTreeView.getSelectionModel().getSelectedItem().getValue()),
+                        fileTreeView.getSelectionModel().getSelectedItems(), favoriteRoot.getPaths())));
         removeFavorite.setOnAction(e -> {
             cutItems.clear();
             copyItems.clear();
@@ -240,13 +264,14 @@ public class FileTreeBox extends VBox {
 
             if (!notToBeDeleted.isEmpty()) {
                 alert.contentText(FXResourceBundle.getBundle().getString​("itemsBeingModified"))
-                .expandableTextArea(notToBeDeleted);
+                        .expandableTextArea(notToBeDeleted);
             }
 
             alert.show();
         });
 
-        ContextMenu menu = new ContextMenu(findFile, new SeparatorMenuItem(), newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy, paste, new SeparatorMenuItem(),
+        ContextMenu menu = new ContextMenu(findFile, new SeparatorMenuItem(), newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy,
+                paste, new SeparatorMenuItem(),
                 addFavorite, removeFavorite, new SeparatorMenuItem(), refresh,
                 new SeparatorMenuItem(), delete);
         fileTreeView.setContextMenu(menu);

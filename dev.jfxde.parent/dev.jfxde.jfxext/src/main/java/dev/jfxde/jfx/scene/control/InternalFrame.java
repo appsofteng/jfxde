@@ -223,7 +223,10 @@ public abstract class InternalFrame extends Region {
     }
 
     protected void setSubFramesVisible(boolean value) {
-        subframes.forEach(s -> s.setSubFramesVisible(value));
+        subframes.forEach(s -> {
+            s.setVisible(value);
+            s.setSubFramesVisible(value);
+        });
     }
 
     public boolean isClosable() {

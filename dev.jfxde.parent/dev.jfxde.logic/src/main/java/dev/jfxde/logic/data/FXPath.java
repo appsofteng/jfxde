@@ -6,6 +6,7 @@ import java.lang.ref.WeakReference;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
@@ -453,7 +454,6 @@ public class FXPath implements Comparable<FXPath> {
         var pd = add(parent.getPaths(), parent, p, directory);
         parent.setDirLeaf(!directory);
         parent.setLeaf(false);
-        parent.setLoaded(true);
 
         return pd;
     }
@@ -519,7 +519,9 @@ public class FXPath implements Comparable<FXPath> {
                     var contextPath = getPath().resolve((Path) e.context());
 
                     if (e.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                        addInParent(this, contextPath, Files.isDirectory(contextPath));
+                        if (getPaths().stream().noneMatch(p -> p.getPath().equals(contextPath))) {
+                            addInParent(this, contextPath, Files.isDirectory(contextPath));
+                        }
                     } else if (e.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
                         var fxpath = getFromCache(contextPath);
                         try {
@@ -564,7 +566,7 @@ public class FXPath implements Comparable<FXPath> {
         onModified.forEach(c -> c.accept(this));
     }
 
-    void search(String pathWildcards, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+    void search(PathMatcher pathNatcher, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
 
         if (!isReadable()) {
             return;
@@ -575,20 +577,21 @@ public class FXPath implements Comparable<FXPath> {
         }
 
         if (isFile()) {
-            searchFile(pathWildcards, textRegex, consumer, stop);
+            searchFile(pathNatcher, textRegex, consumer, stop);
         } else {
 
             List<FXPath> loadedPaths = isLoaded() ? paths : loadSync(new ArrayList<>());
 
-            loadedPaths.parallelStream().sorted(Comparator.reverseOrder()).forEach(p -> p.search(pathWildcards, textRegex, consumer, stop));
+            loadedPaths.parallelStream().sorted(Comparator.reverseOrder()).forEach(p -> p.search(pathNatcher, textRegex, consumer, stop));
         }
     }
 
-    private void searchFile(String pathWildcards, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+    private void searchFile(PathMatcher pathNatcher, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
         if (stop.get()) {
             return;
         }
-        if (getName().matches(wildcardsToRegex(pathWildcards))) {
+        Path fileName = getPath().getFileName();
+        if (fileName != null && pathNatcher.matches(fileName)) {
             PathFilePointer pathPointer = new PathFilePointer(this);
             consumer.accept(pathPointer);
         }

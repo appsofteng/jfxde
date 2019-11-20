@@ -120,6 +120,13 @@ public class InternalDialog extends InternalFrame {
     private ChangeListener<Number> prefSizeListener;
 
     public void show() {
+
+        if (windowPane.getChildren().contains(this)) {
+            deactivateFront();
+            activateAll();
+            return;
+        }
+
         applyModality();
 
         if (!isUseComputedSize()) {

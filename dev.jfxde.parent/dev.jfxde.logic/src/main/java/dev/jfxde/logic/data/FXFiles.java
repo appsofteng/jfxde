@@ -1,8 +1,10 @@
 package dev.jfxde.logic.data;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -122,11 +124,12 @@ public final class FXFiles {
         return future;
     }
 
-    public static CompletableFuture<Void> search(List<FXPath> searchPaths, String pathWildcards, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+    public static CompletableFuture<Void> search(List<FXPath> searchPaths, String pathPattern, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             FXPath.getLock().lock();
             try {
-                searchPaths.forEach(p -> p.search(pathWildcards, textRegex, consumer, stop));
+                PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pathPattern);
+                searchPaths.forEach(p -> p.search(matcher, textRegex, consumer, stop));
             } catch(Exception e) {
                 stop.set(true);
                 throw new RuntimeException(e);
