@@ -7,7 +7,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.util.ArrayList;
@@ -45,7 +44,7 @@ import javafx.collections.ObservableList;
 
 public class FXPath implements Comparable<FXPath> {
 
-    private static final Path ROOT_PATH = Paths.get(File.separator);
+    private static final Path ROOT_PATH = Path.of(File.separator);
     private final static Map<Path, WeakReference<FXPath>> CACHE = new WeakHashMap<>();
     private static WatchServiceRegister watchServiceRegister;
     private static final ReentrantLock LOCK = new ReentrantLock();
@@ -160,14 +159,14 @@ public class FXPath implements Comparable<FXPath> {
     public static FXPath getRoot() {
         // Create a new root path so that it is not strongly referenced and thus removed
         // from the cache.
-        return getFromCache(null, Paths.get(ROOT_PATH.toString()), true);
+        return getFromCache(null, Path.of(ROOT_PATH.toString()), true);
     }
 
     public static FXPath getPseudoRoot(List<String> paths) {
 
         var pseudoRoot = new FXPath();
         List<FXPath> pds = paths.stream()
-                .map(p -> Paths.get(p))
+                .map(p -> Path.of(p))
                 .map(p -> getFromCache(pseudoRoot, p, Files.isDirectory(p)))
                 .collect(Collectors.toList());
 

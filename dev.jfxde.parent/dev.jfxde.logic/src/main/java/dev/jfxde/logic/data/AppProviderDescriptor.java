@@ -3,7 +3,6 @@ package dev.jfxde.logic.data;
 import java.io.FilePermission;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
@@ -74,10 +73,10 @@ public class AppProviderDescriptor implements Comparable<AppProviderDescriptor> 
         this.website.set(appManifest.website());
 
         this.codeSource = provider.type().getProtectionDomain().getCodeSource();
-        this.codeSourceParentPath = Paths.get(codeSource.getLocation().toURI()).getParent();
+        this.codeSourceParentPath = Path.of(codeSource.getLocation().toURI()).getParent();
 
         this.appDataDir = FileManager.APP_DATA_DIR + "/" + getFqn() + "/" + getVersion();
-        Files.createDirectories(Paths.get(appDataDir));
+        Files.createDirectories(Path.of(appDataDir));
 
         setSystem(SystemApp.class.isAssignableFrom(provider.type()));
         checkAppPath();
@@ -282,7 +281,7 @@ public class AppProviderDescriptor implements Comparable<AppProviderDescriptor> 
         var permissionChecksum = checksum.isEmpty() ? "" : Integer.toHexString(checksum.hashCode());
         setAllowed(permissionChecksum.isEmpty());
         appProviderData.setPermissionChecksum(permissionChecksum);
-        add(new FilePermission(Paths.get(appDataDir, "-").toString(), "read,write,delete"));
+        add(new FilePermission(Path.of(appDataDir, "-").toString(), "read,write,delete"));
         putPolicy();
     }
 
