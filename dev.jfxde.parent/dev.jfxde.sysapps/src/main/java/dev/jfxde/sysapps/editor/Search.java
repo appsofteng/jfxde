@@ -5,19 +5,21 @@ import java.util.List;
 
 import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.logic.data.FilePointer;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class Search {
 
-    private List<FXPath> paths = List.of();
+    private ObservableList<FXPath> paths = FXCollections.observableArrayList();
     private String pathPattern = "";
     private String textPattern = "";
-    private List<FilePointer> result = new ArrayList<>();
+    private ObservableList<FilePointer> result = FXCollections.observableArrayList();
 
-    public Search(List<FXPath> paths) {
+    public Search(ObservableList<FXPath> paths) {
         this.paths = paths;
     }
 
-    public List<FXPath> getPaths() {
+    public ObservableList<FXPath> getPaths() {
         return paths;
     }
 
@@ -37,8 +39,15 @@ public class Search {
         this.textPattern = textPattern;
     }
 
-    public List<FilePointer> getResult() {
+    public ObservableList<FilePointer> getResult() {
         return result;
+    }
+
+    public boolean remove(FXPath path) {
+        boolean removed = paths.removeIf(p -> p.equals(path));
+        removed |= result.removeIf(p -> p.getPath().equals(path));
+
+        return removed;
     }
 
     @Override

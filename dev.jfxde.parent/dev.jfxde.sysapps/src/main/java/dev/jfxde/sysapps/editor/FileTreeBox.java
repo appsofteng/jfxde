@@ -5,6 +5,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.scene.control.AlertBuilder;
 import dev.jfxde.jfx.scene.control.TreeViewUtils;
 import dev.jfxde.jfx.util.FXResourceBundle;
@@ -13,6 +14,7 @@ import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.logic.data.FilePointer;
 import dev.jfxde.logic.data.PathFilePointer;
 import dev.jfxde.ui.PathTreeItem;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -42,8 +44,9 @@ public class FileTreeBox extends VBox {
     private ObservableList<TreeItem<FXPath>> copyItems = FXCollections.observableArrayList();
     private FXPath favoriteRoot;
     private ObjectProperty<Consumer<List<FilePointer>>> fileSelectedHandler = new SimpleObjectProperty<>();
-    private ObservableList<Search> searches = FXCollections.observableArrayList();
+    private ObservableList<Search> searches = FXCollections.observableArrayList((s) -> new Observable[] { s.getPaths() });
     private SearchFileDialog searchFileDialog;
+    private Consumer<FXPath> onDeleted;
 
     public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<List<FilePointer>> fileSelectedHandler) {
         this.root = root;
@@ -64,6 +67,7 @@ public class FileTreeBox extends VBox {
     }
 
     private void setGraphics() {
+
         fileTreeView = new TreeView<>(root);
         fileTreeView.setShowRoot(false);
         fileTreeView.setMaxHeight(Double.MAX_VALUE);
@@ -76,6 +80,21 @@ public class FileTreeBox extends VBox {
     }
 
     private void setListeners() {
+        onDeleted = p -> {
+            XPlatform.runFX(() -> {
+                var i = searches.iterator();
+                while (i.hasNext()) {
+                    var s = i.next();
+                    s.remove(p);
+                    if (s.getPaths().isEmpty()) {
+                        i.remove();
+                    }
+                }
+            });
+          };
+
+        FXPath.addOnDeletedGlobally(onDeleted);
+
         fileTreeView.getSelectionModel().getSelectedItems()
                 .addListener((Change<? extends TreeItem<FXPath>> c) -> {
                     while (c.next()) {
@@ -125,10 +144,10 @@ public class FileTreeBox extends VBox {
 
     private void showSearchFileDialog() {
 
-        searches.add(0, new Search(selectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList())));
+        searches.add(0, new Search(FXCollections.observableArrayList(selectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList()))));
 
         if (searchFileDialog == null || !searchFileDialog.isVisible()) {
-            searchFileDialog = new SearchFileDialog(this,searches);
+            searchFileDialog = new SearchFileDialog(this, searches, fileSelectedHandler);
             searchFileDialog.parentProperty().addListener((v,o,n) -> {
                 if (n == null) {
                     searchFileDialog = null;
