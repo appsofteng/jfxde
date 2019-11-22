@@ -16,7 +16,9 @@ import dev.jfxde.logic.data.PathFilePointer;
 import dev.jfxde.ui.PathTreeItem;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener.Change;
@@ -40,7 +42,8 @@ public class FileTreeBox extends VBox {
 
     private TreeView<FXPath> fileTreeView;
     private PathTreeItem root;
-    private ObservableList<TreeItem<FXPath>> selectedItems = FXCollections.observableArrayList();
+    private ObservableList<TreeItem<FXPath>> readableSelectedItems = FXCollections.observableArrayList();
+    private ObservableList<TreeItem<FXPath>> writableSelectedItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> cutItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> copyItems = FXCollections.observableArrayList();
     private FXPath favoriteRoot;
@@ -99,7 +102,9 @@ public class FileTreeBox extends VBox {
         fileTreeView.getSelectionModel().getSelectedItems()
                 .addListener((Change<? extends TreeItem<FXPath>> c) -> {
                     while (c.next()) {
-                        selectedItems.setAll(TreeViewUtils.getSelectedItemsNoAncestor(fileTreeView, i -> i.getValue().getPath() != null));
+                        readableSelectedItems.setAll(TreeViewUtils.getSelectedItemsNoAncestor(fileTreeView, i -> i.getValue().isReadable()));
+                        writableSelectedItems
+                                .setAll(readableSelectedItems.stream().filter(i -> i.getValue().isWritable()).collect(Collectors.toList()));
                     }
                 });
 
@@ -147,7 +152,8 @@ public class FileTreeBox extends VBox {
 
     private void showSearchFileDialog() {
 
-        searches.add(0, new Search(FXCollections.observableArrayList(selectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList()))));
+        searches.add(0,
+                new Search(FXCollections.observableArrayList(readableSelectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList()))));
 
         if (searchFileDialog == null || !searchFileDialog.isVisible()) {
             searchFileDialog = new SearchFileDialog(this, searches, fileSelectedHandler);
@@ -165,41 +171,54 @@ public class FileTreeBox extends VBox {
 
     private void showContextMenu(ContextMenuEvent menuEvent) {
 
-        if (!selectedItems.isEmpty()) {
+        if (readableSelectedItems.size() > 1 || fileTreeView.getSelectionModel().getSelectedItems().size() == 1) {
 
             var menu = getFileContextMenu();
             menu.show(getScene().getWindow(), menuEvent.getScreenX(), menuEvent.getScreenY());
         }
     }
 
+    private BooleanProperty dirModifiable = new SimpleBooleanProperty();
+    private BooleanProperty pathModifiable = new SimpleBooleanProperty();
+    private BooleanProperty refreshable = new SimpleBooleanProperty();
+
     private ContextMenu getFileContextMenu() {
         if (fileContextMenu == null) {
             fileContextMenu = createFileContextMenu();
         }
+
+        int selectionSize = fileTreeView.getSelectionModel().getSelectedItems().size();
+        var item = fileTreeView.getSelectionModel().getSelectedItem();
+        var path = item.getValue();
+        var dir = path.isDirectory() ? path : item.getParent().getValue();
+
+        dirModifiable.set(selectionSize == 1 && dir.isReadable() && dir.isExecutable() && !dir.isReadOnly());
+        pathModifiable.set(selectionSize == 1 && path.isWritable() && !path.isReadOnly());
+        refreshable.set(selectionSize == 1 && !path.isPseudoPath() && path.isLoaded());
 
         return fileContextMenu;
     }
 
     private ContextMenu createFileContextMenu() {
 
-        MenuItem findFile = new MenuItem();
-        FXResourceBundle.getBundle().put(findFile.textProperty(), "search");
-        findFile.disableProperty().bind(Bindings.isEmpty(selectedItems));
-        findFile.setOnAction(e -> showSearchFileDialog());
+        MenuItem searchFile = new MenuItem();
+        FXResourceBundle.getBundle().put(searchFile.textProperty(), "search");
+        searchFile.disableProperty().bind(Bindings.isEmpty(readableSelectedItems));
+        searchFile.setOnAction(e -> showSearchFileDialog());
 
         MenuItem newDirectory = new MenuItem();
         FXResourceBundle.getBundle().put(newDirectory.textProperty(), "newDirectory");
-        newDirectory.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
+        newDirectory.disableProperty().bind(dirModifiable.not());
         newDirectory.setOnAction(e -> create(FXFiles::createDirectory, "directory"));
 
         MenuItem newFile = new MenuItem();
         FXResourceBundle.getBundle().put(newFile.textProperty(), "newFile");
-        newFile.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
+        newFile.disableProperty().bind(dirModifiable.not());
         newFile.setOnAction(e -> create(FXFiles::createFile, "file"));
 
         MenuItem rename = new MenuItem();
         FXResourceBundle.getBundle().put(rename.textProperty(), "rename");
-        rename.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
+        rename.disableProperty().bind(pathModifiable.not());
         rename.setOnAction(e -> {
             cutItems.clear();
             copyItems.clear();
@@ -209,18 +228,18 @@ public class FileTreeBox extends VBox {
 
         MenuItem cut = new MenuItem();
         FXResourceBundle.getBundle().put(cut.textProperty(), "cut");
-        cut.disableProperty().bind(Bindings.isEmpty(selectedItems));
+        cut.disableProperty().bind(Bindings.isEmpty(writableSelectedItems));
         cut.setOnAction(e -> {
             copyItems.clear();
-            cutItems.setAll(selectedItems);
+            cutItems.setAll(writableSelectedItems);
         });
 
         MenuItem copy = new MenuItem();
         FXResourceBundle.getBundle().put(copy.textProperty(), "copy");
-        copy.disableProperty().bind(Bindings.isEmpty(selectedItems));
+        copy.disableProperty().bind(Bindings.isEmpty(readableSelectedItems));
         copy.setOnAction(e -> {
             cutItems.clear();
-            copyItems.setAll(selectedItems);
+            copyItems.setAll(readableSelectedItems);
         });
 
         MenuItem paste = new MenuItem();
@@ -229,7 +248,7 @@ public class FileTreeBox extends VBox {
                 .or(Bindings.createBooleanBinding(
                         () -> cutItems.stream().anyMatch(i -> i.getParent() == fileTreeView.getSelectionModel().getSelectedItem()), cutItems,
                         fileTreeView.getSelectionModel().selectedItemProperty()))
-                .or(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)));
+                .or(dirModifiable.not()));
         paste.setOnAction(e -> {
             var item = fileTreeView.getSelectionModel().getSelectedItem();
             var parentItem = item.getValue().isFile() ? item.getParent() : item;
@@ -250,6 +269,7 @@ public class FileTreeBox extends VBox {
         addFavorite.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1)
                 .or(Bindings.createBooleanBinding(() -> fileTreeView.getSelectionModel().getSelectedItem() == null ||
                         fileTreeView.getSelectionModel().getSelectedItem().getValue().isFile() ||
+                        fileTreeView.getSelectionModel().getSelectedItem().getValue().getPath() == null ||
                         favoriteRoot.getPaths().contains(fileTreeView.getSelectionModel().getSelectedItem().getValue()),
                         fileTreeView.getSelectionModel().getSelectedItems(), favoriteRoot.getPaths())));
         addFavorite.setOnAction(e -> {
@@ -275,7 +295,7 @@ public class FileTreeBox extends VBox {
 
         MenuItem refresh = new MenuItem();
         FXResourceBundle.getBundle().put(refresh.textProperty(), "refresh");
-        refresh.disableProperty().bind(Bindings.size(fileTreeView.getSelectionModel().getSelectedItems()).isNotEqualTo(1));
+        refresh.disableProperty().bind(refreshable.not());
         refresh.setOnAction(e -> {
             cutItems.clear();
             copyItems.clear();
@@ -286,11 +306,11 @@ public class FileTreeBox extends VBox {
 
         MenuItem delete = new MenuItem();
         FXResourceBundle.getBundle().put(delete.textProperty(), "delete");
-        delete.disableProperty().bind(Bindings.isEmpty(selectedItems));
+        delete.disableProperty().bind(Bindings.isEmpty(writableSelectedItems));
         delete.setOnAction(e -> {
             cutItems.clear();
             copyItems.clear();
-            var pds = selectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList());
+            var pds = writableSelectedItems.stream().map(TreeItem::getValue).collect(Collectors.toList());
             var notToBeDeleted = pds.stream()
                     .flatMap(p -> p.getNotToBeDeleted().stream())
                     .map(p -> p.getPath().toString())
@@ -309,7 +329,7 @@ public class FileTreeBox extends VBox {
             alert.show();
         });
 
-        ContextMenu menu = new ContextMenu(findFile, new SeparatorMenuItem(), newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy,
+        ContextMenu menu = new ContextMenu(searchFile, new SeparatorMenuItem(), newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy,
                 paste, new SeparatorMenuItem(),
                 addFavorite, removeFavorite, new SeparatorMenuItem(), refresh,
                 new SeparatorMenuItem(), delete);

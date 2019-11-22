@@ -372,7 +372,28 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     public boolean isReadable() {
-        return getPath() == null || Files.isReadable(getPath());
+        return getPath() != null && Files.isReadable(getPath());
+    }
+
+    public boolean isWritable() {
+        return getPath() != null && Files.isWritable(getPath());
+    }
+
+    public boolean isExecutable() {
+        return getPath() != null && Files.isExecutable(getPath());
+    }
+
+    public boolean isReadOnly() {
+        boolean result = true;
+
+        try {
+            if (getPath() != null) {
+                result = (boolean) Files.getAttribute(getPath(), "dos:readonly");
+            }
+        } catch (IOException e) {
+        }
+
+        return result;
     }
 
     public boolean isDirLeaf() {
@@ -413,7 +434,7 @@ public class FXPath implements Comparable<FXPath> {
         return this == ROOT.get();
     }
 
-    private boolean isPseudoPath() {
+    public boolean isPseudoPath() {
         return getPath() == null && !isRoot();
     }
 
@@ -475,7 +496,8 @@ public class FXPath implements Comparable<FXPath> {
     private void listRoots(List<FXPath> loadedPaths) {
         try (var stream = StreamSupport.stream(FileSystems.getDefault().getRootDirectories().spliterator(), false)) {
             stream.forEach(p -> {
-                add(loadedPaths, this, p, true);
+                var pd = getFromCache(this, p, true);
+                loadedPaths.add(pd);
             });
         }
     }
@@ -487,7 +509,8 @@ public class FXPath implements Comparable<FXPath> {
             while (iterator.hasNext()) {
                 var p = iterator.next();
                 boolean directory = Files.isDirectory(p);
-                add(loadedPaths, this, p, directory);
+                var pd = getFromCache(this, p, directory);
+                loadedPaths.add(pd);
             }
 
         } catch (Exception e) {
@@ -496,16 +519,14 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     private static FXPath addInParent(FXPath parent, Path p, boolean directory) {
-        var pd = add(parent.paths, parent, p, directory);
+        var pd = getFromCache(parent, p, directory);
+
+        if (parent.isLoaded()) {
+            parent.paths.add(pd);
+        }
+
         parent.setDirLeaf(!directory);
         parent.setLeaf(false);
-
-        return pd;
-    }
-
-    private static FXPath add(List<FXPath> loadedPaths, FXPath parent, Path p, boolean directory) {
-        var pd = getFromCache(parent, p, directory);
-        loadedPaths.add(pd);
 
         return pd;
     }

@@ -25,6 +25,7 @@ public class PathTreeItem extends TreeItem<FXPath> {
     private boolean dirOnly;
     private ObservableList<TreeItem<FXPath>> allChildren = FXCollections.observableArrayList((i) -> new Observable[] { i.getValue().nameProperty() });
     private ObservableList<TreeItem<FXPath>> sortedChildren;
+    private boolean loaded;
 
     private ListChangeListener<FXPath> pathListener = (Change<? extends FXPath> c) -> {
 
@@ -54,6 +55,7 @@ public class PathTreeItem extends TreeItem<FXPath> {
 
         Platform.runLater(() -> {
             if (getValue().isLoaded()) {
+                loaded = true;
                 load(getValue().getPaths());
             }
         });
@@ -87,6 +89,8 @@ public class PathTreeItem extends TreeItem<FXPath> {
 
             if (super.getChildren().isEmpty() && getParent() != null) {
                 setExpanded(false);
+                loaded = false;
+                getValue().getPaths().removeListener(pathListener);
             }
         });
     }
@@ -102,7 +106,8 @@ public class PathTreeItem extends TreeItem<FXPath> {
 
     @Override
     public ObservableList<TreeItem<FXPath>> getChildren() {
-        if (super.getChildren().isEmpty()) {
+        if (!loaded) {
+            loaded = true;
             getValue().load(this::load);
         }
 
@@ -110,7 +115,8 @@ public class PathTreeItem extends TreeItem<FXPath> {
     }
 
     public ObservableList<TreeItem<FXPath>> getAllChildren() {
-        if (allChildren.isEmpty()) {
+        if (!loaded) {
+            loaded = true;
             getValue().load(this::load);
         }
 
