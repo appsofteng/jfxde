@@ -31,30 +31,31 @@ public class PathTreeItem extends TreeItem<FXPath> {
         while (c.next()) {
 
             if (c.wasAdded()) {
-                XPlatform.runFX(() -> addItems(c.getAddedSubList()));
+                addItems(c.getAddedSubList());
             } else if (c.wasRemoved()) {
-                XPlatform.runFX(() -> removeItems(c.getRemoved()));
+                removeItems(c.getRemoved());
             }
         }
     };
 
-    public PathTreeItem(FXPath descriptor) {
-        this(descriptor, p -> FXUtils.getIcon(p.getPath()), false);
+    public PathTreeItem(FXPath path) {
+        this(path, p -> FXUtils.getIcon(p.getPath()), false);
     }
 
-    public PathTreeItem(FXPath descriptor, boolean dirOnly) {
-        this(descriptor, p -> FXUtils.getIcon(p.getPath()), dirOnly);
+    public PathTreeItem(FXPath path, boolean dirOnly) {
+        this(path, p -> FXUtils.getIcon(p.getPath()), dirOnly);
     }
 
-    public PathTreeItem(FXPath descriptor, Function<FXPath, Node> graphicFactory, boolean dirOnly) {
-        super(descriptor);
+    public PathTreeItem(FXPath path, Function<FXPath, Node> graphicFactory, boolean dirOnly) {
+        super(path);
         this.graphicFactory = graphicFactory;
         this.dirOnly = dirOnly;
-        setGraphic(graphicFactory.apply(descriptor));
+        setGraphic(graphicFactory.apply(path));
 
         Platform.runLater(() -> {
-            addItems(getValue().getPaths());
-            setListeners();
+            if (getValue().isLoaded()) {
+                load(getValue().getPaths());
+            }
         });
     }
 
@@ -67,18 +68,27 @@ public class PathTreeItem extends TreeItem<FXPath> {
         getValue().getPaths().addListener(pathListener);
     }
 
+    private void load(List<? extends FXPath> paths) {
+        XPlatform.runFX(() -> {
+            addItems(paths);
+            setListeners();
+        });
+    }
+
     private void addItems(List<? extends FXPath> paths) {
-        paths.stream()
+        XPlatform.runFX(() -> paths.stream()
                 .map(p -> new PathTreeItem(p, graphicFactory, dirOnly))
-                .forEach(i -> allChildren.add(i));
+                .forEach(i -> allChildren.add(i)));
     }
 
     private void removeItems(List<? extends FXPath> paths) {
-        allChildren.removeIf(i -> ((PathTreeItem) i).remove(paths));
+        XPlatform.runFX(() -> {
+            allChildren.removeIf(i -> ((PathTreeItem) i).remove(paths));
 
-        if (super.getChildren().isEmpty() && getParent() != null) {
-            setExpanded(false);
-        }
+            if (super.getChildren().isEmpty() && getParent() != null) {
+                setExpanded(false);
+            }
+        });
     }
 
     private boolean remove(List<? extends FXPath> paths) {
@@ -92,12 +102,18 @@ public class PathTreeItem extends TreeItem<FXPath> {
 
     @Override
     public ObservableList<TreeItem<FXPath>> getChildren() {
-        getValue().load();
+        if (super.getChildren().isEmpty()) {
+            getValue().load(this::load);
+        }
+
         return super.getChildren();
     }
 
     public ObservableList<TreeItem<FXPath>> getAllChildren() {
-        getValue().load();
+        if (allChildren.isEmpty()) {
+            getValue().load(this::load);
+        }
+
         return allChildren;
     }
 

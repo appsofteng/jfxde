@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import dev.jfxde.api.AppContext;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
+import dev.jfxde.ui.PathTreeItem;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.collections.ListChangeListener.Change;
@@ -17,7 +19,8 @@ public class EditorContent extends BorderPane {
 
     private AppContext context;
     private EditorActions editorActions;
-    private FileTreePane fileTreePane;
+    private FileTreeBox fileTreeBox;
+    private FXPath favoriteRoot;
     private EditorBar editorBar;
     private EditorPane editorPane = new EditorPane();
     private SplitPane splitPane;
@@ -28,11 +31,22 @@ public class EditorContent extends BorderPane {
 
     EditorContent init(AppContext context) {
         this.context = context;
-        List<String> favorites = context.dc().fromJson(FAVORITES, List.class, List.of());
-        fileTreePane = new FileTreePane(favorites, p -> editorPane.open(p));
-        splitPane = new SplitPane(fileTreePane, editorPane);
+        List<String> favoritePaths = context.dc().fromJson(FAVORITES, List.class, List.of());
+
+        FXPath root = FXPath.getRoot();
+        FXResourceBundle.getBundle().put(root.nameProperty(), "roots");
+
+        favoriteRoot = FXPath.getPseudoPath(favoritePaths);
+        FXResourceBundle.getBundle().put(favoriteRoot.nameProperty(), "favorites");
+
+        FXPath pseudoRoot = FXPath.getPseudoPath(root, favoriteRoot);
+
+        PathTreeItem rootItem = new PathTreeItem(pseudoRoot);
+        fileTreeBox = new FileTreeBox(rootItem, favoriteRoot, p -> editorPane.open(p));
+
+        splitPane = new SplitPane(fileTreeBox, editorPane);
         splitPane.setDividerPositions(0.3);
-        SplitPane.setResizableWithParent(fileTreePane, false);
+        SplitPane.setResizableWithParent(fileTreeBox, false);
 
         editorActions = new EditorActions(this);
         editorBar = new EditorBar(editorActions);
@@ -48,7 +62,7 @@ public class EditorContent extends BorderPane {
     private void setListeners() {
         stoppable.bind(editorPane.changedProperty().not());
 
-        fileTreePane.getFavorites().addListener((Change<? extends FXPath> c) -> {
+        favoriteRoot.getPaths().addListener((Change<? extends FXPath> c) -> {
 
             while (c.next()) {
                 var favorites = c.getList().stream().map(p -> p.getPath().toString()).collect(Collectors.toList());

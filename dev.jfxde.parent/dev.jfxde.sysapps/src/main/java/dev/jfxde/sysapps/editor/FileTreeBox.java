@@ -29,6 +29,7 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.TextFieldTreeCell;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Priority;
@@ -47,6 +48,7 @@ public class FileTreeBox extends VBox {
     private ObservableList<Search> searches = FXCollections.observableArrayList((s) -> new Observable[] { s.getPaths() });
     private SearchFileDialog searchFileDialog;
     private Consumer<FXPath> onDeleted;
+    private ContextMenu fileContextMenu;
 
     public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<List<FilePointer>> fileSelectedHandler) {
         this.root = root;
@@ -54,7 +56,6 @@ public class FileTreeBox extends VBox {
         setFileSelectedHandler(fileSelectedHandler);
 
         setGraphics();
-        setContextMenu();
         setListeners();
     }
 
@@ -91,14 +92,14 @@ public class FileTreeBox extends VBox {
                     }
                 }
             });
-          };
+        };
 
         FXPath.addOnDeletedGlobally(onDeleted);
 
         fileTreeView.getSelectionModel().getSelectedItems()
                 .addListener((Change<? extends TreeItem<FXPath>> c) -> {
                     while (c.next()) {
-                        selectedItems.setAll(TreeViewUtils.getSelectedItemsNoAncestor(fileTreeView));
+                        selectedItems.setAll(TreeViewUtils.getSelectedItemsNoAncestor(fileTreeView, i -> i.getValue().getPath() != null));
                     }
                 });
 
@@ -140,6 +141,8 @@ public class FileTreeBox extends VBox {
                 }
             }
         });
+
+        fileTreeView.setOnContextMenuRequested(this::showContextMenu);
     }
 
     private void showSearchFileDialog() {
@@ -148,7 +151,7 @@ public class FileTreeBox extends VBox {
 
         if (searchFileDialog == null || !searchFileDialog.isVisible()) {
             searchFileDialog = new SearchFileDialog(this, searches, fileSelectedHandler);
-            searchFileDialog.parentProperty().addListener((v,o,n) -> {
+            searchFileDialog.parentProperty().addListener((v, o, n) -> {
                 if (n == null) {
                     searchFileDialog = null;
                 }
@@ -160,7 +163,24 @@ public class FileTreeBox extends VBox {
         searchFileDialog.show();
     }
 
-    private void setContextMenu() {
+    private void showContextMenu(ContextMenuEvent menuEvent) {
+
+        if (!selectedItems.isEmpty()) {
+
+            var menu = getFileContextMenu();
+            menu.show(getScene().getWindow(), menuEvent.getScreenX(), menuEvent.getScreenY());
+        }
+    }
+
+    private ContextMenu getFileContextMenu() {
+        if (fileContextMenu == null) {
+            fileContextMenu = createFileContextMenu();
+        }
+
+        return fileContextMenu;
+    }
+
+    private ContextMenu createFileContextMenu() {
 
         MenuItem findFile = new MenuItem();
         FXResourceBundle.getBundle().put(findFile.textProperty(), "search");
@@ -293,7 +313,9 @@ public class FileTreeBox extends VBox {
                 paste, new SeparatorMenuItem(),
                 addFavorite, removeFavorite, new SeparatorMenuItem(), refresh,
                 new SeparatorMenuItem(), delete);
-        fileTreeView.setContextMenu(menu);
+        menu.setAutoHide(true);
+
+        return menu;
     }
 
     private void create(BiFunction<FXPath, String, FXPath> create, String key) {
