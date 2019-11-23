@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import dev.jfxde.j.nio.file.XFiles;
 
@@ -124,7 +125,7 @@ public final class FXFiles {
         return future;
     }
 
-    public static CompletableFuture<Void> search(List<FXPath> searchPaths, String pathPattern, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+    public static CompletableFuture<Void> search(List<FXPath> searchPaths, String pathPattern, Pattern textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             FXPath.getLock().lock();
             try {

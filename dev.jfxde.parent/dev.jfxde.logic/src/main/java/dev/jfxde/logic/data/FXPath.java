@@ -23,11 +23,16 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
+import dev.jfxde.logic.Sys;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -41,6 +46,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class FXPath implements Comparable<FXPath> {
+
+    private static final Logger LOGGER = Logger.getLogger(FXPath.class.getName());
 
     private static WeakReference<FXPath> ROOT = new WeakReference<FXPath>(null);
 
@@ -384,13 +391,14 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     public boolean isReadOnly() {
-        boolean result = true;
+        boolean result = getPath() == null;
 
         try {
             if (getPath() != null) {
                 result = (boolean) Files.getAttribute(getPath(), "dos:readonly");
             }
         } catch (IOException e) {
+            LOGGER.log(Level.INFO, e.getMessage(), e);
         }
 
         return result;
@@ -632,7 +640,7 @@ public class FXPath implements Comparable<FXPath> {
         onModified.forEach(c -> c.accept(this));
     }
 
-    void search(PathMatcher pathMatcher, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+    void search(PathMatcher pathMatcher, Pattern textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
 
         if (!isReadable()) {
             return;
@@ -652,7 +660,7 @@ public class FXPath implements Comparable<FXPath> {
         }
     }
 
-    private void searchFile(PathMatcher pathNatcher, String textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+    private void searchFile(PathMatcher pathNatcher, Pattern textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
         if (stop.get()) {
             return;
         }
@@ -662,6 +670,29 @@ public class FXPath implements Comparable<FXPath> {
             consumer.accept(pathPointer);
         }
     }
+
+    private void searchText(Pattern pattern) {
+        try {
+            if (pattern != null && Files.probeContentType(getPath()).toLowerCase().startsWith("text")) {
+
+                try (var lines = Files.lines(getPath())) {
+
+                    lines.forEach(line -> {
+
+                        Matcher matcher = pattern.matcher(line);
+
+                        while (matcher.find()) {
+
+                        }
+
+                    });
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, e.getMessage(), e);
+        }
+    }
+
 
     @Override
     public String toString() {

@@ -3,6 +3,7 @@ package dev.jfxde.sysapps.editor;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.scene.control.AutoCompleteField;
@@ -21,10 +22,12 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -36,6 +39,8 @@ public class SearchFileDialog extends InternalDialog {
     private Search search;
     private AutoCompleteField<String> pathField;
     private AutoCompleteField<String> textField;
+    private CheckBox matchCase = new CheckBox();
+    private CheckBox regex = new CheckBox();
     private Button searchButton = new Button();
     private Button closeButton = new Button();
     private TreeItem<FilePointer> root;
@@ -72,8 +77,12 @@ public class SearchFileDialog extends InternalDialog {
         pathField = new AutoCompleteField<String>();
         FXResourceBundle.getBundle().put(pathField.promptTextProperty(), "pathWildcards");
 
+        FXResourceBundle.getBundle().put(matchCase.textProperty(), "matchCase");
+        FXResourceBundle.getBundle().put(regex.textProperty(), "regex");
+        HBox optionBox = new HBox(5, matchCase, regex);
+
         textField = new AutoCompleteField<String>();
-        FXResourceBundle.getBundle().put(textField.promptTextProperty(), "textRegex");
+        FXResourceBundle.getBundle().put(textField.promptTextProperty(), "text");
 
         root = new TreeItem<>();
         filePointerTree = new TreeView<>(root);
@@ -96,11 +105,12 @@ public class SearchFileDialog extends InternalDialog {
 
         VBox.setMargin(searchChoice, margin);
         VBox.setMargin(pathField, margin);
+        VBox.setMargin(optionBox, margin);
         VBox.setMargin(textField, margin);
         VBox.setMargin(filePointerTree, margin);
         VBox.setVgrow(filePointerTree, Priority.ALWAYS);
         VBox.setMargin(buttonBar, margin);
-        pane.getChildren().addAll(searchChoice, pathField, textField, filePointerTree, buttonBar);
+        pane.getChildren().addAll(searchChoice, pathField, optionBox, textField, filePointerTree, buttonBar);
 
         setContent(pane);
     }
@@ -140,7 +150,7 @@ public class SearchFileDialog extends InternalDialog {
 
                 root.getChildren().clear();
                 stop = new AtomicBoolean();
-                FXFiles.search(search.getPaths(), pathField.getText(), textField.getText(), this::found, stop)
+                FXFiles.search(search.getPaths(), pathField.getText(), getPattern(), this::found, stop)
                         .thenRun(() -> XPlatform.runFX(() -> {
                             FXResourceBundle.getBundle().put(searchButton.textProperty(), "search");
                             searching = false;
@@ -166,6 +176,23 @@ public class SearchFileDialog extends InternalDialog {
                 }
             }
         });
+    }
+
+    private Pattern getPattern() {
+
+        if (textField.getText().isBlank()) {
+            return null;
+        }
+
+        int flags = matchCase.isSelected() ? Pattern.CASE_INSENSITIVE : 0;
+
+        if (regex.isSelected()) {
+            flags |= Pattern.LITERAL;
+        }
+
+        Pattern pattern = Pattern.compile(textField.getText(), flags);
+
+        return pattern;
     }
 
     private Consumer<List<FilePointer>> getFileSelectedHandler() {
