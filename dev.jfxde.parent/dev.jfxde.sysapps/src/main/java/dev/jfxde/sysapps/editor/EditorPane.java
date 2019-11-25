@@ -1,8 +1,11 @@
 package dev.jfxde.sysapps.editor;
 
+import java.util.List;
+
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
+import dev.jfxde.logic.data.FilePosition;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -96,12 +99,18 @@ public class EditorPane extends StackPane {
         return selectedEditor.get();
     }
 
-    void setEditor(FXPath path) {
-        Tab tab = findEditorTab(path);
+    void open(List<FilePosition> positions) {
+        positions.forEach(p -> setEditor(p));
+    }
+
+    void setEditor(FilePosition filePosition) {
+        Tab tab = findEditorTab(filePosition.getPath());
 
         if (tab == null) {
-            tab = createEditorTab(path);
+            tab = createEditorTab(filePosition);
             tabPane.getTabs().add(tab);
+        } else {
+            ((Editor)tab.getContent()).moveToPotition(filePosition);
         }
 
         tabPane.getSelectionModel().select(tab);
@@ -114,9 +123,9 @@ public class EditorPane extends StackPane {
                 .orElse(null);
     }
 
-    private Tab createEditorTab(FXPath path) {
+    private Tab createEditorTab(FilePosition filePosition) {
         Tab tab = new Tab();
-        Editor editor = new Editor(path);
+        Editor editor = new Editor(filePosition);
         tab.setContent(editor);
 
         tab.closableProperty().bind(editor.changedProperty().not());
@@ -137,6 +146,7 @@ public class EditorPane extends StackPane {
 
         MenuItem reload = new MenuItem();
         FXResourceBundle.getBundle().put(reload.textProperty(), "reload");
+        reload.disableProperty().bind(((Editor)tab.getContent()).deletedExternallyProperty());
         reload.setOnAction(e -> ((Editor)tab.getContent()).load());
 
         MenuItem closeOthers = new MenuItem();

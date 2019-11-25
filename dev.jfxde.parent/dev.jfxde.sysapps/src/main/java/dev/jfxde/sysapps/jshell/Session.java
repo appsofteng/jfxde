@@ -3,7 +3,6 @@ package dev.jfxde.sysapps.jshell;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -264,7 +263,7 @@ public class Session {
     private void loadStartupScripts() {
 
         for (String file : settings.getStartupScripts()) {
-            Path path = Paths.get(file);
+            Path path = Path.of(file);
             if (Files.exists(path)) {
                 try {
                     String spippets = Files.readString(path);

@@ -1,5 +1,7 @@
 package dev.jfxde.ui;
 
+import java.util.List;
+
 import dev.jfxde.data.entity.Window;
 import dev.jfxde.data.entity.Window.State;
 import dev.jfxde.fonts.Fonts;
@@ -34,7 +36,6 @@ public class InternalWindow extends InternalFrame {
 
     private WindowPane windowPane;
     private Window windowModel;
-    private BooleanProperty closable = new SimpleBooleanProperty();
 
     protected Button newWindow = new Button(Fonts.Unicode.TWO_JOINED_SQUARES);
     private Button tile = new Button(Fonts.FontAwesome.TH_LARGE);
@@ -65,7 +66,7 @@ public class InternalWindow extends InternalFrame {
         } else if (n == State.TILED) {
             tile(o);
         } else if (n == State.CLOSED) {
-            close();
+            onCloseState();
         }
 
         if (o == State.TILED) {
@@ -138,7 +139,7 @@ public class InternalWindow extends InternalFrame {
         full.setTooltip(new Tooltip());
         full.getTooltip().textProperty().bind(Sys.rm().getStringBinding("full"));
 
-        buttonBox.getChildren().addAll(newWindow, tile, minimize, maximize, full, close);
+        buttonBox.getChildren().addAll(0, List.of(newWindow, tile, minimize, maximize, full));
     }
 
     private void setTitleMenu() {
@@ -154,7 +155,7 @@ public class InternalWindow extends InternalFrame {
         MenuItem closeOthers = new MenuItem();
         closeOthers.textProperty().bind(Sys.rm().getStringBinding("closeOthers"));
         closeOthers.disableProperty().bind(Bindings.isEmpty(windowPane.getClosableWindows())
-                .or(Bindings.size(windowPane.getClosableWindows()).isEqualTo(1).and(close.disabledProperty().not())));
+                .or(Bindings.size(windowPane.getClosableWindows()).isEqualTo(1).and(closableProperty())));
         closeOthers.setOnAction(e -> windowModel.getDesktop().closeOthers());
 
         MenuItem closeAll = new MenuItem();
@@ -236,9 +237,6 @@ public class InternalWindow extends InternalFrame {
         maximize.setOnAction(e -> windowModel.maximizeRestore());
         full.setOnAction(e -> windowModel.full());
 
-        close.setOnAction(e -> windowModel.close());
-        closable.bind(close.disabledProperty().not());
-
         windowModel.activeProperty().addListener(activateListener);
 
         windowModel.stateProperty().addListener(stateListener);
@@ -248,20 +246,12 @@ public class InternalWindow extends InternalFrame {
 
     }
 
-    boolean isClosable() {
-        return closable.get();
-    }
-
-    ReadOnlyBooleanProperty closableProperty() {
-        return closable;
-    }
-
-    protected void close() {
-        super.close();
-        onClose();
-    }
-
     protected void onClose() {
+        windowModel.close();
+    }
+
+    void onCloseState() {
+        super.close();
     }
 
     protected void forceClose() {
@@ -272,7 +262,7 @@ public class InternalWindow extends InternalFrame {
     }
 
     public void activate() {
-        active.set(true);
+        setActive(true);
         subframes.forEach(InternalFrame::deactivateAll);
         requestFocus();
         focusOwner.requestFocus();
@@ -285,7 +275,7 @@ public class InternalWindow extends InternalFrame {
             modalFrame.activate();
         } else {
 
-            active.set(true);
+            setActive(true);
 
             if (windowModel.isMinimized()) {
                 restoreTransition(MINIMALIZATION_DURATION);

@@ -1,7 +1,9 @@
 package dev.jfxde.apps.webbrowser;
 
+import java.io.FilePermission;
 import java.net.NetPermission;
 import java.net.SocketPermission;
+import java.security.AllPermission;
 import java.util.PropertyPermission;
 
 import dev.jfxde.api.App;
@@ -15,6 +17,7 @@ import javafx.util.FXPermission;
 @PermissionEntry(type = SocketPermission.class, target = "*", actions = "connect,accept,listen")
 @PermissionEntry(type = NetPermission.class, target = "*")
 @PermissionEntry(type = PropertyPermission.class, target = "*", actions = "read,write")
+@PermissionEntry(type = FilePermission.class, target = "<<ALL FILES>>", actions = "read")
 @PermissionEntry(type = FXPermission.class, target = "*")
 public class WebBrowserApp implements App {
 

@@ -2,17 +2,13 @@ package dev.jfxde.apps.webbrowser;
 
 import java.util.Set;
 
-import org.controlsfx.control.textfield.AutoCompletionBinding;
-import org.controlsfx.control.textfield.TextFields;
-
 import dev.jfxde.api.AppContext;
 import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfx.scene.control.AutoCompleteField;
 import dev.jfxde.jfx.util.FXResourceBundle;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.TilePane;
@@ -24,9 +20,8 @@ public class WebMenuBar extends BorderPane {
 	private Button back = new Button(Fonts.FontAwesome.ARROW_LEFT);
 	private Button forward = new Button(Fonts.FontAwesome.ARROW_RIGHT);
 	private Button reload = new Button(Fonts.FontAwesome.REDO);
-	private TextField urlField = new TextField();
+	private AutoCompleteField<String> urlField;
 	private Set<String> locations;
-	private AutoCompletionBinding<String> urlFieldBinding;
 
 	public WebMenuBar(AppContext context, WebPageView webPageView, Set<String> locations) {
 		this.context = context;
@@ -39,6 +34,8 @@ public class WebMenuBar extends BorderPane {
 	}
 
 	private void initControls() {
+	    urlField = new AutoCompleteField<String>(locations);
+
 		back.getStyleClass().addAll("jd-font-awesome-solid");
 		back.setTooltip(new Tooltip());
 		FXResourceBundle.getBundle().put(back.getTooltip().textProperty(), "back");
@@ -67,8 +64,6 @@ public class WebMenuBar extends BorderPane {
 		buttonPane.setMaxHeight(USE_PREF_SIZE);
 		BorderPane.setAlignment(buttonPane, Pos.CENTER_LEFT);
 
-		Platform.runLater(this::bindAutoCompletion);
-
 		setLeft(buttonPane);
 		setCenter(urlField);
 	}
@@ -90,23 +85,6 @@ public class WebMenuBar extends BorderPane {
 			}
 		});
 
-		urlField.setOnAction(e -> onLocationSelected());
-	}
-
-	private void bindAutoCompletion() {
-		urlFieldBinding = TextFields.bindAutoCompletion(urlField, locations);
-		urlFieldBinding.setOnAutoCompleted(e -> webPageView.load(urlField.getText()));
-	}
-
-	private void onLocationSelected() {
-
-		locations.add(urlField.getText());
-		if (urlFieldBinding != null) {
-			urlFieldBinding.dispose();
-		}
-
-		bindAutoCompletion();
-
-		webPageView.load(urlField.getText());
+		urlField.setOnCompleted(t -> webPageView.load(t));
 	}
 }

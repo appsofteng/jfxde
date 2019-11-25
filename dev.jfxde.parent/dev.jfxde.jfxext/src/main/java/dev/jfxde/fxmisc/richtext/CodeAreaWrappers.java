@@ -99,16 +99,20 @@ public final class CodeAreaWrappers {
                         return;
                     }
 
-                    int insertionEnd = ch.toPlainTextChange().getInsertionEnd();
-                    int caretPosition = insertionEnd >= 0 ? insertionEnd : area.getCaretPosition();
+                    var plainChange = ch.toPlainTextChange();
+                    int insertionEnd = plainChange.getInsertionEnd();
+                    int caretPosition = area.getCaretPosition();
 
                     // Use List not StyleSpansBuilder, StyleSpansBuilder merges styles immediately.
                     List<StyleSpan<Collection<String>>> spans = new ArrayList<>();
 
                     var end = getLexer().tokenize(area.getText(), caretPosition, (lastEnd, t) -> {
                         spans.add(new StyleSpan<>(Collections.emptyList(), t.getStart() - lastEnd));
-                        spans.add(highlightWrapper.getStyleSpan(t));
+                        StyleSpan<Collection<String>> styleSpan = new StyleSpan<>(t.getStyle(), t.getLength());
+                        spans.add(styleSpan);
                     });
+
+                    highlightWrapper.setToken(lexer.getTokenOnCaretPosition());
 
                     StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
                     spansBuilder.addAll(spans);
@@ -116,7 +120,13 @@ public final class CodeAreaWrappers {
                     StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
 
                     area.setStyleSpans(0, styleSpans);
-                    blockEndWrapper.indentEnd(getLexer().getCloseTokenOnChangePosition());
+
+                    var tokenOnCaret = getLexer().getTokenOnCaretPosition();
+
+                    if (insertionEnd == area.getCaretPosition() && tokenOnCaret != null &&
+                            tokenOnCaret.isClose() && tokenOnCaret.getValue().equals(plainChange.getInserted())) {
+                        blockEndWrapper.indentEnd(tokenOnCaret);
+                    }
 
                 });
 

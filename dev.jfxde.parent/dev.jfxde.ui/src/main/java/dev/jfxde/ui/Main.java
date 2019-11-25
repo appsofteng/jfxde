@@ -10,7 +10,6 @@ import dev.jfxde.jfx.scene.control.AlertBuilder;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.FileManager;
 import dev.jfxde.logic.Sys;
-import dev.jfxde.logic.data.FXFiles;
 import javafx.application.Application;
 import javafx.application.Preloader.ProgressNotification;
 import javafx.geometry.Rectangle2D;

@@ -87,7 +87,7 @@ public class FileDialog extends InternalDialog {
         fileTree.setPrefHeight(height);
 
         TableColumn<TreeItem<FXPath>, StringProperty> nameColumn = new TableColumn<>();
-        nameColumn.setText("Name");
+        nameColumn.setText(FXResourceBundle.getBundle().getString​("name"));
         nameColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().nameProperty()));
         nameColumn.setComparator(FXPath.STRING_COMPARATOR);
         nameColumn.setPrefWidth(200);
@@ -117,19 +117,19 @@ public class FileDialog extends InternalDialog {
         });
 
         TableColumn<TreeItem<FXPath>, ReadOnlyLongProperty> createdColumn = new TableColumn<>();
-        createdColumn.setText("Created");
+        createdColumn.setText(FXResourceBundle.getBundle().getString​("created"));
         createdColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().getBasicFileAttributes().creationTimeProperty()));
         createdColumn.setComparator(FXPath.LONG_COMPARATOR);
         createdColumn.setPrefWidth(120);
 
         TableColumn<TreeItem<FXPath>, ReadOnlyLongProperty> modifiedColumn = new TableColumn<>();
-        modifiedColumn.setText("Modified");
+        modifiedColumn.setText(FXResourceBundle.getBundle().getString​("modified"));
         modifiedColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().getBasicFileAttributes().lastModifiedTimeProperty()));
         modifiedColumn.setComparator(FXPath.LONG_COMPARATOR);
         modifiedColumn.setPrefWidth(120);
 
         TableColumn<TreeItem<FXPath>, ReadOnlyLongProperty> sizeColumn = new TableColumn<>();
-        sizeColumn.setText("Size");
+        sizeColumn.setText(FXResourceBundle.getBundle().getString​("size"));
         sizeColumn.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getValue().getBasicFileAttributes().sizeProperty()));
         sizeColumn.setComparator(FXPath.LONG_COMPARATOR);
         sizeColumn.getStyleClass().add("jd-table-column-numerical");

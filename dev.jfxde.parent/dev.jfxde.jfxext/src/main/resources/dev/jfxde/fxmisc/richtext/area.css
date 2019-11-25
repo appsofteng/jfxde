@@ -1,6 +1,6 @@
 .styled-text-area .selection {
     -fx-fill: rgba(147, 147, 147, 0.5);
-
+    -fx-stroke-width: 0;
 }
 
 .styled-text-area .jd-find {

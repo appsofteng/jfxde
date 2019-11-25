@@ -6,6 +6,7 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
@@ -38,6 +39,8 @@ public abstract class InternalFrame extends Region {
     protected static final double CURSOR_BORDER_WIDTH = 5;
     private static final PseudoClass ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("active");
 
+    private BooleanProperty closable = new SimpleBooleanProperty(true);
+
     protected Modality modality = Modality.NONE;
 
     protected ObservableList<InternalFrame> subframes = FXCollections.observableArrayList();
@@ -50,29 +53,14 @@ public abstract class InternalFrame extends Region {
     protected ContentRegion contentRegion = new ContentRegion();
     protected Node focusOwner = contentRegion;
 
-    protected Button close = new Button("x");
+    private Button close = new Button("x");
 
     protected Bounds restoreBounds;
     protected Point2D pressDragPoint;
 
     private Timeline modalTimeline;
 
-    protected BooleanProperty active = new BooleanPropertyBase() {
-        @Override
-        protected void invalidated() {
-            pseudoClassStateChanged(ACTIVE_PSEUDO_CLASS, get());
-        }
-
-        @Override
-        public String getName() {
-            return "activePseudoClass";
-        }
-
-        @Override
-        public Object getBean() {
-            return InternalFrame.this;
-        }
-    };
+    protected BooleanProperty active;
 
     public InternalFrame(Pane windowPane) {
         this.windowPane = windowPane;
@@ -84,6 +72,10 @@ public abstract class InternalFrame extends Region {
         close.setFocusTraversable(false);
         close.setTooltip(new Tooltip());
         FXResourceBundle.getBundle().put(close.getTooltip().textProperty(), "close");
+        close.setOnAction(e -> onClose());
+        close.disableProperty().bind(closable.not());
+
+        buttonBox.getChildren().addAll(close);
     }
 
     protected void buildLayout(double width, double height) {
@@ -219,7 +211,7 @@ public abstract class InternalFrame extends Region {
     void deactivate() {
         setCursor(Cursor.DEFAULT);
         if (isActive()) {
-            active.set(false);
+            setActive(false);
             focusOwner = getScene().getFocusOwner();
         }
     }
@@ -231,11 +223,29 @@ public abstract class InternalFrame extends Region {
     }
 
     protected void setSubFramesVisible(boolean value) {
-        subframes.forEach(s -> s.setSubFramesVisible(value));
+        subframes.forEach(s -> {
+            s.setVisible(value);
+            s.setSubFramesVisible(value);
+        });
+    }
+
+    public boolean isClosable() {
+        return closable.get();
+    }
+
+    public BooleanProperty closableProperty() {
+        return closable;
+    }
+
+    protected void onClose() {
+        close();
     }
 
     protected void close() {
-        subframes.forEach(InternalFrame::close);
+        subframes.forEach(f -> {
+            f.parent = null;
+            f.close();
+        });
 
         if (parent != null) {
             parent.subframes.remove(this);
@@ -249,7 +259,34 @@ public abstract class InternalFrame extends Region {
     }
 
     boolean isActive() {
-        return active.get();
+        return active == null ? false : activeProperty().get();
+    }
+
+    protected void setActive(boolean value) {
+        activeProperty().set(value);
+    }
+
+    BooleanProperty activeProperty() {
+        if (active == null) {
+            active = new BooleanPropertyBase() {
+                @Override
+                protected void invalidated() {
+                    pseudoClassStateChanged(ACTIVE_PSEUDO_CLASS, get());
+                }
+
+                @Override
+                public String getName() {
+                    return "activePseudoClass";
+                }
+
+                @Override
+                public Object getBean() {
+                    return InternalFrame.this;
+                }
+            };
+        }
+
+        return active;
     }
 
     @Override
@@ -308,7 +345,8 @@ public abstract class InternalFrame extends Region {
             modalTimeline.stop();
         } else {
 
-            var b1 = new Border(new BorderStroke(Color.rgb(255, 255, 255, 0.5), BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(4), new Insets(-4)));
+            var b1 = new Border(new BorderStroke(Color.rgb(255, 255, 255, 0.5), BorderStrokeStyle.SOLID, new CornerRadii(5), new BorderWidths(4),
+                    new Insets(-4)));
             var b2 = getBorder();
             modalTimeline = new Timeline();
             modalTimeline.setCycleCount(5);

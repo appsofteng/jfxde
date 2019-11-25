@@ -3,7 +3,6 @@ package dev.jfxde.logic.context;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import dev.jfxde.api.FileController;
 import dev.jfxde.logic.data.AppDescriptor;
@@ -20,7 +19,7 @@ public class FileControllerImpl implements FileController {
 	@Override
     public Path getAppDataDir(String... subDir) {
         AppProviderDescriptor descriptor = appDescriptor.getAppProviderDescriptor();
-        Path dataDir = Paths.get(descriptor.getAppDataDir(), subDir);
+        Path dataDir = Path.of(descriptor.getAppDataDir(), subDir);
 
         try {
             Files.createDirectories(dataDir);

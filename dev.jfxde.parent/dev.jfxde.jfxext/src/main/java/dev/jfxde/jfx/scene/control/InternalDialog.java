@@ -62,12 +62,6 @@ public class InternalDialog extends InternalFrame {
         return this;
     }
 
-    protected void addButtons() {
-        super.addButtons();
-
-        buttonBox.getChildren().addAll(close);
-    }
-
     private void setMoveable() {
         LayoutUtils.makeDragable(this, titleBar, e -> {
             if (isMaximized()) {
@@ -109,8 +103,6 @@ public class InternalDialog extends InternalFrame {
                 close();
             }
         });
-
-        close.setOnAction(e -> close());
     }
 
     private boolean isMaximized() {
@@ -128,6 +120,13 @@ public class InternalDialog extends InternalFrame {
     private ChangeListener<Number> prefSizeListener;
 
     public void show() {
+
+        if (windowPane.getChildren().contains(this)) {
+            deactivateFront();
+            activateAll();
+            return;
+        }
+
         applyModality();
 
         if (!isUseComputedSize()) {
@@ -171,7 +170,7 @@ public class InternalDialog extends InternalFrame {
                 root.deactivate();
             }
             deactivateFront();
-            active.set(true);
+            setActive(true);
             toFront();
             focusOwner.requestFocus();
         } else {
@@ -180,7 +179,7 @@ public class InternalDialog extends InternalFrame {
     }
 
     public void activate() {
-        active.set(true);
+        setActive(true);
         toFront();
         focusOwner.requestFocus();
     }

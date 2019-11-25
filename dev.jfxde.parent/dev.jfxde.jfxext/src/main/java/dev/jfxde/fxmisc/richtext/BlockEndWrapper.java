@@ -10,10 +10,6 @@ public class BlockEndWrapper<T extends GenericStyledArea<?, ?, ?>> extends Gener
 
     void indentEnd(Token closeToken) {
 
-        if (closeToken == null) {
-            return;
-        }
-
         int paragraph = getParagraphForAbsolutePosition(closeToken.getStart());
         String paragraphText = getArea().getText(paragraph);
 

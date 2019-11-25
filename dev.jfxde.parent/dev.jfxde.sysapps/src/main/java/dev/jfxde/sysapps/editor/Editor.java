@@ -8,10 +8,12 @@ import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
 import dev.jfxde.fxmisc.richtext.CodeAreaWrappers;
+import dev.jfxde.fxmisc.richtext.ContextMenuBuilder;
 import dev.jfxde.j.util.LU;
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.logic.data.FXFiles;
 import dev.jfxde.logic.data.FXPath;
+import dev.jfxde.logic.data.FilePosition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -21,6 +23,7 @@ import javafx.scene.layout.StackPane;
 
 public class Editor extends StackPane {
 
+    private FilePosition filePosition;
     private FXPath path;
     private final ReadOnlyBooleanWrapper edited = new ReadOnlyBooleanWrapper();
     private final ReadOnlyBooleanWrapper modified = new ReadOnlyBooleanWrapper();
@@ -31,15 +34,17 @@ public class Editor extends StackPane {
     private final ReadOnlyStringWrapper tabTitle = new ReadOnlyStringWrapper();
     private final CodeArea area = new CodeArea();
 
-    public Editor(FXPath path) {
-        this.path = path;
+    public Editor(FilePosition filePosition) {
+        setFilePosition(filePosition);
 
-        title.bind(Bindings.createStringBinding(() -> path.getPath().toString(), path.pathProperty()));
-        tabTitle.bind(Bindings.createStringBinding(() -> getTabString(), path.nameProperty(), edited, modified, deletedExternally));
+        title.bind(Bindings.createStringBinding(() -> getPath().getPath().toString(), getPath().pathProperty()));
+        tabTitle.bind(Bindings.createStringBinding(() -> getTabString(), getPath().nameProperty(), edited, modified, deletedExternally));
 
         area.setParagraphGraphicFactory(LineNumberFactory.get(area));
         area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
         area.textProperty().addListener((v, o, n) -> setEdited(true));
+
+        ContextMenuBuilder.get(area).copy().cut().paste().selectAll().clear().separator().undo().redo();
 
         CodeAreaWrappers.get(area, path.getPath())
                 .style()
@@ -58,7 +63,10 @@ public class Editor extends StackPane {
         changed.bind(edited.or(modified).or(deletedExternally));
 
         path.getOnModified().add(p -> {
-            XPlatform.runFX(() -> { setModified(true); setDeletedExternally(false);});
+            XPlatform.runFX(() -> {
+                setModified(true);
+                setDeletedExternally(false);
+            });
         });
 
         path.getOnDelete().add(p -> {
@@ -70,7 +78,10 @@ public class Editor extends StackPane {
         });
 
         path.getOnDeletedExternally().add(p -> {
-            XPlatform.runFX(() -> { setDeletedExternally(true); setModified(false);});
+            XPlatform.runFX(() -> {
+                setDeletedExternally(true);
+                setModified(false);
+            });
         });
     }
 
@@ -168,17 +179,42 @@ public class Editor extends StackPane {
         return changed.getReadOnlyProperty();
     }
 
+    private void setFilePosition(FilePosition filePosition) {
+        this.filePosition = filePosition;
+        this.path = filePosition.getPath();
+    }
+
+    void moveToPotition(FilePosition filePointer) {
+        setFilePosition(filePointer);
+        moveToPosition();
+    }
+
+    private void moveToPosition() {
+
+        area.requestFocus();
+        var stringPointer = filePosition.getSelectedPosition();
+
+        if (stringPointer != null) {
+            area.moveTo(stringPointer.getStringRef().getLine(), stringPointer.getStringRef().getStart());
+        } else {
+            area.moveTo(0);
+        }
+
+        area.requestFollowCaret();
+    }
+
     void load() {
-        setEdited(false);
-        setModified(false);
-        area.clear();
         CompletableFuture.supplyAsync(() -> LU.of(() -> Files.readString(path.getPath())))
                 .thenAccept(s -> XPlatform.runFX(() -> {
+                    area.clear();
                     area.replaceText(0, 0, s);
+
                     area.getUndoManager().forgetHistory();
-                    area.requestFocus();
-                    area.moveTo(0);
-                    area.requestFollowCaret();
+
+                    moveToPosition();
+
+                    setEdited(false);
+                    setModified(false);
                 }));
     }
 

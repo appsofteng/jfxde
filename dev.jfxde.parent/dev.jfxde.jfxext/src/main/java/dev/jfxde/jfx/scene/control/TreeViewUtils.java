@@ -1,6 +1,7 @@
 package dev.jfxde.jfx.scene.control;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -14,7 +15,7 @@ public final class TreeViewUtils {
     private TreeViewUtils() {
     }
 
-    public static <T> ObservableList<TreeItem<T>> getSelectedItemsNoAncestor(TreeView<T> treeView) {
+    public static <T> ObservableList<TreeItem<T>> getSelectedItemsNoAncestor(TreeView<T> treeView, Predicate<TreeItem<T>> filter) {
         ObservableList<TreeItem<T>> items = FXCollections.emptyObservableList();
         var selectedItems = treeView.getSelectionModel().getSelectedItems();
 
@@ -22,6 +23,7 @@ public final class TreeViewUtils {
 
             List<TreeItem<T>> selectedItemsNoAncestor = selectedItems
                     .stream()
+                    .filter(filter)
                     .takeWhile(i -> !containsAncestor(i, selectedItems))
                     .collect(Collectors.toList());
 

@@ -1,10 +1,15 @@
 package dev.jfxde.logic.data;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import dev.jfxde.j.nio.file.XFiles;
 
@@ -113,6 +118,24 @@ public final class FXFiles {
                 Path newPath = XFiles.save(path.getPath(), string);
                 path.saved(newPath);
             } finally {
+                FXPath.getLock().unlock();
+            }
+        });
+
+        return future;
+    }
+
+    public static CompletableFuture<Void> search(List<FXPath> searchPaths, String pathPattern, Pattern textRegex, Consumer<FilePosition> consumer, AtomicBoolean stop) {
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            FXPath.getLock().lock();
+            try {
+                PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pathPattern);
+                searchPaths.forEach(p -> p.search(matcher, textRegex, consumer, stop));
+            } catch(Exception e) {
+                stop.set(true);
+                throw new RuntimeException(e);
+            }
+            finally {
                 FXPath.getLock().unlock();
             }
         });

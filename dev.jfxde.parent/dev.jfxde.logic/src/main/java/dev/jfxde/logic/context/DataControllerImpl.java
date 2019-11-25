@@ -1,7 +1,7 @@
 package dev.jfxde.logic.context;
 
 import java.lang.reflect.Type;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import dev.jfxde.api.DataController;
 import dev.jfxde.logic.JsonUtils;
@@ -17,13 +17,13 @@ public class DataControllerImpl implements DataController {
 
     @Override
     public void toJson(Object obj, String relativeFilePath) {
-        JsonUtils.toJson(obj, Paths.get(appDescriptor.getAppProviderDescriptor().getAppDataDir()), relativeFilePath);
+        JsonUtils.toJson(obj, Path.of(appDescriptor.getAppProviderDescriptor().getAppDataDir()), relativeFilePath);
 
     }
 
     @Override
     public <T> T fromJson(String relativeFilePath, Type type, T defaultObj) {
-        return JsonUtils.fromJson(Paths.get(appDescriptor.getAppProviderDescriptor().getAppDataDir()), relativeFilePath, type, defaultObj);
+        return JsonUtils.fromJson(Path.of(appDescriptor.getAppProviderDescriptor().getAppDataDir()), relativeFilePath, type, defaultObj);
     }
 
 }

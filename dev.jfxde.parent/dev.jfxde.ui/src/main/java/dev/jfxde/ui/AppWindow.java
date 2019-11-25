@@ -34,7 +34,7 @@ public class AppWindow extends InternalWindow {
                 }
 
                 setContent(n);
-                close.disableProperty().bind(appDescriptor.getApp().stoppableProperty().not());
+                closableProperty().bind(appDescriptor.getApp().stoppableProperty());
 
             }
         });
@@ -53,7 +53,8 @@ public class AppWindow extends InternalWindow {
     }
 
     @Override
-    protected void onClose() {
+    protected void onCloseState() {
+        super.onCloseState();
         Sys.am().stop(appDescriptor);
     }
 

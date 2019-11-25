@@ -5,7 +5,6 @@ import java.lang.module.ModuleFinder;
 import java.lang.module.ModuleReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -323,9 +322,9 @@ public class EnvBox extends VBox {
     }
 
     private void setEnv() {
-        env.getClassPath().removeIf(p -> Files.notExists(Paths.get(p)));
+        env.getClassPath().removeIf(p -> Files.notExists(Path.of(p)));
         classpathView.setItems(FXCollections.observableList(env.getClassPath()));
-        env.getModulePath().removeIf(p -> Files.notExists(Paths.get(p)));
+        env.getModulePath().removeIf(p -> Files.notExists(Path.of(p)));
         modulepathView.setItems(FXCollections.observableList(env.getModulePath()));
 
         addModuleView.getTargetItems().setAll(env.getAddModules());
@@ -344,7 +343,7 @@ public class EnvBox extends VBox {
     }
 
     private Map<String, ModuleReference> getModulePathModuleReferences() {
-        List<Path> paths = env.getModulePath().stream().map(p -> Paths.get(p)).collect(Collectors.toList());
+        List<Path> paths = env.getModulePath().stream().map(p -> Path.of(p)).collect(Collectors.toList());
         ModuleFinder mf = ModuleFinder.of(paths.toArray(new Path[] {}));
 
         return mf.findAll().stream().collect(Collectors.toMap(r -> r.descriptor().name(), r -> r));
