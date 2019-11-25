@@ -8,6 +8,7 @@ import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 
 import dev.jfxde.fxmisc.richtext.CodeAreaWrappers;
+import dev.jfxde.fxmisc.richtext.ContextMenuBuilder;
 import dev.jfxde.j.util.LU;
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.logic.data.FXFiles;
@@ -42,6 +43,8 @@ public class Editor extends StackPane {
         area.setParagraphGraphicFactory(LineNumberFactory.get(area));
         area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
         area.textProperty().addListener((v, o, n) -> setEdited(true));
+
+        ContextMenuBuilder.get(area).copy().cut().paste().selectAll().clear().separator().undo().redo();
 
         CodeAreaWrappers.get(area, path.getPath())
                 .style()

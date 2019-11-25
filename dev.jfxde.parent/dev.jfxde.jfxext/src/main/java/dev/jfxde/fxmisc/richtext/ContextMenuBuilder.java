@@ -17,18 +17,19 @@ public class ContextMenuBuilder {
 
     private final GenericStyledArea<?, ?, ?> area;
 
-    private ContextMenuBuilder(GenericStyledArea<?, ?, ?> codeArea) {
-        this.area = codeArea;
+    private ContextMenuBuilder(GenericStyledArea<?, ?, ?> area) {
+        this.area = area;
     }
 
-    public static ContextMenuBuilder get(GenericStyledArea<?, ?, ?> codeArea) {
+    public static ContextMenuBuilder get(GenericStyledArea<?, ?, ?> area) {
         ContextMenu menu = new ContextMenu();
         menu.setAutoHide(true);
         menu.setHideOnEscape(true);
         menu.setConsumeAutoHidingEvents(true);
         menu.addEventHandler(KeyEvent.ANY, e -> e.consume());
-        codeArea.setContextMenu(menu);
-        return new ContextMenuBuilder(codeArea);
+        menu.setOnHidden(e -> area.requestFocus());
+        area.setContextMenu(menu);
+        return new ContextMenuBuilder(area);
     }
 
     public ContextMenuBuilder copy() {

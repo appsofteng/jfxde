@@ -99,7 +99,8 @@ public final class CodeAreaWrappers {
                         return;
                     }
 
-                    int insertionEnd = ch.toPlainTextChange().getInsertionEnd();
+                    var plainChange = ch.toPlainTextChange();
+                    int insertionEnd = plainChange.getInsertionEnd();
                     int caretPosition = area.getCaretPosition();
 
                     // Use List not StyleSpansBuilder, StyleSpansBuilder merges styles immediately.
@@ -120,9 +121,11 @@ public final class CodeAreaWrappers {
 
                     area.setStyleSpans(0, styleSpans);
 
-                    if (insertionEnd == area.getCaretPosition() && getLexer().getTokenOnCaretPosition() != null &&
-                            getLexer().getTokenOnCaretPosition().isClose()) {
-                        blockEndWrapper.indentEnd(getLexer().getTokenOnCaretPosition());
+                    var tokenOnCaret = getLexer().getTokenOnCaretPosition();
+
+                    if (insertionEnd == area.getCaretPosition() && tokenOnCaret != null &&
+                            tokenOnCaret.isClose() && tokenOnCaret.getValue().equals(plainChange.getInserted())) {
+                        blockEndWrapper.indentEnd(tokenOnCaret);
                     }
 
                 });
