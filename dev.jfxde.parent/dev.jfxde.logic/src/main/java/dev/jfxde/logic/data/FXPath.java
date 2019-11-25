@@ -28,8 +28,10 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import dev.jfxde.fxmisc.richtext.StringRef;
 import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
 import dev.jfxde.logic.Sys;
@@ -642,11 +644,7 @@ public class FXPath implements Comparable<FXPath> {
 
     void search(PathMatcher pathMatcher, Pattern textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
 
-        if (!isReadable()) {
-            return;
-        }
-
-        if (stop.get()) {
+        if (!isReadable() || stop.get()) {
             return;
         }
 
@@ -667,24 +665,25 @@ public class FXPath implements Comparable<FXPath> {
         Path fileName = getPath().getFileName();
         if (fileName != null && pathNatcher.matches(fileName)) {
             PathFilePointer pathPointer = new PathFilePointer(this);
-            consumer.accept(pathPointer);
+            if (textRegex == null) {
+                consumer.accept(pathPointer);
+            } else {
+                find(pathPointer, textRegex, stop);
+                if (!pathPointer.getStringFilePointers().isEmpty()) {
+                    consumer.accept(pathPointer);
+                }
+            }
         }
     }
 
-    private void searchText(Pattern pattern) {
+    private void find(PathFilePointer pathPointer, Pattern pattern, AtomicBoolean stop) {
         try {
-            if (pattern != null && Files.probeContentType(getPath()).toLowerCase().startsWith("text")) {
+            if (Files.probeContentType(getPath()).toLowerCase().startsWith("text")) {
 
                 try (var lines = Files.lines(getPath())) {
-
-                    lines.forEach(line -> {
-
-                        Matcher matcher = pattern.matcher(line);
-
-                        while (matcher.find()) {
-
-                        }
-
+                    find(lines, pattern, sr -> {
+                        pathPointer.add(new StringFilePointer(sr));
+                        return !stop.get();
                     });
                 }
             }
@@ -693,6 +692,25 @@ public class FXPath implements Comparable<FXPath> {
         }
     }
 
+    private void find(Stream<String> lines, Pattern pattern, Predicate<StringRef> process) {
+        int[] lineNumber = new int[1];
+        lineNumber[0] = 0;
+
+        lines.allMatch(line -> {
+            boolean continueSearch = true;
+            Matcher matcher = pattern.matcher(line);
+
+            while (matcher.find() && continueSearch) {
+                StringRef stringRef = new StringRef(lineNumber[0], matcher.start(), matcher.end(), matcher.group());
+                continueSearch = process.test(stringRef);
+            }
+
+            lineNumber[0]++;
+
+            return continueSearch;
+
+        });
+    }
 
     @Override
     public String toString() {

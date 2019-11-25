@@ -172,16 +172,16 @@ public class Editor extends StackPane {
     }
 
     void load() {
-        setEdited(false);
-        setModified(false);
-        area.clear();
         CompletableFuture.supplyAsync(() -> LU.of(() -> Files.readString(path.getPath())))
                 .thenAccept(s -> XPlatform.runFX(() -> {
+                    area.clear();
                     area.replaceText(0, 0, s);
                     area.getUndoManager().forgetHistory();
                     area.requestFocus();
                     area.moveTo(0);
                     area.requestFollowCaret();
+                    setEdited(false);
+                    setModified(false);
                 }));
     }
 

@@ -2,17 +2,15 @@ package dev.jfxde.logic.data;
 
 import java.util.List;
 
+import dev.jfxde.fxmisc.richtext.StringRef;
+
 public class StringFilePointer extends FilePointer {
 
     private PathFilePointer pathPointer;
-    private int line;
-    private int column;
-    private String text = "";
+    private StringRef stringRef;
 
-    public StringFilePointer(int line, int column, String text) {
-        this.line = line;
-        this.column = column;
-        this.text = text;
+    public StringFilePointer(StringRef stringRef) {
+        this.stringRef = stringRef;
     }
 
     public void setPathFilePointer(PathFilePointer pathPointer) {
@@ -36,6 +34,6 @@ public class StringFilePointer extends FilePointer {
 
     @Override
     public String toString() {
-        return line + "," + column + ": " + text;
+        return stringRef.toString();
     }
 }

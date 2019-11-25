@@ -64,6 +64,7 @@ public class HighlightWrapper extends GenericStyledAreaWrapper<CodeArea> {
             token.getOppositeToken().getStyle().clear();
             token.getOppositeToken().getStyle().add("block-delimiter-match");
             this.token = token;
+            areaLength = area.getLength();
         }
 
         return styleSpan;

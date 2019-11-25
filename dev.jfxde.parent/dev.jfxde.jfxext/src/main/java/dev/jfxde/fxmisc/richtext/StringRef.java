@@ -3,12 +3,14 @@ package dev.jfxde.fxmisc.richtext;
 public class StringRef {
 
     private int line;
-    private int column;
+    private int start;
+    private int end;
     private String value;
 
-    public StringRef(int line, int column, String value) {
+    public StringRef(int line, int start, int end, String value) {
         this.line = line;
-        this.column = column;
+        this.start = start;
+        this.end = end;
         this.value = value;
     }
 
@@ -16,11 +18,20 @@ public class StringRef {
         return line;
     }
 
-    public int getColumn() {
-        return column;
+    public int getStart() {
+        return start;
+    }
+
+    public int getEnd() {
+        return end;
     }
 
     public String getValue() {
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return (line + 1) + "," + (start + 1) + ": " + value;
     }
 }

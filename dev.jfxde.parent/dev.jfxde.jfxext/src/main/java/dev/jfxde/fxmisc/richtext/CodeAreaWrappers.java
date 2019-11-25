@@ -116,7 +116,7 @@ public final class CodeAreaWrappers {
                     StyleSpans<Collection<String>> styleSpans = spansBuilder.create();
 
                     area.setStyleSpans(0, styleSpans);
-                    blockEndWrapper.indentEnd(getLexer().getCloseTokenOnChangePosition());
+               //     blockEndWrapper.indentEnd(getLexer().getCloseTokenOnChangePosition());
 
                 });
 

@@ -10,14 +10,12 @@ import dev.jfxde.jfx.scene.control.AutoCompleteField;
 import dev.jfxde.jfx.scene.control.InternalDialog;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXFiles;
-import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.logic.data.FilePointer;
-import dev.jfxde.logic.data.PathFilePointer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.collections.ListChangeListener.Change;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -39,8 +37,8 @@ public class SearchFileDialog extends InternalDialog {
     private Search search;
     private AutoCompleteField<String> pathField;
     private AutoCompleteField<String> textField;
-    private CheckBox matchCase = new CheckBox();
-    private CheckBox regex = new CheckBox();
+    private CheckBox matchCaseCheck = new CheckBox();
+    private CheckBox regexCheck = new CheckBox();
     private Button searchButton = new Button();
     private Button closeButton = new Button();
     private TreeItem<FilePointer> root;
@@ -51,7 +49,7 @@ public class SearchFileDialog extends InternalDialog {
         while (c.next()) {
 
             if (c.wasAdded()) {
-                c.getAddedSubList().forEach(p -> root.getChildren().add(new TreeItem<>(p)));
+                setItems(c.getAddedSubList());
             } else if (c.wasRemoved()) {
                 c.getRemoved().forEach(p -> root.getChildren().removeIf(i -> i.getValue().equals(p)));
             }
@@ -77,9 +75,9 @@ public class SearchFileDialog extends InternalDialog {
         pathField = new AutoCompleteField<String>();
         FXResourceBundle.getBundle().put(pathField.promptTextProperty(), "pathWildcards");
 
-        FXResourceBundle.getBundle().put(matchCase.textProperty(), "matchCase");
-        FXResourceBundle.getBundle().put(regex.textProperty(), "regex");
-        HBox optionBox = new HBox(5, matchCase, regex);
+        FXResourceBundle.getBundle().put(matchCaseCheck.textProperty(), "matchCase");
+        FXResourceBundle.getBundle().put(regexCheck.textProperty(), "regex");
+        HBox optionBox = new HBox(5, matchCaseCheck, regexCheck);
 
         textField = new AutoCompleteField<String>();
         FXResourceBundle.getBundle().put(textField.promptTextProperty(), "text");
@@ -127,7 +125,7 @@ public class SearchFileDialog extends InternalDialog {
                 pathField.setText(n.getPathPattern());
                 textField.setText(n.getTextPattern());
                 root.getChildren().clear();
-                n.getResult().forEach(p -> root.getChildren().add(new TreeItem<>(p)));
+                setItems(n.getResult());
             } else {
                 search = null;
                 pathField.setText("");
@@ -178,19 +176,28 @@ public class SearchFileDialog extends InternalDialog {
         });
     }
 
+    private void setItems(List<? extends FilePointer> pointers) {
+        pointers.forEach(p -> {
+            TreeItem<FilePointer> item = new TreeItem<>(p);
+            p.getStringFilePointers().forEach(s -> item.getChildren().add(new TreeItem<>(s)));
+            root.getChildren().add(item);
+        });
+    }
+
     private Pattern getPattern() {
 
         if (textField.getText().isBlank()) {
             return null;
         }
 
-        int flags = matchCase.isSelected() ? Pattern.CASE_INSENSITIVE : 0;
+        String regex = textField.getText();
+        int flags = matchCaseCheck.isSelected() ? 0 : Pattern.CASE_INSENSITIVE;
 
-        if (regex.isSelected()) {
+        if (!regexCheck.isSelected()) {
             flags |= Pattern.LITERAL;
         }
 
-        Pattern pattern = Pattern.compile(textField.getText(), flags);
+        Pattern pattern = Pattern.compile(regex, flags);
 
         return pattern;
     }

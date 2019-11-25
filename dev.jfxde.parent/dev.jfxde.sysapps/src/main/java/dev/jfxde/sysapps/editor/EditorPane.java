@@ -144,6 +144,7 @@ public class EditorPane extends StackPane {
 
         MenuItem reload = new MenuItem();
         FXResourceBundle.getBundle().put(reload.textProperty(), "reload");
+        reload.disableProperty().bind(((Editor)tab.getContent()).deletedExternallyProperty());
         reload.setOnAction(e -> ((Editor)tab.getContent()).load());
 
         MenuItem closeOthers = new MenuItem();
