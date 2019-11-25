@@ -34,7 +34,6 @@ import java.util.stream.StreamSupport;
 import dev.jfxde.fxmisc.richtext.StringRef;
 import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
-import dev.jfxde.logic.Sys;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -642,7 +641,7 @@ public class FXPath implements Comparable<FXPath> {
         onModified.forEach(c -> c.accept(this));
     }
 
-    void search(PathMatcher pathMatcher, Pattern textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+    void search(PathMatcher pathMatcher, Pattern textRegex, Consumer<FilePosition> consumer, AtomicBoolean stop) {
 
         if (!isReadable() || stop.get()) {
             return;
@@ -658,31 +657,31 @@ public class FXPath implements Comparable<FXPath> {
         }
     }
 
-    private void searchFile(PathMatcher pathNatcher, Pattern textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+    private void searchFile(PathMatcher pathNatcher, Pattern textRegex, Consumer<FilePosition> consumer, AtomicBoolean stop) {
         if (stop.get()) {
             return;
         }
         Path fileName = getPath().getFileName();
         if (fileName != null && pathNatcher.matches(fileName)) {
-            PathFilePointer pathPointer = new PathFilePointer(this);
+            PathFilePosition pathPointer = new PathFilePosition(this);
             if (textRegex == null) {
                 consumer.accept(pathPointer);
             } else {
                 find(pathPointer, textRegex, stop);
-                if (!pathPointer.getStringFilePointers().isEmpty()) {
+                if (!pathPointer.getStringFilePositions().isEmpty()) {
                     consumer.accept(pathPointer);
                 }
             }
         }
     }
 
-    private void find(PathFilePointer pathPointer, Pattern pattern, AtomicBoolean stop) {
+    private void find(PathFilePosition pathPointer, Pattern pattern, AtomicBoolean stop) {
         try {
             if (Files.probeContentType(getPath()).toLowerCase().startsWith("text")) {
 
                 try (var lines = Files.lines(getPath())) {
                     find(lines, pattern, sr -> {
-                        pathPointer.add(new StringFilePointer(sr));
+                        pathPointer.add(new StringFilePosition(sr));
                         return !stop.get();
                     });
                 }
@@ -701,7 +700,7 @@ public class FXPath implements Comparable<FXPath> {
             Matcher matcher = pattern.matcher(line);
 
             while (matcher.find() && continueSearch) {
-                StringRef stringRef = new StringRef(lineNumber[0], matcher.start(), matcher.end(), matcher.group());
+                StringRef stringRef = new StringRef(line, lineNumber[0], matcher.start(), matcher.end(), matcher.group());
                 continueSearch = process.test(stringRef);
             }
 

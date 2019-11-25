@@ -11,8 +11,8 @@ import dev.jfxde.jfx.scene.control.TreeViewUtils;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXFiles;
 import dev.jfxde.logic.data.FXPath;
-import dev.jfxde.logic.data.FilePointer;
-import dev.jfxde.logic.data.PathFilePointer;
+import dev.jfxde.logic.data.FilePosition;
+import dev.jfxde.logic.data.PathFilePosition;
 import dev.jfxde.ui.PathTreeItem;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -47,13 +47,13 @@ public class FileTreeBox extends VBox {
     private ObservableList<TreeItem<FXPath>> cutItems = FXCollections.observableArrayList();
     private ObservableList<TreeItem<FXPath>> copyItems = FXCollections.observableArrayList();
     private FXPath favoriteRoot;
-    private ObjectProperty<Consumer<List<FilePointer>>> fileSelectedHandler = new SimpleObjectProperty<>();
+    private ObjectProperty<Consumer<List<FilePosition>>> fileSelectedHandler = new SimpleObjectProperty<>();
     private ObservableList<Search> searches = FXCollections.observableArrayList((s) -> new Observable[] { s.getPaths() });
     private SearchFileDialog searchFileDialog;
     private Consumer<FXPath> onDeleted;
     private ContextMenu fileContextMenu;
 
-    public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<List<FilePointer>> fileSelectedHandler) {
+    public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<List<FilePosition>> fileSelectedHandler) {
         this.root = root;
         this.favoriteRoot = favorites;
         setFileSelectedHandler(fileSelectedHandler);
@@ -62,11 +62,11 @@ public class FileTreeBox extends VBox {
         setListeners();
     }
 
-    private Consumer<List<FilePointer>> getFileSelectedHandler() {
+    private Consumer<List<FilePosition>> getFileSelectedHandler() {
         return fileSelectedHandler.get();
     }
 
-    private void setFileSelectedHandler(Consumer<List<FilePointer>> value) {
+    private void setFileSelectedHandler(Consumer<List<FilePosition>> value) {
         fileSelectedHandler.set(value);
     }
 
@@ -142,7 +142,7 @@ public class FileTreeBox extends VBox {
 
                 var path = item.getValue();
                 if (e.getClickCount() == 2 && path.isFile()) {
-                    getFileSelectedHandler().accept(List.of(new PathFilePointer(path)));
+                    getFileSelectedHandler().accept(List.of(new PathFilePosition(path)));
                 }
             }
         });

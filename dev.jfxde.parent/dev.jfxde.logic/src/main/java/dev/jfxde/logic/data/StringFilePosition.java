@@ -4,22 +4,26 @@ import java.util.List;
 
 import dev.jfxde.fxmisc.richtext.StringRef;
 
-public class StringFilePointer extends FilePointer {
+public class StringFilePosition extends FilePosition {
 
-    private PathFilePointer pathPointer;
+    private PathFilePosition pathPointer;
     private StringRef stringRef;
 
-    public StringFilePointer(StringRef stringRef) {
+    public StringFilePosition(StringRef stringRef) {
         this.stringRef = stringRef;
     }
 
-    public void setPathFilePointer(PathFilePointer pathPointer) {
+    public void setPathFilePointer(PathFilePosition pathPointer) {
         this.pathPointer = pathPointer;
     }
 
+    public StringRef getStringRef() {
+        return stringRef;
+    }
+
     @Override
-    public List<StringFilePointer> getStringFilePointers() {
-        return pathPointer.getStringFilePointers();
+    public List<StringFilePosition> getStringFilePositions() {
+        return pathPointer.getStringFilePositions();
     }
 
     @Override
@@ -28,7 +32,7 @@ public class StringFilePointer extends FilePointer {
     }
 
     @Override
-    public StringFilePointer current() {
+    public StringFilePosition getSelectedPosition() {
         return this;
     }
 

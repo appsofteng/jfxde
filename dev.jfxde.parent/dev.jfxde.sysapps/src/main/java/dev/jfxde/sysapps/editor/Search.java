@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.jfxde.logic.data.FXPath;
-import dev.jfxde.logic.data.FilePointer;
+import dev.jfxde.logic.data.FilePosition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -13,7 +13,7 @@ public class Search {
     private ObservableList<FXPath> paths = FXCollections.observableArrayList();
     private String pathPattern = "";
     private String textPattern = "";
-    private ObservableList<FilePointer> result = FXCollections.observableArrayList();
+    private ObservableList<FilePosition> result = FXCollections.observableArrayList();
 
     public Search(ObservableList<FXPath> paths) {
         this.paths = paths;
@@ -39,7 +39,7 @@ public class Search {
         this.textPattern = textPattern;
     }
 
-    public ObservableList<FilePointer> getResult() {
+    public ObservableList<FilePosition> getResult() {
         return result;
     }
 

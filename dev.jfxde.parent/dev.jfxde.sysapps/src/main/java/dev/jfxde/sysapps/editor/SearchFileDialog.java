@@ -10,7 +10,7 @@ import dev.jfxde.jfx.scene.control.AutoCompleteField;
 import dev.jfxde.jfx.scene.control.InternalDialog;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXFiles;
-import dev.jfxde.logic.data.FilePointer;
+import dev.jfxde.logic.data.FilePosition;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ListChangeListener;
@@ -32,7 +32,7 @@ import javafx.scene.layout.VBox;
 public class SearchFileDialog extends InternalDialog {
 
     private ObservableList<Search> searches;
-    private ObjectProperty<Consumer<List<FilePointer>>> fileSelectedHandler;
+    private ObjectProperty<Consumer<List<FilePosition>>> fileSelectedHandler;
     private ChoiceBox<Search> searchChoice;
     private Search search;
     private AutoCompleteField<String> pathField;
@@ -41,11 +41,11 @@ public class SearchFileDialog extends InternalDialog {
     private CheckBox regexCheck = new CheckBox();
     private Button searchButton = new Button();
     private Button closeButton = new Button();
-    private TreeItem<FilePointer> root;
-    private TreeView<FilePointer> filePointerTree;
+    private TreeItem<FilePosition> root;
+    private TreeView<FilePosition> filePointerTree;
     private boolean searching;
     private AtomicBoolean stop = new AtomicBoolean();
-    private ListChangeListener<FilePointer> resultListener = (Change<? extends FilePointer> c) -> {
+    private ListChangeListener<FilePosition> resultListener = (Change<? extends FilePosition> c) -> {
         while (c.next()) {
 
             if (c.wasAdded()) {
@@ -56,7 +56,7 @@ public class SearchFileDialog extends InternalDialog {
         }
     };
 
-    public SearchFileDialog(Node node, ObservableList<Search> searches, ObjectProperty<Consumer<List<FilePointer>>> fileSelectedHandler) {
+    public SearchFileDialog(Node node, ObservableList<Search> searches, ObjectProperty<Consumer<List<FilePosition>>> fileSelectedHandler) {
         super(node);
         this.searches = searches;
         this.search = searches.get(0);
@@ -176,10 +176,10 @@ public class SearchFileDialog extends InternalDialog {
         });
     }
 
-    private void setItems(List<? extends FilePointer> pointers) {
-        pointers.forEach(p -> {
-            TreeItem<FilePointer> item = new TreeItem<>(p);
-            p.getStringFilePointers().forEach(s -> item.getChildren().add(new TreeItem<>(s)));
+    private void setItems(List<? extends FilePosition> positions) {
+        positions.forEach(p -> {
+            TreeItem<FilePosition> item = new TreeItem<>(p);
+            p.getStringFilePositions().forEach(s -> item.getChildren().add(new TreeItem<>(s)));
             root.getChildren().add(item);
         });
     }
@@ -202,7 +202,7 @@ public class SearchFileDialog extends InternalDialog {
         return pattern;
     }
 
-    private Consumer<List<FilePointer>> getFileSelectedHandler() {
+    private Consumer<List<FilePosition>> getFileSelectedHandler() {
         return fileSelectedHandler.get();
     }
 
@@ -210,7 +210,7 @@ public class SearchFileDialog extends InternalDialog {
         searchChoice.getSelectionModel().selectFirst();
     }
 
-    private void found(FilePointer filePointer) {
+    private void found(FilePosition filePointer) {
         XPlatform.runFX(() -> {
             search.getResult().add(filePointer);
         });

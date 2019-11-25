@@ -125,7 +125,7 @@ public final class FXFiles {
         return future;
     }
 
-    public static CompletableFuture<Void> search(List<FXPath> searchPaths, String pathPattern, Pattern textRegex, Consumer<FilePointer> consumer, AtomicBoolean stop) {
+    public static CompletableFuture<Void> search(List<FXPath> searchPaths, String pathPattern, Pattern textRegex, Consumer<FilePosition> consumer, AtomicBoolean stop) {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             FXPath.getLock().lock();
             try {

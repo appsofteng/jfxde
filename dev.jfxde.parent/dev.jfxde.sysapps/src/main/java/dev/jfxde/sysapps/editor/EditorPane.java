@@ -5,7 +5,7 @@ import java.util.List;
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
-import dev.jfxde.logic.data.FilePointer;
+import dev.jfxde.logic.data.FilePosition;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -99,16 +99,18 @@ public class EditorPane extends StackPane {
         return selectedEditor.get();
     }
 
-    void open(List<FilePointer> pointers) {
-        pointers.forEach(p -> setEditor(p));
+    void open(List<FilePosition> positions) {
+        positions.forEach(p -> setEditor(p));
     }
 
-    void setEditor(FilePointer filePointer) {
-        Tab tab = findEditorTab(filePointer.getPath());
+    void setEditor(FilePosition filePosition) {
+        Tab tab = findEditorTab(filePosition.getPath());
 
         if (tab == null) {
-            tab = createEditorTab(filePointer);
+            tab = createEditorTab(filePosition);
             tabPane.getTabs().add(tab);
+        } else {
+            ((Editor)tab.getContent()).moveToPotition(filePosition);
         }
 
         tabPane.getSelectionModel().select(tab);
@@ -121,9 +123,9 @@ public class EditorPane extends StackPane {
                 .orElse(null);
     }
 
-    private Tab createEditorTab(FilePointer filePointer) {
+    private Tab createEditorTab(FilePosition filePosition) {
         Tab tab = new Tab();
-        Editor editor = new Editor(filePointer);
+        Editor editor = new Editor(filePosition);
         tab.setContent(editor);
 
         tab.closableProperty().bind(editor.changedProperty().not());

@@ -5,9 +5,11 @@ public class StringRef {
     private int line;
     private int start;
     private int end;
+    private String text;
     private String value;
 
-    public StringRef(int line, int start, int end, String value) {
+    public StringRef(String text, int line, int start, int end, String value) {
+        this.text = text.trim();
         this.line = line;
         this.start = start;
         this.end = end;
@@ -32,6 +34,6 @@ public class StringRef {
 
     @Override
     public String toString() {
-        return (line + 1) + "," + (start + 1) + ": " + value;
+        return (line + 1) + "," + (start + 1) + ": " + text;
     }
 }
