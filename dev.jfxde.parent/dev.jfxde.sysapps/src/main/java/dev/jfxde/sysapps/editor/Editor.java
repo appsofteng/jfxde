@@ -176,9 +176,11 @@ public class Editor extends StackPane {
                 .thenAccept(s -> XPlatform.runFX(() -> {
                     area.clear();
                     area.replaceText(0, 0, s);
+
                     area.getUndoManager().forgetHistory();
                     area.requestFocus();
                     area.moveTo(0);
+
                     area.requestFollowCaret();
                     setEdited(false);
                     setModified(false);

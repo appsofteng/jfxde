@@ -1,10 +1,8 @@
 package dev.jfxde.fxmisc.richtext;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.model.StyleSpan;
 
 public class HighlightWrapper extends GenericStyledAreaWrapper<CodeArea> {
 
@@ -55,18 +53,15 @@ public class HighlightWrapper extends GenericStyledAreaWrapper<CodeArea> {
         }
     }
 
-    StyleSpan<Collection<String>> getStyleSpan(Token token) {
-        StyleSpan<Collection<String>> styleSpan = new StyleSpan<>(token.getStyle(), token.getLength());
+    void setToken(Token token) {
 
-        if (token.isCloseOnCaretPosition()) {
+        if (token != null && token.isDelimiter()) {
+
             token.getStyle().clear();
             token.getStyle().add("block-delimiter-match");
             token.getOppositeToken().getStyle().clear();
             token.getOppositeToken().getStyle().add("block-delimiter-match");
             this.token = token;
-            areaLength = area.getLength();
         }
-
-        return styleSpan;
     }
 }

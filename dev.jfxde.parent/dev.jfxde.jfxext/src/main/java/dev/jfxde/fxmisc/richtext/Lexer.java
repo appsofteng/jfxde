@@ -26,7 +26,7 @@ public class Lexer {
     private Map<String, String> closeOpenTypes = new HashMap<>();
     private List<Token> tokens = new ArrayList<>();
     private Map<String, Deque<Token>> tokenStack = new HashMap<>();
-    private Token closeTokenOnChangePosition;
+    private Token tokenOnCaretPosition;
 
     private Lexer(String regex, List<String> groups, String openingTokenPattern) {
         this.pattern = Pattern.compile(regex);
@@ -48,8 +48,8 @@ public class Lexer {
         }
     }
 
-    public Token getCloseTokenOnChangePosition() {
-        return closeTokenOnChangePosition;
+    public Token getTokenOnCaretPosition() {
+        return tokenOnCaretPosition;
     }
 
     static Lexer get(String fileName, String language) {
@@ -83,11 +83,16 @@ public class Lexer {
         int lastEnd = 0;
         tokens.clear();
         tokenStack.clear();
-        closeTokenOnChangePosition = null;
+        tokenOnCaretPosition = null;
 
         while (matcher.find()) {
             String type = groups.stream().filter(g -> matcher.group(g) != null).findFirst().orElse("");
-            Token token = new Token(matcher.start(), matcher.end(), type, matcher.group(), caretPosition);
+            Token token = new Token(matcher.start(), matcher.end(), type, matcher.group());
+
+            if (token.isOnCaretPosition(caretPosition)) {
+                tokenOnCaretPosition = token;
+            }
+
             updateStack(token);
             tokens.add(token);
             consumer.accept(lastEnd, token);
@@ -110,9 +115,6 @@ public class Lexer {
                     if (opposite != null) {
                         token.setOppositeToken(opposite);
                         opposite.setOppositeToken(token);
-                        if (token.isOnCaretPosition()) {
-                            closeTokenOnChangePosition = token;
-                        }
                     }
                 }
             }

@@ -11,19 +11,17 @@ public class Token {
     private String value;
     private int length;
     private Token oppositeToken;
-    private boolean onCaretPosition;
     private List<String> style = new ArrayList<>();
 
     public Token() {
     }
 
-    public Token(int start, int end, String type, String value, int caretPosition) {
+    public Token(int start, int end, String type, String value) {
         this.start = start;
         this.end = end;
         this.type = type;
         this.value = value;
         this.length = end - start;
-        this.onCaretPosition = start <= caretPosition && caretPosition <= end;
         resetStyle();
     }
 
@@ -55,12 +53,8 @@ public class Token {
         return style;
     }
 
-    public boolean isOnCaretPosition() {
-        return onCaretPosition;
-    }
-
-    public boolean isCloseOnCaretPosition() {
-        return isClose(type) && isOnCaretPosition() && oppositeToken != null || isClose(type) && oppositeToken != null  && oppositeToken.isOnCaretPosition();
+    public boolean isOnCaretPosition(int caretPosition) {
+        return start <= caretPosition && caretPosition <= end;
     }
 
     boolean isDelimiter() {
@@ -69,6 +63,10 @@ public class Token {
 
     public void setOppositeToken(Token oppositeToken) {
         this.oppositeToken = oppositeToken;
+    }
+
+    boolean isClose() {
+        return isClose(type);
     }
 
     static boolean isOpen(String type) {
