@@ -3,6 +3,7 @@ package dev.jfxde.sysapps.editor;
 import java.nio.file.Files;
 import java.util.concurrent.CompletableFuture;
 
+import org.controlsfx.control.action.ActionUtils;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -34,7 +35,7 @@ public class Editor extends StackPane {
     private final ReadOnlyStringWrapper tabTitle = new ReadOnlyStringWrapper();
     private final CodeArea area = new CodeArea();
 
-    public Editor(FilePosition filePosition) {
+    public Editor(FilePosition filePosition, EditorActions actions) {
         setFilePosition(filePosition);
 
         title.bind(Bindings.createStringBinding(() -> getPath().getPath().toString(), getPath().pathProperty()));
@@ -44,7 +45,12 @@ public class Editor extends StackPane {
         area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
         area.textProperty().addListener((v, o, n) -> setEdited(true));
 
-        ContextMenuBuilder.get(area).copy().cut().paste().selectAll().clear().separator().undo().redo();
+        ContextMenuBuilder.get(area)
+                .addAll(ActionUtils.createMenuItem(actions.saveAction()), ActionUtils.createMenuItem(actions.saveAllAction()))
+                .separator()
+                .copy().cut().paste().selectAll().clear()
+                .separator()
+                .undo().redo();
 
         CodeAreaWrappers.get(area, path.getPath())
                 .style()
@@ -52,7 +58,7 @@ public class Editor extends StackPane {
                 .indentation()
                 .find();
 
-        getChildren().add(new VirtualizedScrollPane<>(area));
+        getChildren().addAll(new VirtualizedScrollPane<>(area));
 
         setListeners();
 

@@ -1,17 +1,24 @@
 package dev.jfxde.fonts;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class Fonts {
 
-    public static List<String> getUrls() {
+    public static final String FONT_AWESOME_5_FREE_REGULAR = "Font Awesome 5 Free Regular";
+    public static final String FONT_AWESOME_5_FREE_SOLID = "Font Awesome 5 Free Solid";
+    public static final String OCTICONS = "octicons";
 
-        List<String> resources = List.of("/dev/jfxde/fonts/FontAwesome5Free-Solid-900.otf",
-                "/dev/jfxde/fonts/FontAwesome5Free-Regular-400.otf",
-                "/dev/jfxde/fonts/octicons.ttf");
+    private static final Map<String, String> URLS = Map.of(FONT_AWESOME_5_FREE_REGULAR, getUrl("/dev/jfxde/fonts/FontAwesome5Free-Regular-400.otf"),
+            FONT_AWESOME_5_FREE_SOLID, getUrl("/dev/jfxde/fonts/FontAwesome5Free-Solid-900.otf"),
+            OCTICONS, getUrl("/dev/jfxde/fonts/octicons.ttf"));
 
-        return resources.stream().map(r -> Fonts.class.getResource(r).toExternalForm()).collect(Collectors.toList());
+    private static String getUrl(String path) {
+        return Fonts.class.getResource(path).toExternalForm();
+    }
+
+    public static Map<String,String> getUrls() {
+
+        return URLS;
     }
 
     public static class FontAwesome {

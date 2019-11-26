@@ -31,6 +31,7 @@ import javafx.util.Duration;
 
 public class EditorPane extends StackPane {
 
+    private EditorActions actions;
     private TabPane tabPane = new TabPane();
     private final ObservableList<Editor> editors = FXCollections
             .observableArrayList(e -> new Observable[] { e.changedProperty(), e.deletedProperty() });
@@ -38,7 +39,8 @@ public class EditorPane extends StackPane {
     private final ObjectProperty<Editor> selectedEditor = new SimpleObjectProperty<>();
     private final ReadOnlyBooleanWrapper changed = new ReadOnlyBooleanWrapper();
 
-    public EditorPane() {
+    public EditorPane(EditorActions actions) {
+        this.actions = actions;
         tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
         tabPane.setTabDragPolicy(TabDragPolicy.REORDER);
 
@@ -103,7 +105,7 @@ public class EditorPane extends StackPane {
         positions.forEach(p -> setEditor(p));
     }
 
-    void setEditor(FilePosition filePosition) {
+    private void setEditor(FilePosition filePosition) {
         Tab tab = findEditorTab(filePosition.getPath());
 
         if (tab == null) {
@@ -125,7 +127,7 @@ public class EditorPane extends StackPane {
 
     private Tab createEditorTab(FilePosition filePosition) {
         Tab tab = new Tab();
-        Editor editor = new Editor(filePosition);
+        Editor editor = new Editor(filePosition, actions);
         tab.setContent(editor);
 
         tab.closableProperty().bind(editor.changedProperty().not());

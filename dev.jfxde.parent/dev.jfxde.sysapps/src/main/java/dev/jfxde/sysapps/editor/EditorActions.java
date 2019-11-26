@@ -1,61 +1,70 @@
 package dev.jfxde.sysapps.editor;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanWrapper;
+import org.controlsfx.control.action.Action;
+import org.controlsfx.glyphfont.GlyphFontRegistry;
+
+import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.event.Event;
-
-import static javafx.scene.input.KeyCode.S;
-import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
-import static javafx.scene.input.KeyCombination.SHIFT_DOWN;
-
-import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
-import static org.fxmisc.wellbehaved.event.InputMap.consume;
-import static org.fxmisc.wellbehaved.event.InputMap.sequence;
-import org.fxmisc.wellbehaved.event.Nodes;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCombination;
 
 public class EditorActions {
 
     private EditorContent content;
-    private ReadOnlyBooleanWrapper saveDisable = new ReadOnlyBooleanWrapper(true);
-    private ReadOnlyBooleanWrapper saveAllDisable = new ReadOnlyBooleanWrapper();
+    private Action saveAction;
+    private Action saveAllAction;
 
     public EditorActions(EditorContent content) {
         this.content = content;
+    }
 
+    void init() {
+        createActions();
         setListeners();
     }
 
+    private void createActions() {
+        saveAction = new Action(this::save);
+        saveAction.setGraphic(GlyphFontRegistry.font(Fonts.FONT_AWESOME_5_FREE_SOLID).create(Fonts.Unicode.FLOPPY_DISK).size(14));
+        saveAction.disabledProperty().set(true);
+        FXResourceBundle.getBundle().put(saveAction.textProperty(), "save");
+        FXResourceBundle.getBundle().put(saveAction.longTextProperty(), "save");
+        saveAction.setAccelerator(KeyCombination.keyCombination("Shortcut+S"));
+
+        saveAllAction = new Action(this::saveAll);
+        saveAllAction.setGraphic(new ImageView(getClass().getResource("save-all.png").toExternalForm()));
+        FXResourceBundle.getBundle().put(saveAllAction.textProperty(), "saveAll");
+        FXResourceBundle.getBundle().put(saveAllAction.longTextProperty(), "saveAll");
+        saveAllAction.setAccelerator(KeyCombination.keyCombination("Shift+Shortcut+S"));
+    }
+
     private void setListeners() {
-        saveAllDisable.bind(content.getEditorPane().changedProperty().not());
+        saveAllAction.disabledProperty().bind(content.getEditorPane().changedProperty().not());
 
         content.getEditorPane().selectedEditorProperty().addListener((v,o,n) -> {
-            saveDisable.unbind();
+            saveAction.disabledProperty().unbind();
             if (n != null) {
-                saveDisable.bind(n.changedProperty().not());
+                saveAction.disabledProperty().bind(n.changedProperty().not());
             } else {
-                saveDisable.set(true);
+                saveAction.disabledProperty().set(true);
             }
         });
-
-        Nodes.addInputMap(content.getEditorPane(), sequence(
-                consume(keyPressed(S, CONTROL_DOWN), this::save),
-                consume(keyPressed(S, SHIFT_DOWN, CONTROL_DOWN), this::saveAll)
-            ));
     }
 
-    ReadOnlyBooleanProperty saveDisableProperty() {
-        return saveDisable.getReadOnlyProperty();
+    Action saveAction() {
+        return saveAction;
     }
 
-    ReadOnlyBooleanProperty saveAllDisableProperty() {
-        return saveAllDisable.getReadOnlyProperty();
+    Action saveAllAction() {
+        return saveAllAction;
     }
 
-    void save(Event e) {
+    private void save(Event e) {
         content.getEditorPane().save();
     }
 
-    void saveAll(Event e) {
+    private void saveAll(Event e) {
         content.getEditorPane().saveAll();
     }
 }
