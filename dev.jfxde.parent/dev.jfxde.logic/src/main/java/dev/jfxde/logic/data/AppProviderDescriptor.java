@@ -34,6 +34,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 
@@ -320,17 +321,17 @@ public class AppProviderDescriptor implements Comparable<AppProviderDescriptor> 
         return permission;
     }
 
-    public Region getMediumIcon() {
+    public Node getMediumIcon() {
 
         return resourceManager.getMediumIcon("jd-medium-icon");
     }
 
-    public Region getMediumIcon(String styleClass) {
+    public Node getMediumIcon(String styleClass) {
 
         return resourceManager.getMediumIcon(styleClass);
     }
 
-    public Region getSmallIcon() {
+    public Node getSmallIcon() {
 
         return resourceManager.getSmallIcon("jd-small-icon");
     }

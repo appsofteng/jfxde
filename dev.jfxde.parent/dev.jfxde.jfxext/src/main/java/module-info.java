@@ -20,6 +20,7 @@ module dev.jfxde.jfxext {
 
     requires com.github.javaparser.core;
 
+    requires dev.jfxde.fonts;
 
     exports dev.jfxde.fxmisc.richtext to dev.jfxde.sysapps, dev.jfxde.logic;
 

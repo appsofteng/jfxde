@@ -1,23 +1,32 @@
 package dev.jfxde.jfx.scene.control;
 
+import java.util.List;
+
+import dev.jfxde.fonts.Fonts;
+import dev.jfxde.jfx.scene.layout.LayoutUtils;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.BorderStroke;
@@ -36,38 +45,100 @@ import javafx.util.Duration;
 
 public abstract class InternalFrame extends Region {
 
-    protected static final double CURSOR_BORDER_WIDTH = 5;
+    private static final double CURSOR_BORDER_WIDTH = 5;
     private static final PseudoClass ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("active");
 
+
+    private Pane pane;
+    private InternalFrame parent;
+    private Modality modality = Modality.NONE;
+    private BorderPane payload = new BorderPane();
+    private ObservableList<InternalFrame> subframes = FXCollections.observableArrayList();
+    private HBox buttonBox = new HBox();
     private BooleanProperty closable = new SimpleBooleanProperty(true);
+    private Label titleLabel = new Label();
+    private BorderPane titleBar = new BorderPane();
 
-    protected Modality modality = Modality.NONE;
+    private ContentRegion contentRegion = new ContentRegion();
+    private Node focusOwner = contentRegion;
 
-    protected ObservableList<InternalFrame> subframes = FXCollections.observableArrayList();
-    protected Pane windowPane;
-    protected InternalFrame parent;
-    protected Label titleLabel = new Label();
-    protected HBox buttonBox = new HBox();
-    protected BorderPane titleBar = new BorderPane();
-    protected BorderPane payload = new BorderPane();
-    protected ContentRegion contentRegion = new ContentRegion();
-    protected Node focusOwner = contentRegion;
+    private Button maximize;
+    private Button close;
 
-    private Button close = new Button("x");
-
-    protected Bounds restoreBounds;
-    protected Point2D pressDragPoint;
+    private Bounds restoreBounds;
+    private Point2D pressDragPoint;
 
     private Timeline modalTimeline;
 
-    protected BooleanProperty active;
+    private BooleanProperty active;
+    private BooleanProperty maximized = new SimpleBooleanProperty();
 
-    public InternalFrame(Pane windowPane) {
-        this.windowPane = windowPane;
+    public InternalFrame(Pane pane) {
+        this.pane = pane;
+
+        init();
+    }
+
+    public InternalFrame(Node node, Modality modality) {
+        this(findPaneParent(node), modality);
+    }
+
+    private InternalFrame(PaneParent paneParent, Modality modality) {
+        this.pane = paneParent.getPane();
+        this.parent = paneParent.getParent();
+        this.modality = modality;
+
+        if (this.parent != null) {
+            this.parent.getSubframes().add(this);
+        } else if (modality == Modality.WINDOW_MODAL) {
+            this.modality = Modality.APPLICATION_MODAL;
+        }
+
+        init();
+    }
+
+    private void init() {
+        buildLayout(pane.getWidth() / 2, pane.getHeight() / 2);
+        addButtons();
+        setHandlers();
+        setMoveable();
         setBorder();
     }
 
+    private static PaneParent findPaneParent(Node node) {
+
+        PaneParent paneParent = null;
+        Node parent = node;
+
+        while (parent != null && !(parent instanceof InternalFrame)) {
+            parent = parent.getParent();
+        }
+
+        if (parent instanceof InternalFrame) {
+            paneParent = new PaneParent((InternalFrame) parent);
+        } else if (node instanceof Pane) {
+            paneParent = new PaneParent((Pane) node);
+        }
+
+        return paneParent;
+    }
+
     protected void addButtons() {
+
+        maximize = new Button(Fonts.Unicode.WHITE_LARGE_SQUARE);
+        maximize.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
+        maximize.setFocusTraversable(false);
+        maximize.textProperty()
+                .bind(Bindings.when(maximized)
+                        .then(Fonts.Unicode.UPPER_RIGHT_DROP_SHADOWED_WHITE_SQUARE)
+                        .otherwise(Fonts.Unicode.WHITE_LARGE_SQUARE));
+        maximize.setTooltip(new Tooltip());
+        maximize.getTooltip().textProperty().bind(Bindings.when(maximized)
+                .then(FXResourceBundle.getBundle().getStringBinding("restore"))
+                .otherwise(FXResourceBundle.getBundle().getStringBinding("maximize")));
+        maximize.setOnAction(e -> onMaximizeRestore());
+
+        close = new Button("x");
         close.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         close.setFocusTraversable(false);
         close.setTooltip(new Tooltip());
@@ -75,10 +146,18 @@ public abstract class InternalFrame extends Region {
         close.setOnAction(e -> onClose());
         close.disableProperty().bind(closable.not());
 
-        buttonBox.getChildren().addAll(close);
+        buttonBox.getChildren().addAll(maximize, close);
     }
 
-    protected void buildLayout(double width, double height) {
+    protected void addButtons(int index, List<Button> buttons) {
+        if (index >= 0) {
+            buttonBox.getChildren().addAll(index, buttons);
+        } else {
+            buttonBox.getChildren().addAll(buttonBox.getChildren().size() + index, buttons);
+        }
+    }
+
+    private void buildLayout(double width, double height) {
         buttonBox.setMinWidth(USE_PREF_SIZE);
         buttonBox.setMinHeight(USE_PREF_SIZE);
 
@@ -87,6 +166,7 @@ public abstract class InternalFrame extends Region {
         titleBar.setCenter(titleLabel);
         titleBar.setRight(buttonBox);
         titleBar.minWidthProperty().bind(buttonBox.widthProperty().add(10));
+        titleBar.managedProperty().bind(titleBar.visibleProperty());
 
         payload.setTop(titleBar);
         payload.setCenter(contentRegion);
@@ -103,6 +183,45 @@ public abstract class InternalFrame extends Region {
         getChildren().add(payload);
         center();
         restoreBounds = getBoundsInParent();
+    }
+
+    protected void setHandlers() {
+        titleLabel.setOnMouseClicked(e -> {
+            InternalFrame modalFrame = getModalFrame(this);
+            if (modalFrame == null) {
+                if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+                    onMaximizeRestore();
+                }
+            } else {
+                e.consume();
+            }
+        });
+    }
+
+    private void setMoveable() {
+        LayoutUtils.makeDragable(this, titleBar, e -> {
+            if (isEnlarged()) {
+                Point2D localClickPoint = pane.screenToLocal(e.getScreenX(), e.getScreenY());
+                double restoreX = localClickPoint.getX() - restoreBounds.getWidth() / 2;
+                restoreX = Math.max(0, restoreX);
+                restoreX = Math.min(pane.getWidth() - restoreBounds.getWidth(), restoreX);
+                double restoreY = localClickPoint.getY() - e.getY();
+                pressDragPoint = new Point2D(restoreX, restoreY);
+            } else {
+                pressDragPoint = new Point2D(getLayoutX(), getLayoutY());
+            }
+
+            return pressDragPoint;
+        }, () -> {
+
+            if (isEnlarged()) {
+                restoreBounds = new BoundingBox(pressDragPoint.getX(), 0, restoreBounds.getWidth(),
+                        restoreBounds.getHeight());
+                onRestore();
+            }
+        });
+
+        LayoutUtils.makeResizable(this, payload, CURSOR_BORDER_WIDTH);
     }
 
     private void setBorder() {
@@ -128,6 +247,18 @@ public abstract class InternalFrame extends Region {
 //        setCacheHint(CacheHint.SPEED);
 //    }
 
+    protected ObservableList<InternalFrame> getSubframes() {
+        return subframes;
+    }
+
+    protected Region getPayload() {
+        return payload;
+    }
+
+    Pane getPane() {
+        return pane;
+    }
+
     boolean isUseComputedSize() {
         return payload.getPrefWidth() == Region.USE_COMPUTED_SIZE || payload.getPrefHeight() == Region.USE_COMPUTED_SIZE;
     }
@@ -135,12 +266,29 @@ public abstract class InternalFrame extends Region {
     void setUseComputedSize() {
 
         payload.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
+        maximize.setVisible(false);
+    }
+
+    protected BooleanProperty titleVisibleProperty() {
+        return titleBar.visibleProperty();
+    }
+
+    protected void setIcon(Node node) {
+        titleLabel.setGraphic(node);
     }
 
     public InternalFrame setTitle(String value) {
         titleLabel.setText(value);
 
         return this;
+    }
+
+    protected StringProperty titleProperty() {
+        return titleLabel.textProperty();
+    }
+
+    protected void setTitleContextMenu(ContextMenu menu) {
+        titleLabel.setContextMenu(menu);
     }
 
     public InternalFrame setContent(Node node) {
@@ -177,6 +325,12 @@ public abstract class InternalFrame extends Region {
 
     }
 
+    public void setContentCss(String css) {
+        if (css != null) {
+            contentRegion.getStylesheets().addAll(css);
+        }
+    }
+
     void setFreeze(boolean value) {
         if (value) {
             if (!payload.isDisabled()) {
@@ -197,11 +351,11 @@ public abstract class InternalFrame extends Region {
 
     void deactivateFront() {
 
-        if (windowPane.getChildren().isEmpty()) {
+        if (pane.getChildren().isEmpty()) {
             return;
         }
 
-        var frame = windowPane.getChildren().get(windowPane.getChildren().size() - 1);
+        var frame = pane.getChildren().get(pane.getChildren().size() - 1);
 
         if (frame instanceof InternalFrame) {
             ((InternalFrame) frame).deactivate();
@@ -229,6 +383,79 @@ public abstract class InternalFrame extends Region {
         });
     }
 
+    @Override
+    public boolean isResizable() {
+        return !isMaximized();
+    }
+
+    protected boolean isEnlarged() {
+        return isMaximized();
+    }
+
+    protected void onRestore() {
+        restore();
+    }
+
+    private boolean isMaximized() {
+        return maximized.get();
+    }
+
+    protected void setMaximized(boolean value) {
+        this.maximized.set(value);
+    }
+
+    protected boolean isRestored() {
+        return !isMaximized();
+    }
+
+    protected void onMaximizeRestore() {
+
+        if (isMaximized()) {
+            restore();
+        } else {
+            storeBounds();
+            maximize();
+        }
+    }
+
+    protected void storeBounds() {
+        restoreBounds = getBoundsInParent();
+    }
+
+    protected void maximize() {
+
+        if (isUseComputedSize()) {
+            return;
+        }
+
+        layoutXProperty().unbind();
+        layoutYProperty().unbind();
+        setLayoutX(0);
+        setLayoutY(0);
+
+        payload.prefWidthProperty().unbind();
+        payload.prefHeightProperty().unbind();
+        payload.prefWidthProperty().bind(pane.widthProperty());
+        payload.prefHeightProperty().bind(pane.heightProperty());
+
+        toFront();
+
+        setMaximized(true);
+    }
+
+    protected void restore() {
+        layoutXProperty().unbind();
+        layoutYProperty().unbind();
+        setLayoutX(restoreBounds.getMinX());
+        setLayoutY(restoreBounds.getMinY());
+
+        payload.prefWidthProperty().unbind();
+        payload.prefHeightProperty().unbind();
+        payload.setPrefSize(restoreBounds.getWidth(), restoreBounds.getHeight());
+
+        setMaximized(false);
+    }
+
     public boolean isClosable() {
         return closable.get();
     }
@@ -254,7 +481,7 @@ public abstract class InternalFrame extends Region {
         }
 
         if (modality == Modality.APPLICATION_MODAL) {
-            windowPane.toBack();
+            pane.toBack();
         }
     }
 
@@ -290,20 +517,26 @@ public abstract class InternalFrame extends Region {
     }
 
     @Override
+    public void requestFocus() {
+        super.requestFocus();
+        focusOwner.requestFocus();
+    }
+
+    @Override
     public void toFront() {
         super.toFront();
         subframes.forEach(InternalFrame::toFront);
     }
 
     boolean isInFront() {
-        return !windowPane.getChildren().isEmpty() && windowPane.getChildren().indexOf(this) == windowPane.getChildren().size() - 1;
+        return !pane.getChildren().isEmpty() && pane.getChildren().indexOf(this) == pane.getChildren().size() - 1;
     }
 
     void center() {
         if (isUseComputedSize()) {
-            relocate((windowPane.getWidth() - payload.getWidth()) / 2, (windowPane.getHeight() - payload.getHeight()) / 2);
+            relocate((pane.getWidth() - payload.getWidth()) / 2, (pane.getHeight() - payload.getHeight()) / 2);
         } else {
-            relocate((windowPane.getWidth() - payload.getPrefWidth()) / 2, (windowPane.getHeight() - payload.getPrefHeight()) / 2);
+            relocate((pane.getWidth() - payload.getPrefWidth()) / 2, (pane.getHeight() - payload.getPrefHeight()) / 2);
         }
     }
 
@@ -313,7 +546,7 @@ public abstract class InternalFrame extends Region {
                 parent.setFreeze(true);
             }
         } else if (modality == Modality.APPLICATION_MODAL) {
-            windowPane.toFront();
+            pane.toFront();
         }
     }
 
@@ -363,5 +596,27 @@ public abstract class InternalFrame extends Region {
         modalTimeline.play();
 
 //        new DropShadowTransition((DropShadow) getEffect(), this).play();
+    }
+
+    private static class PaneParent {
+        private Pane pane;
+        private InternalFrame parent;
+
+        public PaneParent(Pane pane) {
+            this.pane = pane;
+        }
+
+        public PaneParent(InternalFrame parent) {
+            this.parent = parent;
+            this.pane = parent.pane;
+        }
+
+        public Pane getPane() {
+            return pane;
+        }
+
+        public InternalFrame getParent() {
+            return parent;
+        }
     }
 }

@@ -16,11 +16,11 @@ public class AppWindow extends InternalWindow {
         super(pane, window);
         this.appDescriptor = window.getContent();
 
-        titleLabel.textProperty().bind(appDescriptor.displayProperty());
-        titleLabel.setGraphic(appDescriptor.getAppProviderDescriptor().getSmallIcon());
+        titleProperty().bind(appDescriptor.displayProperty());
+        setIcon(appDescriptor.getAppProviderDescriptor().getSmallIcon());
         newWindow.setDisable(appDescriptor.isSingleton());
 
-        setCss(appDescriptor.getAppProviderDescriptor().getCss());
+        setContentCss(appDescriptor.getAppProviderDescriptor().getCss());
 
         PauseTransition pause = new PauseTransition(Duration.seconds(1));
 
@@ -53,8 +53,8 @@ public class AppWindow extends InternalWindow {
     }
 
     @Override
-    protected void onCloseState() {
-        super.onCloseState();
+    protected void close() {
+        super.close();
         Sys.am().stop(appDescriptor);
     }
 

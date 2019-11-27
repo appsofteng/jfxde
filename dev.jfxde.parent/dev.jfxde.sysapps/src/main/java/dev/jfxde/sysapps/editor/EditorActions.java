@@ -14,6 +14,7 @@ public class EditorActions {
     private EditorContent content;
     private Action saveAction;
     private Action saveAllAction;
+    private Action findAction;
 
     public EditorActions(EditorContent content) {
         this.content = content;
@@ -37,6 +38,11 @@ public class EditorActions {
         FXResourceBundle.getBundle().put(saveAllAction.textProperty(), "saveAll");
         FXResourceBundle.getBundle().put(saveAllAction.longTextProperty(), "saveAll");
         saveAllAction.setAccelerator(KeyCombination.keyCombination("Shift+Shortcut+S"));
+
+        findAction = new Action(this::find);
+        FXResourceBundle.getBundle().put(findAction.textProperty(), "find");
+        FXResourceBundle.getBundle().put(findAction.longTextProperty(), "find");
+        findAction.setAccelerator(KeyCombination.keyCombination("Shortcut+F"));
     }
 
     private void setListeners() {
@@ -66,5 +72,9 @@ public class EditorActions {
 
     private void saveAll(Event e) {
         content.getEditorPane().saveAll();
+    }
+
+    private void find(Event e) {
+        new FindDialog(content).show();
     }
 }

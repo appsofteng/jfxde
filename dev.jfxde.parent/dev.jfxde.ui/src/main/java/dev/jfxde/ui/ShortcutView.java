@@ -9,6 +9,7 @@ import javafx.beans.binding.Bindings;
 import javafx.css.PseudoClass;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
@@ -42,7 +43,7 @@ public class ShortcutView extends VBox {
         this.shortcut = shortcut;
 
         AppProviderDescriptor appProviderDescriptor = Sys.am().getAppProviderDescriptor(shortcut.getFqn());
-        Region icon = null;
+        Node icon = null;
         if (appProviderDescriptor != null) {
             icon = appProviderDescriptor.getMediumIcon("jd-desktop-shortcut-icon");
         } else {

@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,11 +18,11 @@ import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Region;
 
 public final class ResourceManager extends Manager implements ResourceController {
 
@@ -138,17 +137,17 @@ public final class ResourceManager extends Manager implements ResourceController
         return Arrays.stream(names).map(n -> getCss(n)).filter(s -> s != null).collect(Collectors.toList());
     }
 
-    public Region getMediumIcon(String style) {
+    public Node getMediumIcon(String style) {
 
         return getIcon(MEDIUM_ICON_NAME, iconAltText, MEDIUM_ICON_SIZE, style);
     }
 
-    public Region getSmallIcon(String style) {
+    public Node getSmallIcon(String style) {
 
         return getIcon(SMALL_ICON_NAME, iconAltText, SMALL_ICON_SIZE, style);
     }
 
-    private Region getIcon(String name, String iconAltText, double size, String style) {
+    private Node getIcon(String name, String iconAltText, double size, String style) {
         Label icon = new Label();
 
         Image image = getIconImage(name);

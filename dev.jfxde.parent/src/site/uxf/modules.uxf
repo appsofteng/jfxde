@@ -225,18 +225,18 @@
     <id>Relation</id>
     <coordinates>
       <x>470</x>
-      <y>110</y>
+      <y>90</y>
       <w>230</w>
-      <h>110</h>
+      <h>130</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>10.0;10.0;210.0;10.0;210.0;90.0</additional_attributes>
+    <additional_attributes>10.0;10.0;210.0;10.0;210.0;110.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
       <x>380</x>
-      <y>100</y>
+      <y>80</y>
       <w>100</w>
       <h>30</h>
     </coordinates>
@@ -258,11 +258,22 @@
     <id>Relation</id>
     <coordinates>
       <x>470</x>
-      <y>100</y>
+      <y>80</y>
       <w>260</w>
-      <h>280</h>
+      <h>300</h>
     </coordinates>
     <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>10.0;10.0;240.0;10.0;240.0;260.0;160.0;260.0</additional_attributes>
+    <additional_attributes>10.0;10.0;240.0;10.0;240.0;280.0;160.0;280.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>420</x>
+      <y>100</y>
+      <w>30</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>10.0;40.0;10.0;10.0</additional_attributes>
   </element>
 </diagram>

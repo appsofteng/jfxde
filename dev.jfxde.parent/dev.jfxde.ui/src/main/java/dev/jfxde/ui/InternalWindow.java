@@ -6,26 +6,19 @@ import dev.jfxde.data.entity.Window;
 import dev.jfxde.data.entity.Window.State;
 import dev.jfxde.fonts.Fonts;
 import dev.jfxde.jfx.scene.control.InternalFrame;
-import dev.jfxde.jfx.scene.layout.LayoutUtils;
 import dev.jfxde.logic.Sys;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.css.PseudoClass;
-import javafx.geometry.BoundingBox;
-import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tooltip;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Duration;
 
@@ -37,11 +30,10 @@ public class InternalWindow extends InternalFrame {
     private WindowPane windowPane;
     private Window windowModel;
 
-    protected Button newWindow = new Button(Fonts.Unicode.TWO_JOINED_SQUARES);
-    private Button tile = new Button(Fonts.FontAwesome.TH_LARGE);
-    private Button minimize = new Button("_");
-    private Button maximize = new Button(Fonts.Unicode.WHITE_LARGE_SQUARE);
-    private Button full = new Button(Fonts.Octicons.SCREEN_FULL);
+    protected Button newWindow;
+    private Button tile;
+    private Button minimize;
+    private Button full;
 
     private ChangeListener<Boolean> activateListener = (v, o, n) -> {
         if (n) {
@@ -55,19 +47,25 @@ public class InternalWindow extends InternalFrame {
 
         pseudoClassStateChanged(FULL_PSEUDO_CLASS, n == State.FULL);
 
-        if (n == State.MINIMIZED) {
-            minimize(o);
-        } else if (n == State.MAXIMIZED) {
-            maximize(o);
-        } else if (n == State.FULL) {
-            full(o);
-        } else if (n == State.RESTORED) {
-            restore(o);
-        } else if (n == State.TILED) {
-            tile(o);
-        } else if (n == State.CLOSED) {
-            onCloseState();
+        if (o == State.RESTORED) {
+            storeBounds();
         }
+
+        if (n == State.MINIMIZED) {
+            minimize();
+        } else if (n == State.MAXIMIZED) {
+            maximize();
+        } else if (n == State.FULL) {
+            full();
+        } else if (n == State.RESTORED) {
+            restore();
+        } else if (n == State.TILED) {
+            tile();
+        } else if (n == State.CLOSED) {
+            close();
+        }
+
+        setMaximized(n == State.MAXIMIZED);
 
         if (o == State.TILED) {
             windowPane.untile(this);
@@ -78,18 +76,11 @@ public class InternalWindow extends InternalFrame {
         super(windowPane);
         this.windowPane = windowPane;
         this.windowModel = windowModel;
+        windowModel.activeProperty().addListener(activateListener);
+        windowModel.stateProperty().addListener(stateListener);
+        titleVisibleProperty().bind(windowModel.stateProperty().isNotEqualTo(State.FULL));
 
-        addButtons();
-        buildLayout(windowPane.getWidth() / 2, windowPane.getHeight() / 2);
-        setMoveable();
-        setHandlers();
         setTitleMenu();
-    }
-
-    void setCss(String css) {
-        if (css != null) {
-            contentRegion.getStylesheets().addAll(css);
-        }
     }
 
     @Override
@@ -101,45 +92,34 @@ public class InternalWindow extends InternalFrame {
         return windowModel;
     }
 
-    protected void buildLayout(double width, double height) {
-        super.buildLayout(width, height);
-        titleBar.visibleProperty().bind(windowModel.stateProperty().isNotEqualTo(State.FULL));
-        titleBar.managedProperty().bind(titleBar.visibleProperty());
-    }
-
     protected void addButtons() {
         super.addButtons();
+        newWindow = new Button(Fonts.Unicode.TWO_JOINED_SQUARES);
         newWindow.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         newWindow.setFocusTraversable(false);
         newWindow.setTooltip(new Tooltip());
         newWindow.getTooltip().textProperty().bind(Sys.rm().getStringBinding("newWindow"));
 
+        tile = new Button(Fonts.FontAwesome.TH_LARGE);
         tile.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         tile.setFocusTraversable(false);
         tile.setTooltip(new Tooltip());
         tile.getTooltip().textProperty().bind(Sys.rm().getStringBinding("tile"));
 
+        minimize = new Button("_");
         minimize.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         minimize.setFocusTraversable(false);
         minimize.setTooltip(new Tooltip());
         minimize.getTooltip().textProperty().bind(Sys.rm().getStringBinding("minimize"));
 
-        maximize.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
-        maximize.setFocusTraversable(false);
-        maximize.textProperty()
-                .bind(Bindings.when(windowModel.stateProperty().isEqualTo(State.MAXIMIZED))
-                        .then(Fonts.Unicode.UPPER_RIGHT_DROP_SHADOWED_WHITE_SQUARE)
-                        .otherwise(Fonts.Unicode.WHITE_LARGE_SQUARE));
-        maximize.setTooltip(new Tooltip());
-        maximize.getTooltip().textProperty().bind(Bindings.when(windowModel.stateProperty().isEqualTo(State.MAXIMIZED))
-                .then(Sys.rm().getStringBinding("restore")).otherwise(Sys.rm().getStringBinding("maximize")));
-
+        full = new Button(Fonts.Octicons.SCREEN_FULL);
         full.getStyleClass().addAll("jd-frame-button", "jd-octicons");
         full.setFocusTraversable(false);
         full.setTooltip(new Tooltip());
         full.getTooltip().textProperty().bind(Sys.rm().getStringBinding("full"));
 
-        buttonBox.getChildren().addAll(0, List.of(newWindow, tile, minimize, maximize, full));
+        addButtons(0, List.of(newWindow, tile, minimize));
+        addButtons(-1, List.of(full));
     }
 
     private void setTitleMenu() {
@@ -168,36 +148,20 @@ public class InternalWindow extends InternalFrame {
         forceClose.setOnAction(e -> forceClose());
 
         ContextMenu titleContextMenu = new ContextMenu(minimizeOthers, minimizeAll, closeOthers, closeAll, new SeparatorMenuItem(), forceClose);
-        titleLabel.setContextMenu(titleContextMenu);
+        setTitleContextMenu(titleContextMenu);
     }
 
-    private void setMoveable() {
-        LayoutUtils.makeDragable(this, titleBar, e -> {
-            if (windowModel.isMaximized() || windowModel.isTiled()) {
-                Point2D localClickPoint = windowPane.screenToLocal(e.getScreenX(), e.getScreenY());
-                double restoreX = localClickPoint.getX() - restoreBounds.getWidth() / 2;
-                restoreX = Math.max(0, restoreX);
-                restoreX = Math.min(windowPane.getWidth() - restoreBounds.getWidth(), restoreX);
-                double restoreY = localClickPoint.getY() - e.getY();
-                pressDragPoint = new Point2D(restoreX, restoreY);
-            } else {
-                pressDragPoint = new Point2D(getLayoutX(), getLayoutY());
-            }
-
-            return pressDragPoint;
-        }, () -> {
-
-            if (windowModel.isMaximized() || windowModel.isTiled()) {
-                restoreBounds = new BoundingBox(pressDragPoint.getX(), 0, restoreBounds.getWidth(),
-                        restoreBounds.getHeight());
-                windowModel.restore();
-            }
-        });
-
-        LayoutUtils.makeResizable(this, payload, CURSOR_BORDER_WIDTH);
+    protected boolean isEnlarged() {
+        return windowModel.isMaximized() || windowModel.isTiled();
     }
 
-    private void setHandlers() {
+    protected void onRestore() {
+        windowModel.restore();
+    }
+
+    @Override
+    protected void setHandlers() {
+        super.setHandlers();
         addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
 
             InternalFrame modalFrame = getModalFrame(this);
@@ -217,29 +181,10 @@ public class InternalWindow extends InternalFrame {
             }
         });
 
-        titleLabel.setOnMouseClicked(e -> {
-            InternalFrame modalFrame = getModalFrame(this);
-            if (modalFrame == null) {
-                if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
-                    windowModel.maximizeRestore();
-                }
-            } else {
-                e.consume();
-            }
-
-        });
-
         newWindow.setOnAction(e -> onNewWindow());
-        tile.setOnAction(e -> {
-            windowPane.tile();
-        });
+        tile.setOnAction(e -> windowPane.tile());
         minimize.setOnAction(e -> windowModel.minimizeActivate());
-        maximize.setOnAction(e -> windowModel.maximizeRestore());
         full.setOnAction(e -> windowModel.full());
-
-        windowModel.activeProperty().addListener(activateListener);
-
-        windowModel.stateProperty().addListener(stateListener);
     }
 
     protected void onNewWindow() {
@@ -250,11 +195,12 @@ public class InternalWindow extends InternalFrame {
         windowModel.close();
     }
 
-    void onCloseState() {
-        super.close();
+    protected void forceClose() {
     }
 
-    protected void forceClose() {
+    @Override
+    protected void onMaximizeRestore() {
+        windowModel.maximizeRestore();
     }
 
     protected void activateRoot() {
@@ -263,9 +209,8 @@ public class InternalWindow extends InternalFrame {
 
     public void activate() {
         setActive(true);
-        subframes.forEach(InternalFrame::deactivateAll);
+        getSubframes().forEach(InternalFrame::deactivateAll);
         requestFocus();
-        focusOwner.requestFocus();
     }
 
     void activateAll() {
@@ -281,74 +226,44 @@ public class InternalWindow extends InternalFrame {
                 restoreTransition(MINIMALIZATION_DURATION);
             }
 
-            focusOwner.requestFocus();
+            requestFocus();
         }
     }
 
-    void minimize(State old) {
+    void minimize() {
         setSubFramesVisible(false);
-        if (old == State.RESTORED) {
-            restoreBounds = getBoundsInParent();
-        }
 
         layoutXProperty().unbind();
         layoutYProperty().unbind();
-        payload.prefWidthProperty().unbind();
-        payload.prefHeightProperty().unbind();
+        getPayload().prefWidthProperty().unbind();
+        getPayload().prefHeightProperty().unbind();
 
         minimizeTransition(MINIMALIZATION_DURATION);
     }
 
-    private void maximize(State old) {
-
-        if (old == State.RESTORED) {
-            restoreBounds = getBoundsInParent();
-        }
+    private void full() {
 
         layoutXProperty().unbind();
         layoutYProperty().unbind();
+        getPayload().prefWidthProperty().unbind();
+        getPayload().prefHeightProperty().unbind();
         setLayoutX(0);
         setLayoutY(0);
 
-        payload.prefWidthProperty().unbind();
-        payload.prefHeightProperty().unbind();
-        payload.prefWidthProperty().bind(windowPane.widthProperty());
-        payload.prefHeightProperty().bind(windowPane.heightProperty());
+        getPayload().prefWidthProperty().bind(windowPane.widthProperty());
+        getPayload().prefHeightProperty().bind(windowPane.heightProperty());
 
         toFront();
     }
 
-    private void full(State old) {
-
-        if (old == State.RESTORED) {
-            restoreBounds = getBoundsInParent();
-        }
-
-        layoutXProperty().unbind();
-        layoutYProperty().unbind();
-        payload.prefWidthProperty().unbind();
-        payload.prefHeightProperty().unbind();
-        setLayoutX(0);
-        setLayoutY(0);
-
-        payload.prefWidthProperty().bind(windowPane.widthProperty());
-        payload.prefHeightProperty().bind(windowPane.heightProperty());
-
-        toFront();
-    }
-
-    void tile(State old) {
-
-        if (old == State.RESTORED) {
-            restoreBounds = getBoundsInParent();
-        }
+    void tile() {
 
         windowPane.tile(this);
 
         layoutXProperty().unbind();
         layoutYProperty().unbind();
-        payload.prefWidthProperty().unbind();
-        payload.prefHeightProperty().unbind();
+        getPayload().prefWidthProperty().unbind();
+        getPayload().prefHeightProperty().unbind();
 
         layoutXProperty().bind(Bindings.createDoubleBinding(
                 () -> windowPane.getTiledWindows().indexOf(this) % windowPane.tileColsProperty().get()
@@ -359,19 +274,8 @@ public class InternalWindow extends InternalFrame {
                         * windowPane.tileHeightProperty().get(),
                 windowPane.tileColsProperty(), windowPane.tileHeightProperty()));
 
-        payload.prefWidthProperty().bind(windowPane.tileWidthProperty());
-        payload.prefHeightProperty().bind(windowPane.tileHeightProperty());
-    }
-
-    void restore(State old) {
-        layoutXProperty().unbind();
-        layoutYProperty().unbind();
-        setLayoutX(restoreBounds.getMinX());
-        setLayoutY(restoreBounds.getMinY());
-
-        payload.prefWidthProperty().unbind();
-        payload.prefHeightProperty().unbind();
-        payload.setPrefSize(restoreBounds.getWidth(), restoreBounds.getHeight());
+        getPayload().prefWidthProperty().bind(windowPane.tileWidthProperty());
+        getPayload().prefHeightProperty().bind(windowPane.tileHeightProperty());
     }
 
     private void minimizeTransition(Duration duration) {

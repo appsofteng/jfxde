@@ -65,7 +65,9 @@ public class FileDialog extends InternalDialog {
     public FileDialog(Node node) {
         super(node, Modality.WINDOW_MODAL);
 
-        setGraphics();
+        double height = node.getScene().getHeight() * 0.8;
+
+        setGraphics(height);
         setSelectionContextMenu();
         setBehavior();
     }
@@ -76,8 +78,8 @@ public class FileDialog extends InternalDialog {
         return this;
     }
 
-    private void setGraphics() {
-        double height = windowPane.getHeight() * 0.8;
+    private void setGraphics(double height) {
+
         root = new PathTreeItem(FXPath.getRoot(), true);
 
         breadCrumbBar = new BreadCrumbBar<>(root);
