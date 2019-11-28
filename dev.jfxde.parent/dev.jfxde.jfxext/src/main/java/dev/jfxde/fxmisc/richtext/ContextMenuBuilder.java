@@ -53,6 +53,15 @@ public class ContextMenuBuilder {
         return this;
     }
 
+    public ContextMenuBuilder add(MenuItem item) {
+        area.getContextMenu().getItems().add(item);
+
+        Nodes.addInputMap(area, sequence(
+                consume(keyPressed(item.getAccelerator()).onlyIf(e -> !item.isDisable()), e -> item.fire())));
+
+        return this;
+    }
+
     public ContextMenuBuilder copy() {
         MenuItem item = new MenuItem();
         item.setAccelerator(KeyCombination.keyCombination("Shortcut+C"));

@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import dev.jfxde.fxmisc.richtext.Line;
 import dev.jfxde.fxmisc.richtext.StringRef;
 import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
@@ -692,19 +693,48 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     private void find(Stream<String> lines, Pattern pattern, Predicate<StringRef> process) {
-        int[] lineNumber = new int[1];
-        lineNumber[0] = 0;
+
+        Line[] lineObj = new Line[1];
+        lineObj[0] = new Line("", -1, 0);
+
+        int[] searchStart = new int[1];
+        searchStart[0] = 0;
+
+        String[] search = new String[1];
+        search[0] = "";
+
+        List<Line> searchLines = new ArrayList<>();
 
         lines.allMatch(line -> {
             boolean continueSearch = true;
-            Matcher matcher = pattern.matcher(line);
+
+            lineObj[0] = lineObj[0].createNext(line + "\n");
+
+            searchLines.add(lineObj[0]);
+            search[0] += line + "\n";
+
+            Line matchLine = null;
+            Matcher matcher = pattern.matcher(search[0]);
+            int matchEnd = 0;
 
             while (matcher.find() && continueSearch) {
-                StringRef stringRef = new StringRef(line, lineNumber[0], matcher.start(), matcher.end(), matcher.group());
+                int absMatchStart = searchStart[0] + matcher.start();
+                matchLine = searchLines.stream().filter(ln -> ln.contains(absMatchStart)).findFirst().orElse(null);
+
+                StringRef stringRef = new StringRef(matchLine, absMatchStart - matchLine.getStart(), matcher.group());
+                matchEnd = matcher.end();
                 continueSearch = process.test(stringRef);
             }
 
-            lineNumber[0]++;
+            if (matchLine != null) {
+                int matchLineNumber = matchLine.getNumber();
+                searchLines.removeIf(ln -> ln.getNumber() < matchLineNumber);
+            }
+
+            if (matchEnd > 0) {
+                search[0] = search[0].substring(matchEnd);
+                searchStart[0] += matchEnd;
+            }
 
             return continueSearch;
 

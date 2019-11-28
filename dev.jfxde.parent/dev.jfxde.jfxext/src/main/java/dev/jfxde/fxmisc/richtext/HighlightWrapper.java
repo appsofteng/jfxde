@@ -53,6 +53,10 @@ public class HighlightWrapper extends GenericStyledAreaWrapper<CodeArea> {
         }
     }
 
+    void setAreaLength(int areaLength) {
+        this.areaLength = areaLength;
+    }
+
     void setToken(Token token) {
 
         if (token != null && token.isDelimiter()) {

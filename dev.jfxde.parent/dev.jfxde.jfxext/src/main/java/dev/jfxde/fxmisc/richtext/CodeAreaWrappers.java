@@ -113,6 +113,7 @@ public final class CodeAreaWrappers {
                     });
 
                     highlightWrapper.setToken(lexer.getTokenOnCaretPosition());
+                    highlightWrapper.setAreaLength(area.getLength());
 
                     StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
                     spansBuilder.addAll(spans);

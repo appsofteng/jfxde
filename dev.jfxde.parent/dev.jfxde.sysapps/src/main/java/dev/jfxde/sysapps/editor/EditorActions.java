@@ -65,6 +65,10 @@ public class EditorActions {
     Action saveAllAction() {
         return saveAllAction;
     }
+    
+    Action findAction() {
+        return findAction;
+    }    
 
     private void save(Event e) {
         content.getEditorPane().save();

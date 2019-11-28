@@ -48,6 +48,8 @@ public class Editor extends StackPane {
         ContextMenuBuilder.get(area)
                 .addAll(ActionUtils.createMenuItem(actions.saveAction()), ActionUtils.createMenuItem(actions.saveAllAction()))
                 .separator()
+                .add(ActionUtils.createMenuItem(actions.findAction()))
+                .separator()
                 .copy().cut().paste().selectAll().clear()
                 .separator()
                 .undo().redo();
@@ -201,7 +203,7 @@ public class Editor extends StackPane {
         var stringPointer = filePosition.getSelectedPosition();
 
         if (stringPointer != null) {
-            area.moveTo(stringPointer.getStringRef().getLine(), stringPointer.getStringRef().getStart());
+            area.moveTo(stringPointer.getStringRef().getLine().getNumber(), stringPointer.getStringRef().getStart());
         } else {
             area.moveTo(0);
         }
