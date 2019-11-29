@@ -40,10 +40,16 @@ public final class CodeAreaWrappers {
     private String language;
     private Lexer lexer;
 
+    private  FindWrapper findWrapper;
+
     private CodeAreaWrappers(CodeArea area, String fileName, String language) {
         this.area = area;
         this.fileName = fileName;
         this.language = language;
+    }
+
+    public FindWrapper getFindWrapper() {
+        return findWrapper;
     }
 
     public static CodeAreaWrappers get(CodeArea area, String language) {
@@ -179,7 +185,7 @@ public final class CodeAreaWrappers {
 
     public CodeAreaWrappers find() {
 
-        var findWrapper = new FindWrapper(area);
+        findWrapper = new FindWrapper(area);
 
         Nodes.addInputMap(area, sequence(
                 consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 2), e -> findWrapper.findWord())));

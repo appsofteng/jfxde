@@ -31,10 +31,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import dev.jfxde.fxmisc.richtext.Line;
-import dev.jfxde.fxmisc.richtext.StringRef;
 import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
+import dev.jfxde.j.util.search.Line;
+import dev.jfxde.j.util.search.StringRef;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;

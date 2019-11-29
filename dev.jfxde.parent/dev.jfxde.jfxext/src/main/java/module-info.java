@@ -27,6 +27,7 @@ module dev.jfxde.jfxext {
     exports dev.jfxde.j.nio.file to dev.jfxde.logic, dev.jfxde.sysapps;
     exports dev.jfxde.j.util to dev.jfxde.logic, dev.jfxde.sysapps;
     exports dev.jfxde.j.util.prefs to dev.jfxde.logic;
+    exports dev.jfxde.j.util.search to dev.jfxde.logic, dev.jfxde.sysapps;
 
     exports dev.jfxde.jfx.animation to dev.jfxde.ui;
     exports dev.jfxde.jfx.application to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;

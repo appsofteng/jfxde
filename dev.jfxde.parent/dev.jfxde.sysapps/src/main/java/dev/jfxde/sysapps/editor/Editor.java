@@ -35,6 +35,8 @@ public class Editor extends StackPane {
     private final ReadOnlyStringWrapper tabTitle = new ReadOnlyStringWrapper();
     private final CodeArea area = new CodeArea();
 
+    private CodeAreaWrappers codeAreaWrappers;
+
     public Editor(FilePosition filePosition, EditorActions actions) {
         setFilePosition(filePosition);
 
@@ -54,7 +56,7 @@ public class Editor extends StackPane {
                 .separator()
                 .undo().redo();
 
-        CodeAreaWrappers.get(area, path.getPath())
+        codeAreaWrappers = CodeAreaWrappers.get(area, path.getPath())
                 .style()
                 .highlighting()
                 .indentation()
@@ -113,8 +115,12 @@ public class Editor extends StackPane {
         return str;
     }
 
-    public FXPath getPath() {
+    FXPath getPath() {
         return path;
+    }
+
+    CodeAreaWrappers getCodeAreaWrappers() {
+        return codeAreaWrappers;
     }
 
     ReadOnlyStringProperty titleProperty() {

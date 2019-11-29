@@ -27,18 +27,26 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
         super(area);
     }
 
+    public void find(Pattern pattern) {
+        indices.forEach(i -> removeStyleClass(i, "jd-find"));
+        if (pattern != null) {
+            indices = find(pattern, r -> addStyleClass(r, "jd-find"));
+        }
+    }
+
     void findWord() {
         area.requestFocus();
         Pair<IndexRange, String> pair = getCodeWord(getArea().getText(), getArea().getCaretPosition());
         area.selectRange(pair.getKey().getStart(), pair.getKey().getEnd());
         String word = pair.getValue();
 
-        indices.forEach(i -> removeStyleClass(i, "jd-find"));
+        Pattern pattern = null;
 
         if (word != null && !word.isBlank()) {
-            Pattern pattern = Pattern.compile("(?<=^|\\W)(" + word + ")(?=\\W|$)");
-            indices = find(pattern, r -> addStyleClass(r, "jd-find"));
+            pattern = Pattern.compile("(?<=^|\\W)(" + word + ")(?=\\W|$)");
         }
+
+        find(pattern);
     }
 
     private List<IndexRange> find(Pattern pattern, Consumer<IndexRange> consumer) {

@@ -186,11 +186,12 @@ public class SearchFileDialog extends InternalDialog {
 
     private Pattern getPattern() {
 
-        if (textField.getText().isBlank()) {
+        String regex = textField.getText();
+
+        if (regex.isEmpty()) {
             return null;
         }
 
-        String regex = textField.getText();
         int flags = matchCaseCheck.isSelected() ? 0 : Pattern.CASE_INSENSITIVE;
 
         if (!regexCheck.isSelected()) {

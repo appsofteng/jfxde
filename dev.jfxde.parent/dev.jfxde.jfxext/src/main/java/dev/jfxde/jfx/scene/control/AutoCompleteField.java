@@ -56,6 +56,7 @@ public class AutoCompleteField<T> extends Region {
         }
 
         suggestions.add(converter.fromString(textField.getText()));
+
         if (binding != null) {
             binding.dispose();
         }

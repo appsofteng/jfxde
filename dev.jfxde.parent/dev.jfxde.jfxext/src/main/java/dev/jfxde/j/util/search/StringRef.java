@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext;
+package dev.jfxde.j.util.search;
 
 public class StringRef {
 

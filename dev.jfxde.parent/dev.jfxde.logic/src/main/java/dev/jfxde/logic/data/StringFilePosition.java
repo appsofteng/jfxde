@@ -2,7 +2,7 @@ package dev.jfxde.logic.data;
 
 import java.util.List;
 
-import dev.jfxde.fxmisc.richtext.StringRef;
+import dev.jfxde.j.util.search.StringRef;
 
 public class StringFilePosition extends FilePosition {
 
