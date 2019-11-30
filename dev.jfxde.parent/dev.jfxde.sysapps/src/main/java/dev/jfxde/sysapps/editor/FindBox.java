@@ -23,11 +23,13 @@ public class FindBox extends VBox {
     private CheckBox inSelectionCheck = new CheckBox();
 
     private AutoCompleteField<String> findField = new AutoCompleteField<String>();
-    private Button findPrevious;
-    private Button findNext;
+    private Button findPreviousButton;
+    private Button findNextButton;
     private Label foundCount = new Label();
 
-    private Consumer<Pattern> findConsumer = p -> {};
+    private boolean previous;
+    private Consumer<Pattern> findPrevious = p -> {};
+    private Consumer<Pattern> findNext = p -> {};
 
     public FindBox() {
         setGraphics();
@@ -44,26 +46,30 @@ public class FindBox extends VBox {
         FXResourceBundle.getBundle().put(inSelectionCheck.textProperty(), "inSelection");
         HBox optionBox = new HBox(5, matchCaseCheck, wholeWordCheck, regexCheck, inSelectionCheck);
 
-        findPrevious = new Button(Fonts.FontAwesome.CHEVRON_UP);
-        findPrevious.setFocusTraversable(false);
-        findPrevious.getStyleClass().addAll("jd-font-awesome-solid", "jd-editor-button");
-        findPrevious.setMaxHeight(Double.MAX_VALUE);
-        findPrevious.setMinWidth(USE_PREF_SIZE);
-        findPrevious.disableProperty().bind(findField.textProperty().isEmpty());
+        findField.setOnCompleted(this::find);
 
-        findNext = new Button(Fonts.FontAwesome.CHEVRON_DOWN);
-        findNext.setFocusTraversable(false);
-        findNext.getStyleClass().addAll("jd-font-awesome-solid", "jd-editor-button");
-        findNext.setMaxHeight(Double.MAX_VALUE);
-        findNext.setMinWidth(USE_PREF_SIZE);
-        findNext.disableProperty().bind(findField.textProperty().isEmpty());
+        findPreviousButton = new Button(Fonts.FontAwesome.CHEVRON_UP);
+        findPreviousButton.setFocusTraversable(false);
+        findPreviousButton.getStyleClass().addAll("jd-font-awesome-solid", "jd-editor-button");
+        findPreviousButton.setMaxHeight(Double.MAX_VALUE);
+        findPreviousButton.setMinWidth(USE_PREF_SIZE);
+        findPreviousButton.disableProperty().bind(findField.textProperty().isEmpty());
+        findPreviousButton.setOnAction(e -> findPrevious());
+
+        findNextButton = new Button(Fonts.FontAwesome.CHEVRON_DOWN);
+        findNextButton.setFocusTraversable(false);
+        findNextButton.getStyleClass().addAll("jd-font-awesome-solid", "jd-editor-button");
+        findNextButton.setMaxHeight(Double.MAX_VALUE);
+        findNextButton.setMinWidth(USE_PREF_SIZE);
+        findNextButton.disableProperty().bind(findField.textProperty().isEmpty());
+        findNextButton.setOnAction(e -> findNext());
 
         foundCount.getStyleClass().add("jd-editor-label");
         foundCount.setMaxHeight(Double.MAX_VALUE);
         foundCount.setMinWidth(USE_PREF_SIZE);
 
         HBox.setHgrow(findField, Priority.ALWAYS);
-        HBox fieldBox = new HBox(findField, findPrevious, findNext, foundCount);
+        HBox fieldBox = new HBox(findField, findPreviousButton, findNextButton, foundCount);
 
         var margin = new Insets(0,0,5,0);
 
@@ -72,8 +78,42 @@ public class FindBox extends VBox {
         getChildren().addAll(optionBox, fieldBox);
     }
 
+    void setText(String value) {
+        findField.setText(value);
+    }
+
     public StringProperty promptTextProperty() {
         return findField.promptTextProperty();
+    }
+
+    public void setFindPrevious(Consumer<Pattern> findPrevious) {
+        this.findPrevious = findPrevious;
+    }
+
+    public void setFindNext(Consumer<Pattern> findNext) {
+        this.findNext = findNext;
+    }
+
+    private void find(String value) {
+        if (previous) {
+            findPrevious.accept(getPattern());
+        } else {
+            findNext.accept(getPattern());
+        }
+
+        findField.requestFocus();
+    }
+
+    private void findPrevious() {
+        previous = true;
+        findField.store();
+        findPrevious.accept(getPattern());
+    }
+
+    private void findNext() {
+        previous = false;
+        findField.store();
+        findNext.accept(getPattern());
     }
 
     private Pattern getPattern() {
@@ -95,5 +135,11 @@ public class FindBox extends VBox {
         Pattern pattern = Pattern.compile(regex, flags);
 
         return pattern;
+    }
+
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        findField.requestFocus();
     }
 }

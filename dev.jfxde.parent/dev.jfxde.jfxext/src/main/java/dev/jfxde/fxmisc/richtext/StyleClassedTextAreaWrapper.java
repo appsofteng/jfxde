@@ -1,7 +1,7 @@
 package dev.jfxde.fxmisc.richtext;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -31,7 +31,7 @@ public class StyleClassedTextAreaWrapper extends GenericStyledAreaWrapper<StyleC
 
         var builder = new StyleSpansBuilder<Collection<String>>();
         styleSpans.stream().forEach(s -> {
-            var style = new ArrayList<String>(s.getStyle());
+            var style = new HashSet<>(s.getStyle());
             change.accept(style, styleClass);
             builder.add(style, s.getLength());
         });

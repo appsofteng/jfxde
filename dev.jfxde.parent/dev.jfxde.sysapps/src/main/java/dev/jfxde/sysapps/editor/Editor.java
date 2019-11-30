@@ -119,6 +119,10 @@ public class Editor extends StackPane {
         return path;
     }
 
+    CodeArea getArea() {
+        return area;
+    }
+
     CodeAreaWrappers getCodeAreaWrappers() {
         return codeAreaWrappers;
     }

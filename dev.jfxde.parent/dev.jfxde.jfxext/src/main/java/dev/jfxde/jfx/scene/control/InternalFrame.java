@@ -298,6 +298,10 @@ public abstract class InternalFrame extends Region {
         return this;
     }
 
+    protected void setFocusOwner(Node node) {
+        this.focusOwner = node;
+    }
+
     public void show() {
     }
 

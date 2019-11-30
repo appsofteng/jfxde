@@ -1,5 +1,8 @@
 package dev.jfxde.sysapps.editor;
 
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
+
 import dev.jfxde.jfx.scene.control.AutoCompleteField;
 import dev.jfxde.jfx.scene.control.InternalDialog;
 import dev.jfxde.jfx.util.FXResourceBundle;
@@ -24,6 +27,25 @@ public class FindDialog extends InternalDialog {
         setTitle(FXResourceBundle.getBundle().getString​("findReplace"));
 
         setGraphics();
+    }
+
+    FindDialog text(String value) {
+        if (value != null && !value.isEmpty()) {
+            findBox.setText(value);
+        }
+
+        setFocusOwner(findBox);
+        return this;
+    }
+
+    FindDialog findPrevious(Consumer<Pattern> consumer) {
+        findBox.setFindPrevious(consumer);
+        return this;
+    }
+
+    FindDialog findNext(Consumer<Pattern> consumer) {
+        findBox.setFindNext(consumer);
+        return this;
     }
 
     private void setGraphics() {
@@ -51,5 +73,6 @@ public class FindDialog extends InternalDialog {
         pane.getChildren().addAll(findBox, replaceField, buttonBar);
 
         setContent(pane);
+        setFocusOwner(findBox);
     }
 }

@@ -5,33 +5,39 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
-import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.StyleClassedTextArea;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.IndexRange;
 import javafx.util.Pair;
 
 public class FindWrapper extends StyleClassedTextAreaWrapper {
 
-    private StringProperty string = new SimpleStringProperty();
-    private BooleanProperty caseSensitive = new SimpleBooleanProperty();
-    private BooleanProperty regEx = new SimpleBooleanProperty();
+    private Pattern pattern;
+    private IntegerProperty index = new SimpleIntegerProperty(-1);
     private List<IndexRange> indices = List.of();
 
     public FindWrapper(StyleClassedTextArea area) {
         super(area);
+
+        area.textProperty().addListener(o -> pattern = null);
     }
 
-    public void find(Pattern pattern) {
-        indices.forEach(i -> removeStyleClass(i, "jd-find"));
-        if (pattern != null) {
-            indices = find(pattern, r -> addStyleClass(r, "jd-find"));
-        }
+    public void findPrevious(Pattern pattern) {
+
+        find(pattern);
+        findPrevious();
+        area.requestFocus();
+    }
+
+    public void findNext(Pattern pattern) {
+
+        find(pattern);
+        findNext();
+        area.requestFocus();
     }
 
     void findWord() {
@@ -47,6 +53,55 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
         }
 
         find(pattern);
+    }
+
+    private void findPrevious() {
+
+        if (indices.isEmpty()) {
+            return;
+        }
+
+        IndexRange range = Stream.iterate(indices.size() - 1, i -> i >= 0, i -> i - 1).map(i -> indices.get(i))
+                .filter(r -> r.getStart() < getArea().getCaretPosition())
+                .findFirst()
+                .orElse(indices.get(indices.size() - 1));
+
+        index.set(indices.indexOf(range));
+        getArea().moveTo(range.getStart());
+        getArea().requestFollowCaret();
+    }
+
+    private void findNext() {
+
+        if (indices.isEmpty()) {
+            return;
+        }
+
+        IndexRange range = Stream.iterate(0, i -> i < indices.size(), i -> i + 1).map(i -> indices.get(i))
+            .filter(r -> r.getStart() > getArea().getCaretPosition())
+            .findFirst()
+            .orElse(indices.get(0));
+
+        index.set(indices.indexOf(range));
+        getArea().moveTo(range.getStart());
+        getArea().requestFollowCaret();
+    }
+
+    private void find(Pattern pattern) {
+
+        if (pattern != null && this.pattern != null && pattern.pattern().equals(this.pattern.pattern()) && pattern.flags() == this.pattern.flags()) {
+            return;
+        }
+
+        this.pattern = pattern;
+        indices.forEach(i -> removeStyleClass(i, "jd-find"));
+
+        if (pattern == null) {
+            indices = List.of();
+        } else {
+
+            indices = find(pattern, r -> addStyleClass(r, "jd-find"));
+        }
     }
 
     private List<IndexRange> find(Pattern pattern, Consumer<IndexRange> consumer) {

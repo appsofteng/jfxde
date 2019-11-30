@@ -1,5 +1,7 @@
 package dev.jfxde.sysapps.editor;
 
+import java.lang.ref.WeakReference;
+
 import org.controlsfx.control.action.Action;
 import org.controlsfx.glyphfont.GlyphFontRegistry;
 
@@ -15,6 +17,7 @@ public class EditorActions {
     private Action saveAction;
     private Action saveAllAction;
     private Action findAction;
+    private FindDialog findDialog;
 
     public EditorActions(EditorContent content) {
         this.content = content;
@@ -48,7 +51,7 @@ public class EditorActions {
     private void setListeners() {
         saveAllAction.disabledProperty().bind(content.getEditorPane().changedProperty().not());
 
-        content.getEditorPane().selectedEditorProperty().addListener((v,o,n) -> {
+        content.getEditorPane().selectedEditorProperty().addListener((v, o, n) -> {
             saveAction.disabledProperty().unbind();
             if (n != null) {
                 saveAction.disabledProperty().bind(n.changedProperty().not());
@@ -65,10 +68,10 @@ public class EditorActions {
     Action saveAllAction() {
         return saveAllAction;
     }
-    
+
     Action findAction() {
         return findAction;
-    }    
+    }
 
     private void save(Event e) {
         content.getEditorPane().save();
@@ -79,6 +82,19 @@ public class EditorActions {
     }
 
     private void find(Event e) {
-        new FindDialog(content).show();
+
+        if (findDialog == null) {
+            findDialog = new FindDialog(content)
+                    .findPrevious(content.getEditorPane().getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findPrevious)
+                    .findNext(content.getEditorPane().getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findNext);
+            findDialog.parentProperty().addListener((v, o, n) -> {
+                if (n == null) {
+                    findDialog = null;
+                }
+            });
+        }
+
+        findDialog.text(content.getEditorPane().getSelectedEditor().getArea().getSelectedText())
+                .show();
     }
 }
