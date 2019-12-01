@@ -1,11 +1,12 @@
 package dev.jfxde.sysapps.editor;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 import dev.jfxde.jfx.scene.control.AutoCompleteField;
 import dev.jfxde.jfx.scene.control.InternalDialog;
 import dev.jfxde.jfx.util.FXResourceBundle;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -29,6 +30,10 @@ public class FindDialog extends InternalDialog {
         setGraphics();
     }
 
+    StringProperty foundCountProperty() {
+        return findBox.foundCountProperty();
+    }
+
     FindDialog text(String value) {
         if (value != null && !value.isEmpty()) {
             findBox.setText(value);
@@ -38,12 +43,12 @@ public class FindDialog extends InternalDialog {
         return this;
     }
 
-    FindDialog findPrevious(Consumer<Pattern> consumer) {
+    FindDialog findPrevious(BiConsumer<Pattern, Boolean> consumer) {
         findBox.setFindPrevious(consumer);
         return this;
     }
 
-    FindDialog findNext(Consumer<Pattern> consumer) {
+    FindDialog findNext(BiConsumer<Pattern, Boolean> consumer) {
         findBox.setFindNext(consumer);
         return this;
     }

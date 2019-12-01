@@ -1,6 +1,6 @@
 package dev.jfxde.sysapps.editor;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 import dev.jfxde.fonts.Fonts;
@@ -28,8 +28,8 @@ public class FindBox extends VBox {
     private Label foundCount = new Label();
 
     private boolean previous;
-    private Consumer<Pattern> findPrevious = p -> {};
-    private Consumer<Pattern> findNext = p -> {};
+    private BiConsumer<Pattern, Boolean> findPrevious = (p,s) -> {};
+    private BiConsumer<Pattern, Boolean> findNext = (p,s) -> {};
 
     public FindBox() {
         setGraphics();
@@ -69,16 +69,20 @@ public class FindBox extends VBox {
         foundCount.setMinWidth(USE_PREF_SIZE);
 
         HBox.setHgrow(findField, Priority.ALWAYS);
-        HBox fieldBox = new HBox(findField, findPreviousButton, findNextButton, foundCount);
+        HBox fieldBox = new HBox(findField, findPreviousButton, findNextButton);
 
-        var margin = new Insets(0,0,5,0);
+        var margin = new Insets(5,0,5,0);
 
-        VBox.setMargin(optionBox, margin);
+        VBox.setMargin(fieldBox, margin);
 
-        getChildren().addAll(optionBox, fieldBox);
+        getChildren().addAll(optionBox, fieldBox, foundCount);
     }
 
     void setText(String value) {
+        if (value.contains("\n")) {
+            value = value.substring(0, value.indexOf("\n"));
+            inSelectionCheck.setSelected(true);
+        }
         findField.setText(value);
     }
 
@@ -86,19 +90,23 @@ public class FindBox extends VBox {
         return findField.promptTextProperty();
     }
 
-    public void setFindPrevious(Consumer<Pattern> findPrevious) {
-        this.findPrevious = findPrevious;
+    StringProperty foundCountProperty() {
+        return foundCount.textProperty();
     }
 
-    public void setFindNext(Consumer<Pattern> findNext) {
-        this.findNext = findNext;
+    public void setFindPrevious(BiConsumer<Pattern, Boolean> consumer) {
+        this.findPrevious = consumer;
+    }
+
+    public void setFindNext(BiConsumer<Pattern, Boolean> consumer) {
+        this.findNext = consumer;
     }
 
     private void find(String value) {
         if (previous) {
-            findPrevious.accept(getPattern());
+            findPrevious.accept(getPattern(), inSelectionCheck.isSelected());
         } else {
-            findNext.accept(getPattern());
+            findNext.accept(getPattern(), inSelectionCheck.isSelected());
         }
 
         findField.requestFocus();
@@ -107,13 +115,13 @@ public class FindBox extends VBox {
     private void findPrevious() {
         previous = true;
         findField.store();
-        findPrevious.accept(getPattern());
+        findPrevious.accept(getPattern(), inSelectionCheck.isSelected());
     }
 
     private void findNext() {
         previous = false;
         findField.store();
-        findNext.accept(getPattern());
+        findNext.accept(getPattern(), inSelectionCheck.isSelected());
     }
 
     private Pattern getPattern() {

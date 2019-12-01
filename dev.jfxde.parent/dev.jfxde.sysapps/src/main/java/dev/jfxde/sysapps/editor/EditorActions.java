@@ -1,7 +1,5 @@
 package dev.jfxde.sysapps.editor;
 
-import java.lang.ref.WeakReference;
-
 import org.controlsfx.control.action.Action;
 import org.controlsfx.glyphfont.GlyphFontRegistry;
 
@@ -17,7 +15,6 @@ public class EditorActions {
     private Action saveAction;
     private Action saveAllAction;
     private Action findAction;
-    private FindDialog findDialog;
 
     public EditorActions(EditorContent content) {
         this.content = content;
@@ -82,19 +79,6 @@ public class EditorActions {
     }
 
     private void find(Event e) {
-
-        if (findDialog == null) {
-            findDialog = new FindDialog(content)
-                    .findPrevious(content.getEditorPane().getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findPrevious)
-                    .findNext(content.getEditorPane().getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findNext);
-            findDialog.parentProperty().addListener((v, o, n) -> {
-                if (n == null) {
-                    findDialog = null;
-                }
-            });
-        }
-
-        findDialog.text(content.getEditorPane().getSelectedEditor().getArea().getSelectedText())
-                .show();
+        content.getEditorPane().find();
     }
 }

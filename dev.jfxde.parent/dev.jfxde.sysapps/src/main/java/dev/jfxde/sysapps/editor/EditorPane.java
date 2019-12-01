@@ -38,6 +38,7 @@ public class EditorPane extends StackPane {
     private final FilteredList<Editor> closableEditors = editors.filtered(e -> !e.isChanged());
     private final ObjectProperty<Editor> selectedEditor = new SimpleObjectProperty<>();
     private final ReadOnlyBooleanWrapper changed = new ReadOnlyBooleanWrapper();
+    private FindDialog findDialog;
 
     public EditorPane(EditorActions actions) {
         this.actions = actions;
@@ -80,9 +81,16 @@ public class EditorPane extends StackPane {
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
 
+            if (findDialog != null) {
+                findDialog.foundCountProperty().unbind();
+            }
+
             if (n != null) {
                 Editor editor = (Editor) n.getContent();
                 selectedEditor.set(editor);
+                if (findDialog != null) {
+                    findDialog.foundCountProperty().bind(editor.getCodeAreaWrappers().getFindWrapper().foundCountProperty());
+                }
             } else {
                 selectedEditor.set(null);
             }
@@ -175,5 +183,24 @@ public class EditorPane extends StackPane {
 
     void saveAll() {
         tabPane.getTabs().forEach(t -> ((Editor) t.getContent()).save());
+    }
+
+    void find() {
+
+        if (findDialog == null) {
+            findDialog = new FindDialog(this)
+                    .findPrevious(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findPrevious)
+                    .findNext(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findNext);
+            findDialog.parentProperty().addListener((v, o, n) -> {
+                if (n == null) {
+                    findDialog = null;
+                }
+            });
+
+            findDialog.foundCountProperty().bind(getSelectedEditor().getCodeAreaWrappers().getFindWrapper().foundCountProperty());
+        }
+
+        findDialog.text(getSelectedEditor().getArea().getSelectedText())
+                .show();
     }
 }
