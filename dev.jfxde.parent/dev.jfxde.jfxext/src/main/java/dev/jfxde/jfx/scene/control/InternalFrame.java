@@ -263,7 +263,7 @@ public abstract class InternalFrame extends Region {
         return payload.getPrefWidth() == Region.USE_COMPUTED_SIZE || payload.getPrefHeight() == Region.USE_COMPUTED_SIZE;
     }
 
-    void setUseComputedSize() {
+    protected void setUseComputedSize() {
 
         payload.setPrefSize(USE_COMPUTED_SIZE, USE_COMPUTED_SIZE);
         maximize.setVisible(false);

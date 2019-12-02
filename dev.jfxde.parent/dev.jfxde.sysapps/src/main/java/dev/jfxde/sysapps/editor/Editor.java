@@ -51,6 +51,7 @@ public class Editor extends StackPane {
                 .addAll(ActionUtils.createMenuItem(actions.saveAction()), ActionUtils.createMenuItem(actions.saveAllAction()))
                 .separator()
                 .add(ActionUtils.createMenuItem(actions.findAction()))
+                .add(ActionUtils.createMenuItem(actions.goToLineAction()))
                 .separator()
                 .copy().cut().paste().selectAll().clear()
                 .separator()
@@ -240,6 +241,13 @@ public class Editor extends StackPane {
         if (isChanged()) {
             FXFiles.save(path, area.getText()).thenRun(() -> XPlatform.runFX(() -> unchange()));
         }
+    }
+
+    void goToLine(int line) {
+
+        line = Math.min(Math.max(line, 1),getArea().getParagraphs().size());
+
+        getArea().moveTo(line - 1, 0);
     }
 
     void dispose() {
