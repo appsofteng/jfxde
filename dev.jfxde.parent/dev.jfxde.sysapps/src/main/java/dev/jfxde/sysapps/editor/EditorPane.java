@@ -190,7 +190,10 @@ public class EditorPane extends StackPane {
         if (findDialog == null) {
             findDialog = new FindDialog(this)
                     .findPrevious(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findPrevious)
-                    .findNext(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findNext);
+                    .findNext(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findNext)
+                    .replace(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::replace)
+                    .replaceAll(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::replaceAll);
+
             findDialog.parentProperty().addListener((v, o, n) -> {
                 if (n == null) {
                     findDialog = null;

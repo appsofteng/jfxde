@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.fxmisc.richtext.StyleClassedTextArea;
 
@@ -26,12 +27,46 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
     private IntegerProperty index = new SimpleIntegerProperty(-1);
     private ObservableList<IndexRange> indices = FXCollections.observableArrayList();
     private ReadOnlyStringWrapper foundCount = new ReadOnlyStringWrapper();
+    private boolean inSelection;
+    private IndexRange selection;
+    private boolean replace;
+    private boolean replaceAll;
 
     public FindWrapper(StyleClassedTextArea area) {
         super(area);
 
-        area.textProperty().addListener(o -> pattern = null);
-        foundCount.bind(Bindings.createStringBinding(() -> index.get() + 1 + "/" + indices.size(), index, indices));
+        area.textProperty().addListener((v, o, n) -> reset());
+        foundCount.bind(Bindings.createStringBinding(() -> getIndex() + 1 + "/" + indices.size(), index, indices));
+    }
+
+    void afterReplace() {
+        if (replace) {
+            replace = false;
+            var pattern = this.pattern;
+            this.pattern = null;
+
+            find(pattern, inSelection);
+        }
+    }
+
+    public void reset() {
+        if (!replace && !replaceAll) {
+            indices.clear();
+            setIndex(-1);
+            pattern = null;
+            inSelection = false;
+            selection = null;
+            replace = false;
+            replaceAll = false;
+        }
+    }
+
+    private int getIndex() {
+        return index.get();
+    }
+
+    private void setIndex(int value) {
+        index.set(value);
     }
 
     public ReadOnlyStringProperty foundCountProperty() {
@@ -63,10 +98,37 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
         findAnother(pattern, inSelection, this::findNext);
     }
 
-    private void findAnother(Pattern pattern, boolean inSelection, Supplier<IndexRange> finder) {
+    public void replace(String text) {
+        if (getIndex() >= 0 && getIndex() < indices.size()) {
 
-        boolean selected = !getArea().getSelectedText().isEmpty();
-        IndexRange selection = getArea().getSelection();
+            replace = true;
+            IndexRange range = indices.get(getIndex());
+            getArea().replaceText(range, text);
+        }
+    }
+
+    public void replaceAll(String text) {
+        int length = getArea().getLength();
+        int delta = 0;
+
+        replaceAll = true;
+
+        for (var range : indices) {
+            getArea().replaceText(range.getStart() + delta, range.getEnd() + delta, text);
+
+            delta = getArea().getLength() - length;
+        }
+
+        setIndex(indices.size() - 1);
+    }
+
+    private void findAnother(Pattern pattern, boolean inSelection, Supplier<Pair<Integer, IndexRange>> finder) {
+
+        var selection = getArea().getSelection();
+
+        if (inSelection && selection.getLength() > 0) {
+            this.selection = selection;
+        }
 
         find(pattern, inSelection);
 
@@ -74,77 +136,69 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
             return;
         }
 
-        if (index.get() >= 0 && index.get() < indices.size()) {
-            removeStyle(indices.get(index.get()), List.of(FIND_STYLE_SELECTED));
+        if (getIndex() >= 0 && getIndex() < indices.size()) {
+            removeStyle(indices.get(getIndex()), List.of(FIND_STYLE_SELECTED));
         }
 
-        IndexRange range = finder.get();
+        Pair<Integer, IndexRange> pair = finder.get();
+        IndexRange range = pair.getValue();
+        setIndex(pair.getKey());
 
-        if (selected) {
-            getArea().showParagraphInViewport(getParagraphForAbsolutePosition(range.getStart()));
-        } else {
-          getArea().moveTo(range.getStart());
-          getArea().requestFollowCaret();
-        }
+        getArea().moveTo(range.getStart());
+        getArea().requestFollowCaret();
 
         addStyle(range, List.of(FIND_STYLE_SELECTED));
 
         area.requestFocus();
-
-        if (selected && getArea().getSelectedText().isEmpty()) {
-            getArea().selectRange(selection.getStart(), selection.getEnd());
-        }
     }
 
-    private IndexRange findPrevious() {
+    private Pair<Integer, IndexRange> findPrevious() {
 
-        index.set(index.get() - 1);
-        if (index.get() < 0) {
-            index.set(indices.size() - 1);
-        }
-        IndexRange range = indices.get(index.get());
+        Pair<Integer, IndexRange> pair = Stream.iterate(indices.size() - 1, i -> i >= 0, i -> i - 1)
+                .filter(i -> indices.get(i).getStart() < getArea().getCaretPosition())
+                .map(i -> new Pair<>(i, indices.get(i)))
+                .findFirst()
+                .orElse(new Pair<>(indices.size() - 1, indices.get(indices.size() - 1)));
 
-        return range;
+        return pair;
     }
 
-    private IndexRange findNext() {
+    private Pair<Integer, IndexRange> findNext() {
 
-        index.set(index.get() + 1);
+        Pair<Integer, IndexRange> pair = Stream.iterate(0, i -> i < indices.size(), i -> i + 1)
+                .filter(i -> indices.get(i).getStart() > getArea().getCaretPosition())
+                .findFirst()
+                .map(i -> new Pair<>(i, indices.get(i)))
+                .orElse(new Pair<>(0, indices.get(0)));
 
-        if (index.get() >= indices.size()) {
-            index.set(0);
-        }
-
-        IndexRange range = indices.get(index.get());
-
-        return range;
+        return pair;
     }
 
     private void find(Pattern pattern, boolean inSelection) {
 
-        if (pattern != null && this.pattern != null && pattern.pattern().equals(this.pattern.pattern()) && pattern.flags() == this.pattern.flags()) {
+        if (replaceAll) {
+            replaceAll = false;
+            reset();
+        }
+
+        if (pattern != null && this.pattern != null && pattern.pattern().equals(this.pattern.pattern()) && pattern.flags() == this.pattern.flags()
+                && inSelection == this.inSelection) {
             return;
         }
 
         this.pattern = pattern;
+        this.inSelection = inSelection;
         indices.forEach(i -> removeStyle(i, List.of(FIND_STYLE, FIND_STYLE_SELECTED)));
         indices.clear();
 
-        if (pattern == null) {
-            index.set(-1);
-        } else {
+        if (pattern != null) {
 
             find(pattern, inSelection, r -> addStyle(r, List.of(FIND_STYLE)));
         }
-    }
 
-    private String getText(boolean inSelection) {
-
-        return inSelection ? getArea().getSelectedText() : getArea().getText();
-    }
-
-    private int getTextStart(boolean inSelection) {
-        return inSelection ? getArea().getSelection().getStart() : 0;
+        if (indices.isEmpty()) {
+            setIndex(-1);
+        }
     }
 
     private void find(Pattern pattern, boolean inSelection, Consumer<IndexRange> consumer) {
@@ -158,5 +212,14 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
             indices.add(range);
             consumer.accept(range);
         }
+    }
+
+    private String getText(boolean inSelection) {
+
+        return inSelection && selection != null ? getArea().getText(selection) : getArea().getText();
+    }
+
+    private int getTextStart(boolean inSelection) {
+        return inSelection && selection != null ? selection.getStart() : 0;
     }
 }

@@ -1,6 +1,7 @@
 package dev.jfxde.sysapps.editor;
 
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import dev.jfxde.jfx.scene.control.AutoCompleteField;
@@ -21,6 +22,8 @@ public class FindDialog extends InternalDialog {
     private Button replaceButton = new Button();
     private Button replaceAllButton = new Button();
     private Button closeButton = new Button();
+    private Consumer<String> replace = s -> {};
+    private Consumer<String> replaceAll = s -> {};
 
     public FindDialog(Node node) {
         super(node);
@@ -53,11 +56,25 @@ public class FindDialog extends InternalDialog {
         return this;
     }
 
+    FindDialog replace(Consumer<String> consumer) {
+        this.replace = consumer;
+        return this;
+    }
+
+    FindDialog replaceAll(Consumer<String> consumer) {
+        this.replaceAll = consumer;
+        return this;
+    }
+
     private void setGraphics() {
 
         FXResourceBundle.getBundle().put(findBox.promptTextProperty(), "find");
         FXResourceBundle.getBundle().put(replaceField.promptTextProperty(), "replace");
 
+        replaceButton.disableProperty().bind(findBox.textProperty().isEmpty());
+        replaceButton.setOnAction(e -> replace());
+        replaceAllButton.disableProperty().bind(findBox.textProperty().isEmpty());
+        replaceAllButton.setOnAction(e -> replaceAll());
         closeButton.setOnAction(e -> close());
 
         FXResourceBundle.getBundle().put(replaceButton.textProperty(), "replace");
@@ -79,5 +96,17 @@ public class FindDialog extends InternalDialog {
 
         setContent(pane);
         setFocusOwner(findBox);
+    }
+
+    private void replace() {
+        replaceField.store();
+        findBox.find();
+        replace.accept(replaceField.getText());
+    }
+
+    private void replaceAll() {
+        replaceField.store();
+        findBox.find();
+        replaceAll.accept(replaceField.getText());
     }
 }

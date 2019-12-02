@@ -28,8 +28,10 @@ public class FindBox extends VBox {
     private Label foundCount = new Label();
 
     private boolean previous;
-    private BiConsumer<Pattern, Boolean> findPrevious = (p,s) -> {};
-    private BiConsumer<Pattern, Boolean> findNext = (p,s) -> {};
+    private BiConsumer<Pattern, Boolean> findPrevious = (p, s) -> {
+    };
+    private BiConsumer<Pattern, Boolean> findNext = (p, s) -> {
+    };
 
     public FindBox() {
         setGraphics();
@@ -71,7 +73,7 @@ public class FindBox extends VBox {
         HBox.setHgrow(findField, Priority.ALWAYS);
         HBox fieldBox = new HBox(findField, findPreviousButton, findNextButton);
 
-        var margin = new Insets(5,0,5,0);
+        var margin = new Insets(5, 0, 5, 0);
 
         VBox.setMargin(fieldBox, margin);
 
@@ -80,10 +82,14 @@ public class FindBox extends VBox {
 
     void setText(String value) {
         if (value.contains("\n")) {
-            value = value.substring(0, value.indexOf("\n"));
             inSelectionCheck.setSelected(true);
+        } else {
+            findField.setText(value);
         }
-        findField.setText(value);
+    }
+
+    StringProperty textProperty() {
+        return findField.textProperty();
     }
 
     public StringProperty promptTextProperty() {
@@ -110,6 +116,14 @@ public class FindBox extends VBox {
         }
 
         findField.requestFocus();
+    }
+
+    void find() {
+        if (previous) {
+            findPrevious();
+        } else {
+            findNext();
+        }
     }
 
     private void findPrevious() {

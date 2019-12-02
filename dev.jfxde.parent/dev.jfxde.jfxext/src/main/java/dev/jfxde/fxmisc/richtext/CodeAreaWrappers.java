@@ -135,6 +135,9 @@ public final class CodeAreaWrappers {
                         blockEndWrapper.indentEnd(tokenOnCaret);
                     }
 
+                    if (findWrapper != null) {
+                        findWrapper.afterReplace();
+                    }
                 });
 
         area.caretPositionProperty().addListener((v, o, n) -> {
