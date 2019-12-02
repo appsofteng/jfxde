@@ -206,4 +206,10 @@ public class EditorPane extends StackPane {
         findDialog.text(getSelectedEditor().getArea().getSelectedText())
                 .show();
     }
+
+    void goToLine() {
+        new GoToDialog(this)
+        .setOnGo(getSelectedEditor()::goToLine)
+        .show();
+    }
 }

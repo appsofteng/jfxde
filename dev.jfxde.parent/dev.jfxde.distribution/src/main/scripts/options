@@ -5,6 +5,7 @@
 --add-exports javafx.graphics/com.sun.javafx.css=org.controlsfx.controls
 --add-exports javafx.graphics/com.sun.javafx.scene=org.controlsfx.controls
 --add-exports javafx.graphics/com.sun.javafx.scene.traversal=org.controlsfx.controls
+--add-opens javafx.graphics/javafx.scene=org.controlsfx.controls
 -p lib/mp${pathSeparator}modules${pathSeparator}apps${pathSeparator}${osHomeDir}/${homeDir}/apps
 -cp lib/cp/*
 -m dev.jfxde.ui

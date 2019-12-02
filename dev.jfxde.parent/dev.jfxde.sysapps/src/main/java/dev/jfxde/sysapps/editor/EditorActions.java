@@ -15,6 +15,7 @@ public class EditorActions {
     private Action saveAction;
     private Action saveAllAction;
     private Action findAction;
+    private Action goToLineAction;
 
     public EditorActions(EditorContent content) {
         this.content = content;
@@ -26,23 +27,28 @@ public class EditorActions {
     }
 
     private void createActions() {
-        saveAction = new Action(this::save);
+        saveAction = new Action(e -> content.getEditorPane().save());
         saveAction.setGraphic(GlyphFontRegistry.font(Fonts.FONT_AWESOME_5_FREE_SOLID).create(Fonts.Unicode.FLOPPY_DISK).size(14));
         saveAction.disabledProperty().set(true);
         FXResourceBundle.getBundle().put(saveAction.textProperty(), "save");
         FXResourceBundle.getBundle().put(saveAction.longTextProperty(), "save");
         saveAction.setAccelerator(KeyCombination.keyCombination("Shortcut+S"));
 
-        saveAllAction = new Action(this::saveAll);
+        saveAllAction = new Action(e -> content.getEditorPane().saveAll());
         saveAllAction.setGraphic(new ImageView(getClass().getResource("save-all.png").toExternalForm()));
         FXResourceBundle.getBundle().put(saveAllAction.textProperty(), "saveAll");
         FXResourceBundle.getBundle().put(saveAllAction.longTextProperty(), "saveAll");
         saveAllAction.setAccelerator(KeyCombination.keyCombination("Shift+Shortcut+S"));
 
-        findAction = new Action(this::find);
+        findAction = new Action(e -> content.getEditorPane().find());
         FXResourceBundle.getBundle().put(findAction.textProperty(), "find");
         FXResourceBundle.getBundle().put(findAction.longTextProperty(), "find");
         findAction.setAccelerator(KeyCombination.keyCombination("Shortcut+F"));
+
+        goToLineAction = new Action(e -> content.getEditorPane().goToLine());
+        FXResourceBundle.getBundle().put(goToLineAction.textProperty(), "goToLine");
+        FXResourceBundle.getBundle().put(goToLineAction.longTextProperty(), "goToLine");
+        goToLineAction.setAccelerator(KeyCombination.keyCombination("Shortcut+L"));
     }
 
     private void setListeners() {
@@ -70,15 +76,7 @@ public class EditorActions {
         return findAction;
     }
 
-    private void save(Event e) {
-        content.getEditorPane().save();
-    }
-
-    private void saveAll(Event e) {
-        content.getEditorPane().saveAll();
-    }
-
-    private void find(Event e) {
-        content.getEditorPane().find();
+    Action goToLineAction() {
+        return goToLineAction;
     }
 }
