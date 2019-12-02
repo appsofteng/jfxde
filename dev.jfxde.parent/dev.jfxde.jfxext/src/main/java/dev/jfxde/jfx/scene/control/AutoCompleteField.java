@@ -34,6 +34,13 @@ public class AutoCompleteField<T> extends Region {
         textField = TextFields.createClearableTextField();
         Platform.runLater(this::bindAutoCompletion);
         textField.setOnAction(e -> onSelected());
+
+        textField.focusedProperty().addListener((v,o,n) -> {
+            if (n) {
+                Platform.runLater(() -> textField.deselect());
+            }
+        });
+
         getChildren().add(textField);
     }
 
@@ -56,6 +63,7 @@ public class AutoCompleteField<T> extends Region {
         }
 
         suggestions.add(converter.fromString(textField.getText()));
+
         if (binding != null) {
             binding.dispose();
         }
@@ -89,6 +97,12 @@ public class AutoCompleteField<T> extends Region {
 
     public StringProperty promptTextProperty() {
         return textField.promptTextProperty();
+    }
+
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        textField.requestFocus();
     }
 
     @Override

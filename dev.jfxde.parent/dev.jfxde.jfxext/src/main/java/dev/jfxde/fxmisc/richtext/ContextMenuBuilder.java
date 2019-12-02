@@ -1,6 +1,15 @@
 package dev.jfxde.fxmisc.richtext;
 
+import static org.fxmisc.wellbehaved.event.EventPattern.keyPressed;
+import static org.fxmisc.wellbehaved.event.InputMap.consume;
+import static org.fxmisc.wellbehaved.event.InputMap.sequence;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.fxmisc.richtext.GenericStyledArea;
+import org.fxmisc.wellbehaved.event.InputMap;
+import org.fxmisc.wellbehaved.event.Nodes;
 
 import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.beans.binding.Bindings;
@@ -30,6 +39,27 @@ public class ContextMenuBuilder {
         menu.setOnHidden(e -> area.requestFocus());
         area.setContextMenu(menu);
         return new ContextMenuBuilder(area);
+    }
+
+    @SuppressWarnings("unchecked")
+    public ContextMenuBuilder addAll(MenuItem... items) {
+        area.getContextMenu().getItems().addAll(items);
+
+        Nodes.addInputMap(area, sequence(
+                Arrays.stream(items)
+                .map(item -> consume(keyPressed(item.getAccelerator()).onlyIf(e -> !item.isDisable()), e -> item.fire()))
+                .collect(Collectors.toList()).toArray(new InputMap[] {})));
+
+        return this;
+    }
+
+    public ContextMenuBuilder add(MenuItem item) {
+        area.getContextMenu().getItems().add(item);
+
+        Nodes.addInputMap(area, sequence(
+                consume(keyPressed(item.getAccelerator()).onlyIf(e -> !item.isDisable()), e -> item.fire())));
+
+        return this;
     }
 
     public ContextMenuBuilder copy() {

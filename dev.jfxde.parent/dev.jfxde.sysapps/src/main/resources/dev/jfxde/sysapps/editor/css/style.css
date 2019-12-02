@@ -12,3 +12,13 @@
 .jd-editor-button:hover {
     -fx-background-color:#aaa;
 }
+
+.jd-editor-label {
+    -fx-border-color: transparent;
+    -fx-background-color:transparent;
+    -fx-padding: 2;
+    -fx-font-size: 14.0px;
+    -fx-background-radius: 2.0;
+    -fx-border-radius: 2.0;
+    -fx-font-smoothing-type: lcd;
+}

@@ -5,6 +5,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.controlsfx.glyphfont.GlyphFontRegistry;
+
 import dev.jfxde.fonts.Fonts;
 import dev.jfxde.jfx.scene.control.AlertBuilder;
 import dev.jfxde.jfx.util.FXResourceBundle;
@@ -17,7 +19,6 @@ import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.KeyCombination;
-import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -41,7 +42,7 @@ public class Main extends Application {
 
         Sys.get().init(Main.class, (p) -> notifyPreloader(new ProgressNotification(p)));
 
-        Fonts.getUrls().forEach(s -> Font.loadFont(s, 10));
+        Fonts.getUrls().forEach((k, v) -> GlyphFontRegistry.register(k, v, 10));
     }
 
     @Override

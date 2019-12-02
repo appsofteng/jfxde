@@ -53,12 +53,13 @@ public class PathTreeItem extends TreeItem<FXPath> {
         this.dirOnly = dirOnly;
         setGraphic(graphicFactory.apply(path));
 
-        Platform.runLater(() -> {
-            if (getValue().isLoaded()) {
-                loaded = true;
+        if (getValue().isLoaded()) {
+            loaded = true;
+            Platform.runLater(() -> {
                 load(getValue().getPaths());
-            }
-        });
+            });
+        }
+
     }
 
     private void setListeners() {

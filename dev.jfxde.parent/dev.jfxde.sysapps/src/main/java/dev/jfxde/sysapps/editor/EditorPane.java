@@ -31,14 +31,17 @@ import javafx.util.Duration;
 
 public class EditorPane extends StackPane {
 
+    private EditorActions actions;
     private TabPane tabPane = new TabPane();
     private final ObservableList<Editor> editors = FXCollections
             .observableArrayList(e -> new Observable[] { e.changedProperty(), e.deletedProperty() });
     private final FilteredList<Editor> closableEditors = editors.filtered(e -> !e.isChanged());
     private final ObjectProperty<Editor> selectedEditor = new SimpleObjectProperty<>();
     private final ReadOnlyBooleanWrapper changed = new ReadOnlyBooleanWrapper();
+    private FindDialog findDialog;
 
-    public EditorPane() {
+    public EditorPane(EditorActions actions) {
+        this.actions = actions;
         tabPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
         tabPane.setTabDragPolicy(TabDragPolicy.REORDER);
 
@@ -78,9 +81,16 @@ public class EditorPane extends StackPane {
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((v, o, n) -> {
 
+            if (findDialog != null) {
+                findDialog.foundCountProperty().unbind();
+            }
+
             if (n != null) {
                 Editor editor = (Editor) n.getContent();
                 selectedEditor.set(editor);
+                if (findDialog != null) {
+                    findDialog.foundCountProperty().bind(editor.getCodeAreaWrappers().getFindWrapper().foundCountProperty());
+                }
             } else {
                 selectedEditor.set(null);
             }
@@ -103,7 +113,7 @@ public class EditorPane extends StackPane {
         positions.forEach(p -> setEditor(p));
     }
 
-    void setEditor(FilePosition filePosition) {
+    private void setEditor(FilePosition filePosition) {
         Tab tab = findEditorTab(filePosition.getPath());
 
         if (tab == null) {
@@ -125,7 +135,7 @@ public class EditorPane extends StackPane {
 
     private Tab createEditorTab(FilePosition filePosition) {
         Tab tab = new Tab();
-        Editor editor = new Editor(filePosition);
+        Editor editor = new Editor(filePosition, actions);
         tab.setContent(editor);
 
         tab.closableProperty().bind(editor.changedProperty().not());
@@ -173,5 +183,27 @@ public class EditorPane extends StackPane {
 
     void saveAll() {
         tabPane.getTabs().forEach(t -> ((Editor) t.getContent()).save());
+    }
+
+    void find() {
+
+        if (findDialog == null) {
+            findDialog = new FindDialog(this)
+                    .findPrevious(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findPrevious)
+                    .findNext(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::findNext)
+                    .replace(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::replace)
+                    .replaceAll(getSelectedEditor().getCodeAreaWrappers().getFindWrapper()::replaceAll);
+
+            findDialog.parentProperty().addListener((v, o, n) -> {
+                if (n == null) {
+                    findDialog = null;
+                }
+            });
+
+            findDialog.foundCountProperty().bind(getSelectedEditor().getCodeAreaWrappers().getFindWrapper().foundCountProperty());
+        }
+
+        findDialog.text(getSelectedEditor().getArea().getSelectedText())
+                .show();
     }
 }

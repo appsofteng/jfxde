@@ -1,7 +1,7 @@
 package dev.jfxde.fxmisc.richtext;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -18,21 +18,21 @@ public class StyleClassedTextAreaWrapper extends GenericStyledAreaWrapper<StyleC
         super(area);
     }
 
-    void addStyleClass(IndexRange range, String styleClass) {
-        changeStyleClass(range, styleClass, (s, c) -> s.add(c));
+    void addStyle(IndexRange range, Collection<String> styleClasses) {
+        changeStyleClass(range, styleClasses, (s, c) -> s.addAll(c));
     }
 
-    void removeStyleClass(IndexRange range, String styleClass) {
-        changeStyleClass(range, styleClass, (s, c) -> s.remove(c));
+    void removeStyle(IndexRange range, Collection<String> styleClasses) {
+        changeStyleClass(range, styleClasses, (s, c) -> s.removeAll(c));
     }
 
-    private void changeStyleClass(IndexRange range, String styleClass, BiConsumer<Collection<String>,String> change) {
+    private void changeStyleClass(IndexRange range, Collection<String> styleClasses, BiConsumer<Collection<String>,Collection<String>> change) {
         StyleSpans<Collection<String>> styleSpans = getArea().getStyleSpans(range);
 
         var builder = new StyleSpansBuilder<Collection<String>>();
         styleSpans.stream().forEach(s -> {
-            var style = new ArrayList<String>(s.getStyle());
-            change.accept(style, styleClass);
+            var style = new HashSet<>(s.getStyle());
+            change.accept(style, styleClasses);
             builder.add(style, s.getLength());
         });
 

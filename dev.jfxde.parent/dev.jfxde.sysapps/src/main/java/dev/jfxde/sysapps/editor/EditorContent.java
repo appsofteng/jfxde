@@ -22,7 +22,7 @@ public class EditorContent extends BorderPane {
     private FileTreeBox fileTreeBox;
     private FXPath favoriteRoot;
     private EditorBar editorBar;
-    private EditorPane editorPane = new EditorPane();
+    private EditorPane editorPane;
     private SplitPane splitPane;
     private ReadOnlyBooleanWrapper stoppable = new ReadOnlyBooleanWrapper();
 
@@ -44,12 +44,14 @@ public class EditorContent extends BorderPane {
         PathTreeItem rootItem = new PathTreeItem(pseudoRoot);
         fileTreeBox = new FileTreeBox(rootItem, favoriteRoot, p -> editorPane.open(p));
 
+        editorActions = new EditorActions(this);
+        editorPane = new EditorPane(editorActions);
+        editorActions.init();
+        editorBar = new EditorBar(editorActions);
+
         splitPane = new SplitPane(fileTreeBox, editorPane);
         splitPane.setDividerPositions(0.3);
         SplitPane.setResizableWithParent(fileTreeBox, false);
-
-        editorActions = new EditorActions(this);
-        editorBar = new EditorBar(editorActions);
 
         setListeners();
 

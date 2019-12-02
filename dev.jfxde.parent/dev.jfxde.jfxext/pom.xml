@@ -37,5 +37,9 @@
 			<groupId>org.controlsfx</groupId>
 			<artifactId>controlsfx</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>dev.jfxde</groupId>
+			<artifactId>dev.jfxde.fonts</artifactId>
+		</dependency>
 	</dependencies>
 </project>

@@ -3,6 +3,7 @@ package dev.jfxde.sysapps.editor;
 import java.nio.file.Files;
 import java.util.concurrent.CompletableFuture;
 
+import org.controlsfx.control.action.ActionUtils;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -34,7 +35,9 @@ public class Editor extends StackPane {
     private final ReadOnlyStringWrapper tabTitle = new ReadOnlyStringWrapper();
     private final CodeArea area = new CodeArea();
 
-    public Editor(FilePosition filePosition) {
+    private CodeAreaWrappers codeAreaWrappers;
+
+    public Editor(FilePosition filePosition, EditorActions actions) {
         setFilePosition(filePosition);
 
         title.bind(Bindings.createStringBinding(() -> getPath().getPath().toString(), getPath().pathProperty()));
@@ -44,15 +47,22 @@ public class Editor extends StackPane {
         area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
         area.textProperty().addListener((v, o, n) -> setEdited(true));
 
-        ContextMenuBuilder.get(area).copy().cut().paste().selectAll().clear().separator().undo().redo();
+        ContextMenuBuilder.get(area)
+                .addAll(ActionUtils.createMenuItem(actions.saveAction()), ActionUtils.createMenuItem(actions.saveAllAction()))
+                .separator()
+                .add(ActionUtils.createMenuItem(actions.findAction()))
+                .separator()
+                .copy().cut().paste().selectAll().clear()
+                .separator()
+                .undo().redo();
 
-        CodeAreaWrappers.get(area, path.getPath())
+        codeAreaWrappers = CodeAreaWrappers.get(area, path.getPath())
                 .style()
                 .highlighting()
                 .indentation()
                 .find();
 
-        getChildren().add(new VirtualizedScrollPane<>(area));
+        getChildren().addAll(new VirtualizedScrollPane<>(area));
 
         setListeners();
 
@@ -105,8 +115,16 @@ public class Editor extends StackPane {
         return str;
     }
 
-    public FXPath getPath() {
+    FXPath getPath() {
         return path;
+    }
+
+    CodeArea getArea() {
+        return area;
+    }
+
+    CodeAreaWrappers getCodeAreaWrappers() {
+        return codeAreaWrappers;
     }
 
     ReadOnlyStringProperty titleProperty() {
@@ -195,7 +213,7 @@ public class Editor extends StackPane {
         var stringPointer = filePosition.getSelectedPosition();
 
         if (stringPointer != null) {
-            area.moveTo(stringPointer.getStringRef().getLine(), stringPointer.getStringRef().getStart());
+            area.moveTo(stringPointer.getStringRef().getLine().getNumber(), stringPointer.getStringRef().getStart());
         } else {
             area.moveTo(0);
         }

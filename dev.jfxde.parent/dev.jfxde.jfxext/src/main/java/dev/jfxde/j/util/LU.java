@@ -3,7 +3,7 @@ package dev.jfxde.j.util;
 import java.io.Closeable;
 import java.util.concurrent.Callable;
 
-public abstract class LU {
+public final class LU {
 
     private LU() {
     }

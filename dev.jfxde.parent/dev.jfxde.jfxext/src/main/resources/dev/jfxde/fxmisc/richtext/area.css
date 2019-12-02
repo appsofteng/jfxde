@@ -6,3 +6,8 @@
 .styled-text-area .jd-find {
     -rtfx-background-color: rgba(255, 0, 255, 0.5);
 }
+
+.styled-text-area .jd-find-selected {
+    -rtfx-background-color: #90ee90;
+}
+
