@@ -13,22 +13,25 @@ public final class XFiles {
     private XFiles() {
     }
 
-    public static String getFileExtension(Path path) {
-        return getFileExtension(path.getFileName());
+    public static String getFileExtension(String path) {
+        return splitFilePath(path)[1];
     }
 
-    public static String getFileExtension(String path) {
-        String extension = null;
+    private static String[] splitFilePath(String path) {
+        String name = path;
+        String extension = "";
 
         if (path != null) {
-            String name = path.toString().toLowerCase();
-            int i = name.lastIndexOf(".") + 1;
+            int i = path.lastIndexOf(".") + 1;
             if (i > 0) {
-                extension = name.substring(i);
+                name = path.substring(0, i - 1);
+                extension = path.substring(i);
             }
         }
 
-        return extension;
+        String[] result = { name, extension };
+
+        return result;
     }
 
     public static Path createFile(Path path, String name) {
@@ -140,11 +143,17 @@ public final class XFiles {
             path = path.getParent();
         }
 
+        String[] parts = splitFilePath(name);
+
+        if (!parts[1].isEmpty()) {
+            parts[1] = "." + parts[1];
+        }
+
         result = path.resolve(name);
         int i = 1;
 
         while (Files.exists(result)) {
-            result = path.resolve(String.format("%s%d", name, i++));
+            result = path.resolve(String.format("%s%d%s", parts[0], i++, parts[1]));
         }
 
         return result;

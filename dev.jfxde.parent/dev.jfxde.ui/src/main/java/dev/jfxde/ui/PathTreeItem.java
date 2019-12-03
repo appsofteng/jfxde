@@ -3,6 +3,7 @@ package dev.jfxde.ui;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.embed.swing.FXUtils;
@@ -10,6 +11,9 @@ import dev.jfxde.logic.data.FXPath;
 import javafx.application.Platform;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ListChangeListener.Change;
@@ -25,7 +29,8 @@ public class PathTreeItem extends TreeItem<FXPath> {
     private boolean dirOnly;
     private ObservableList<TreeItem<FXPath>> allChildren = FXCollections.observableArrayList((i) -> new Observable[] { i.getValue().nameProperty() });
     private ObservableList<TreeItem<FXPath>> sortedChildren;
-    private boolean loaded;
+    private boolean loading;
+    private BooleanProperty loaded = new SimpleBooleanProperty();
 
     private ListChangeListener<FXPath> pathListener = (Change<? extends FXPath> c) -> {
 
@@ -53,13 +58,11 @@ public class PathTreeItem extends TreeItem<FXPath> {
         this.dirOnly = dirOnly;
         setGraphic(graphicFactory.apply(path));
 
-        if (getValue().isLoaded()) {
-            loaded = true;
+        if (isLoaded()) {
             Platform.runLater(() -> {
                 load(getValue().getPaths());
             });
         }
-
     }
 
     private void setListeners() {
@@ -75,6 +78,8 @@ public class PathTreeItem extends TreeItem<FXPath> {
         XPlatform.runFX(() -> {
             addItems(paths);
             setListeners();
+            loading = false;
+            setLoaded(true);
         });
     }
 
@@ -90,7 +95,8 @@ public class PathTreeItem extends TreeItem<FXPath> {
 
             if (super.getChildren().isEmpty() && getParent() != null) {
                 setExpanded(false);
-                loaded = false;
+                loading = false;
+                setLoaded(false);
                 getValue().getPaths().removeListener(pathListener);
             }
         });
@@ -105,23 +111,59 @@ public class PathTreeItem extends TreeItem<FXPath> {
         return remove;
     }
 
+    private boolean isLoaded() {
+        return loaded.get();
+    }
+
+    private void setLoaded(boolean value) {
+        this.loaded.set(value);
+    }
+
     @Override
     public ObservableList<TreeItem<FXPath>> getChildren() {
-        if (!loaded) {
-            loaded = true;
-            getValue().load(this::load);
-        }
-
+        checkLoaded();
         return super.getChildren();
     }
 
     public ObservableList<TreeItem<FXPath>> getAllChildren() {
-        if (!loaded) {
-            loaded = true;
+        checkLoaded();
+        return allChildren;
+    }
+
+    private void checkLoaded() {
+        if (!loading && !isLoaded()) {
+            loading = true;
             getValue().load(this::load);
         }
+    }
 
-        return allChildren;
+    private ChangeListener<Boolean> loadedListener;
+
+    public void traverse(Predicate<TreeItem<FXPath>> predicate) {
+
+        if (isLoaded()) {
+            traverseLoaded(predicate);
+        } else {
+
+            loadedListener = (v, o, n) -> {
+                if (n) {
+                    traverseLoaded(predicate);
+                    loaded.removeListener(loadedListener);
+                }
+            };
+
+            loaded.addListener(loadedListener);
+            getChildren();
+        }
+    }
+
+    private void traverseLoaded(Predicate<TreeItem<FXPath>> predicate) {
+        PathTreeItem result = (PathTreeItem) getChildren().stream().filter(predicate).findFirst().orElse(null);
+
+        if (result != null) {
+            result.setExpanded(true);
+            result.traverse(predicate);
+        }
     }
 
     @Override

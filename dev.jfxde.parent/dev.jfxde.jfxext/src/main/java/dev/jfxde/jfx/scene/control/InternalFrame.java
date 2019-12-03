@@ -8,6 +8,7 @@ import dev.jfxde.jfx.util.FXResourceBundle;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.BooleanPropertyBase;
@@ -48,7 +49,6 @@ public abstract class InternalFrame extends Region {
     private static final double CURSOR_BORDER_WIDTH = 5;
     private static final PseudoClass ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("active");
 
-
     private Pane pane;
     private InternalFrame parent;
     private Modality modality = Modality.NONE;
@@ -60,7 +60,7 @@ public abstract class InternalFrame extends Region {
     private BorderPane titleBar = new BorderPane();
 
     private ContentRegion contentRegion = new ContentRegion();
-    private Node focusOwner = contentRegion;
+    private Node focusOwner;
 
     private Button maximize;
     private Button close;
@@ -186,6 +186,26 @@ public abstract class InternalFrame extends Region {
     }
 
     protected void setHandlers() {
+
+        sceneProperty().addListener((v, o, n) -> {
+            if (n != null) {
+                getScene().focusOwnerProperty().addListener((vv, oo, nn) -> {
+
+                    if (nn != null) {
+                        var prnt = nn.getParent();
+
+                        while (prnt != null && prnt != this) {
+                            prnt = prnt.getParent();
+                        }
+
+                        if (prnt != null) {
+                            focusOwner = nn;
+                        }
+                    }
+                });
+            }
+        });
+
         titleLabel.setOnMouseClicked(e -> {
             InternalFrame modalFrame = getModalFrame(this);
             if (modalFrame == null) {
@@ -293,8 +313,7 @@ public abstract class InternalFrame extends Region {
 
     public InternalFrame setContent(Node node) {
         contentRegion.setContent(node);
-        Object owner = node.getProperties().get(node.getClass());
-        focusOwner = owner != null ? (Node) owner : node;
+
         return this;
     }
 
@@ -370,7 +389,6 @@ public abstract class InternalFrame extends Region {
         setCursor(Cursor.DEFAULT);
         if (isActive()) {
             setActive(false);
-            focusOwner = getScene().getFocusOwner();
         }
     }
 
@@ -522,8 +540,11 @@ public abstract class InternalFrame extends Region {
 
     @Override
     public void requestFocus() {
-        super.requestFocus();
-        focusOwner.requestFocus();
+        Platform.runLater(() -> {
+            if (focusOwner != null) {
+                focusOwner.requestFocus();
+            }
+        });
     }
 
     @Override

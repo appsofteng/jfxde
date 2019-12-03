@@ -5,7 +5,6 @@ import org.controlsfx.glyphfont.GlyphFontRegistry;
 
 import dev.jfxde.fonts.Fonts;
 import dev.jfxde.jfx.util.FXResourceBundle;
-import javafx.event.Event;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCombination;
 
@@ -16,6 +15,7 @@ public class EditorActions {
     private Action saveAllAction;
     private Action findAction;
     private Action goToLineAction;
+    private Action showInFavoritesAction;
 
     public EditorActions(EditorContent content) {
         this.content = content;
@@ -49,6 +49,11 @@ public class EditorActions {
         FXResourceBundle.getBundle().put(goToLineAction.textProperty(), "goToLine");
         FXResourceBundle.getBundle().put(goToLineAction.longTextProperty(), "goToLine");
         goToLineAction.setAccelerator(KeyCombination.keyCombination("Shortcut+L"));
+
+        showInFavoritesAction = new Action(e -> content.showInFavorites());
+        FXResourceBundle.getBundle().put(showInFavoritesAction.textProperty(), "showInFavorites");
+        FXResourceBundle.getBundle().put(showInFavoritesAction.longTextProperty(), "showInFavorites");
+        showInFavoritesAction.setAccelerator(KeyCombination.keyCombination("Alt+Shift+W"));
     }
 
     private void setListeners() {
@@ -78,5 +83,9 @@ public class EditorActions {
 
     Action goToLineAction() {
         return goToLineAction;
+    }
+
+    Action showInFavoritesAction() {
+        return showInFavoritesAction;
     }
 }
