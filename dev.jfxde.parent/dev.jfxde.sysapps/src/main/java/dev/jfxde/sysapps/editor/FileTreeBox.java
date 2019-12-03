@@ -62,6 +62,11 @@ public class FileTreeBox extends VBox {
         setListeners();
     }
 
+    public void select(TreeItem<FXPath> item) {
+        fileTreeView.getSelectionModel().clearSelection();
+        fileTreeView.getSelectionModel().select(item);
+    }
+
     private Consumer<List<FilePosition>> getFileSelectedHandler() {
         return fileSelectedHandler.get();
     }
@@ -346,7 +351,7 @@ public class FileTreeBox extends VBox {
         var parentPahDescriptor = parentItem.getValue();
 
         FXPath newPahDescriptor = create.apply(parentPahDescriptor, FXResourceBundle.getBundle().getString​(key));
-        TreeViewUtils.select(newPahDescriptor, parentItem, fileTreeView);
+        TreeViewUtils.select(fileTreeView, parentItem, newPahDescriptor);
     }
 
     private class PathDescriptorStringConverter extends StringConverter<FXPath> {

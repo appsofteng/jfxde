@@ -20,11 +20,12 @@ public class EditorContent extends BorderPane {
     private AppContext context;
     private EditorActions editorActions;
     private FileTreeBox fileTreeBox;
-    private FXPath favoriteRoot;
+    private FXPath favorites;
     private EditorBar editorBar;
     private EditorPane editorPane;
     private SplitPane splitPane;
     private ReadOnlyBooleanWrapper stoppable = new ReadOnlyBooleanWrapper();
+    private PathTreeItem rootItem;
 
     public EditorContent() {
     }
@@ -33,16 +34,17 @@ public class EditorContent extends BorderPane {
         this.context = context;
         List<String> favoritePaths = context.dc().fromJson(FAVORITES, List.class, List.of());
 
-        FXPath root = FXPath.getRoot();
-        FXResourceBundle.getBundle().put(root.nameProperty(), "roots");
+        FXPath roots = FXPath.getRoot();
+        FXResourceBundle.getBundle().put(roots.nameProperty(), "roots");
 
-        favoriteRoot = FXPath.getPseudoPath(favoritePaths);
-        FXResourceBundle.getBundle().put(favoriteRoot.nameProperty(), "favorites");
+        favorites = FXPath.getPseudoPath(favoritePaths);
+        FXResourceBundle.getBundle().put(favorites.nameProperty(), "favorites");
 
-        FXPath pseudoRoot = FXPath.getPseudoPath(root, favoriteRoot);
+        FXPath root = FXPath.getPseudoPath(roots, favorites);
 
-        PathTreeItem rootItem = new PathTreeItem(pseudoRoot);
-        fileTreeBox = new FileTreeBox(rootItem, favoriteRoot, p -> editorPane.open(p));
+        rootItem = new PathTreeItem(root);
+
+        fileTreeBox = new FileTreeBox(rootItem, favorites, p -> editorPane.open(p));
 
         editorActions = new EditorActions(this);
         editorPane = new EditorPane(editorActions);
@@ -64,7 +66,7 @@ public class EditorContent extends BorderPane {
     private void setListeners() {
         stoppable.bind(editorPane.changedProperty().not());
 
-        favoriteRoot.getPaths().addListener((Change<? extends FXPath> c) -> {
+        favorites.getPaths().addListener((Change<? extends FXPath> c) -> {
 
             while (c.next()) {
                 var favorites = c.getList().stream().map(p -> p.getPath().toString()).collect(Collectors.toList());
@@ -77,7 +79,25 @@ public class EditorContent extends BorderPane {
         return stoppable.getReadOnlyProperty();
     }
 
-    public EditorPane getEditorPane() {
+    EditorPane getEditorPane() {
         return editorPane;
+    }
+
+    void showInFavorites() {
+
+        FXPath path = editorPane.getSelectedEditor().getPath();
+        PathTreeItem favoriteItem = (PathTreeItem) rootItem.getChildren().stream().filter(i -> i.getValue().equals(favorites)).findFirst().get();
+
+        favoriteItem.traverse(i -> {
+            var result = false;
+
+            if (i.getValue().equals(path)) {
+                fileTreeBox.select(i);
+            } else {
+                result = path.getPath().startsWith(i.getValue().getPath());
+            }
+
+            return result;
+        });
     }
 }

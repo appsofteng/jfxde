@@ -52,6 +52,7 @@ public class Editor extends StackPane {
                 .separator()
                 .add(ActionUtils.createMenuItem(actions.findAction()))
                 .add(ActionUtils.createMenuItem(actions.goToLineAction()))
+                .add(ActionUtils.createMenuItem(actions.showInFavoritesAction()))
                 .separator()
                 .copy().cut().paste().selectAll().clear()
                 .separator()

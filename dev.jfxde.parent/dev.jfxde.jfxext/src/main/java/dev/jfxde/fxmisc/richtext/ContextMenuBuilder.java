@@ -36,6 +36,7 @@ public class ContextMenuBuilder {
         menu.setHideOnEscape(true);
         menu.setConsumeAutoHidingEvents(true);
         menu.addEventHandler(KeyEvent.ANY, e -> e.consume());
+        menu.setOnShown(e -> area.requestFocus());
         menu.setOnHidden(e -> area.requestFocus());
         area.setContextMenu(menu);
         return new ContextMenuBuilder(area);
