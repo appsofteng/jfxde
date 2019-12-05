@@ -98,6 +98,7 @@ public final class FXFiles {
         if (Files.notExists(targetPath)) {
             FXPath.getLock().lock();
             try {
+                pd.unwatchPaths();
                 Files.move(pd.getPath(), targetPath);
                 pd.rename(targetPath, name);
                 renamed = true;

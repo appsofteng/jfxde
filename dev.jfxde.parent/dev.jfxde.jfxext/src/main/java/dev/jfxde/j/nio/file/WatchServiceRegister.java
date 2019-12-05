@@ -19,28 +19,31 @@ import java.util.function.Consumer;
 
 public class WatchServiceRegister {
 
-    private Map<Watchable, List<WeakReference<Consumer<List<WatchEvent<?>>>>>> register =  Collections.synchronizedMap(new WeakHashMap<>());
-    private Map<Watchable, WatchKey> keys = new WeakHashMap<>();
-    private Map<Watchable, WeakReference<Path>> paths = new WeakHashMap<>();
+    private Map<Watchable, List<WeakReference<Consumer<List<WatchEvent<?>>>>>> register = Collections.synchronizedMap(new WeakHashMap<>());
+    private Map<Watchable, WatchKey> watchKeys = new WeakHashMap<>();
+    private Map<Watchable, WeakReference<Path>> sharedPaths = new WeakHashMap<>();
     private WatchService watchService;
     private volatile boolean started;
 
     public synchronized Path register(Path path, Consumer<List<WatchEvent<?>>> consumer) {
 
-        var ref = paths.get(path);
+        var sharedPathRef = sharedPaths.get(path);
+        Path sharedPath = sharedPathRef == null ? null : sharedPathRef.get();
 
-        Path sharedPath = ref == null ? null : ref.get();
+        if (sharedPath == null) {
+            sharedPaths.put(path, new WeakReference<>(path));
+            sharedPath = path;
+        }
+
         try {
-            if (!register.containsKey(path)) {
-                WatchKey key = path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE,
+            if (!watchKeys.containsKey(sharedPath)) {
+                WatchKey watchKey = sharedPath.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE,
                         StandardWatchEventKinds.ENTRY_MODIFY);
-                keys.put(path, key);
-                paths.put(path, new WeakReference<>(path));
+                watchKeys.put(sharedPath, watchKey);
             }
 
-            if (sharedPath != path) {
-                sharedPath = path;
-                register.computeIfAbsent(path, k -> new ArrayList<>()).add(new WeakReference<>(consumer));
+            if (sharedPathRef == null || sharedPathRef.get() == null || sharedPath != path) {
+                register.computeIfAbsent(sharedPath, k -> new ArrayList<>()).add(new WeakReference<>(consumer));
             }
 
         } catch (IOException e) {
@@ -48,6 +51,13 @@ public class WatchServiceRegister {
         }
 
         return sharedPath;
+    }
+
+    public synchronized void unwatch(Path path) {
+        var key = watchKeys.remove(path);
+        if (key != null) {
+            key.cancel();
+        }
     }
 
     public void start() {
@@ -60,7 +70,7 @@ public class WatchServiceRegister {
                     WatchKey key = null;
                     try {
                         key = watchService.take();
-                    //    Thread.sleep(1000);
+                        // Thread.sleep(1000);
                     } catch (InterruptedException | ClosedWatchServiceException e) {
                         break;
                     }

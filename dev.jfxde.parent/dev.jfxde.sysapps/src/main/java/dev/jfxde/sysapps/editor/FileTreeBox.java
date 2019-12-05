@@ -1,6 +1,7 @@
 package dev.jfxde.sysapps.editor;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.SeparatorMenuItem;
@@ -52,6 +54,7 @@ public class FileTreeBox extends VBox {
     private SearchFileDialog searchFileDialog;
     private Consumer<FXPath> onDeleted;
     private ContextMenu fileContextMenu;
+    private BiConsumer<String, FXPath> onNewProject;
 
     public FileTreeBox(PathTreeItem root, FXPath favorites, Consumer<List<FilePosition>> fileSelectedHandler) {
         this.root = root;
@@ -65,6 +68,10 @@ public class FileTreeBox extends VBox {
     public void select(TreeItem<FXPath> item) {
         fileTreeView.getSelectionModel().clearSelection();
         fileTreeView.getSelectionModel().select(item);
+    }
+
+    void setOnNewProject(BiConsumer<String, FXPath> onNewProject) {
+        this.onNewProject = onNewProject;
     }
 
     private Consumer<List<FilePosition>> getFileSelectedHandler() {
@@ -211,6 +218,19 @@ public class FileTreeBox extends VBox {
         searchFile.disableProperty().bind(Bindings.isEmpty(readableSelectedItems));
         searchFile.setOnAction(e -> showSearchFileDialog());
 
+        Menu newProject = new Menu();
+        FXResourceBundle.getBundle().put(newProject.textProperty(), "newProject");
+        newProject.disableProperty().bind(dirModifiable.not());
+
+        MenuItem javaProject = new MenuItem();
+        FXResourceBundle.getBundle().put(javaProject.textProperty(), "java");
+        javaProject.setOnAction(e -> {
+            var fxPath = create(FXFiles::createDirectory, "project");
+            onNewProject.accept("java", fxPath);
+        });
+
+        newProject.getItems().add(javaProject);
+
         MenuItem newDirectory = new MenuItem();
         FXResourceBundle.getBundle().put(newDirectory.textProperty(), "newDirectory");
         newDirectory.disableProperty().bind(dirModifiable.not());
@@ -334,8 +354,8 @@ public class FileTreeBox extends VBox {
             alert.show();
         });
 
-        ContextMenu menu = new ContextMenu(searchFile, new SeparatorMenuItem(), newDirectory, newFile, rename, new SeparatorMenuItem(), cut, copy,
-                paste, new SeparatorMenuItem(),
+        ContextMenu menu = new ContextMenu(searchFile, new SeparatorMenuItem(), newProject, newDirectory, newFile, rename,
+                new SeparatorMenuItem(), cut, copy, paste, new SeparatorMenuItem(),
                 addFavorite, removeFavorite, new SeparatorMenuItem(), refresh,
                 new SeparatorMenuItem(), delete);
         menu.setAutoHide(true);
@@ -343,7 +363,7 @@ public class FileTreeBox extends VBox {
         return menu;
     }
 
-    private void create(BiFunction<FXPath, String, FXPath> create, String key) {
+    private FXPath create(BiFunction<FXPath, String, FXPath> create, String key) {
         cutItems.clear();
         copyItems.clear();
         var item = fileTreeView.getSelectionModel().getSelectedItem();
@@ -352,6 +372,8 @@ public class FileTreeBox extends VBox {
 
         FXPath newPahDescriptor = create.apply(parentPahDescriptor, FXResourceBundle.getBundle().getString​(key));
         TreeViewUtils.select(fileTreeView, parentItem, newPahDescriptor);
+
+        return newPahDescriptor;
     }
 
     private class PathDescriptorStringConverter extends StringConverter<FXPath> {
