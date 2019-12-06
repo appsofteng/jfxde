@@ -340,7 +340,7 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     public String getName() {
-        return name.get();
+        return name == null ? "" : name.get();
     }
 
     private void setName(String value) {
