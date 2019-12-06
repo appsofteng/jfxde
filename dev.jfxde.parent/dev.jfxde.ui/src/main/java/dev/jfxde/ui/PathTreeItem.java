@@ -44,6 +44,12 @@ public class PathTreeItem extends TreeItem<FXPath> {
         }
     };
 
+    private ChangeListener<String> nameListener = (v, o, n) -> {
+        if (n != null) {
+            setGraphic(graphicFactory.apply(getValue()));
+        }
+    };
+
     public PathTreeItem(FXPath path) {
         this(path, p -> FXUtils.getIcon(p.getPath()), false);
     }
@@ -57,6 +63,7 @@ public class PathTreeItem extends TreeItem<FXPath> {
         this.graphicFactory = graphicFactory;
         this.dirOnly = dirOnly;
         setGraphic(graphicFactory.apply(path));
+        getValue().nameProperty().addListener(nameListener);
 
         if (isLoaded()) {
             Platform.runLater(() -> {
@@ -106,6 +113,7 @@ public class PathTreeItem extends TreeItem<FXPath> {
         boolean remove = paths.contains(getValue());
         if (remove) {
             getValue().getPaths().removeListener(pathListener);
+            getValue().nameProperty().removeListener(nameListener);
         }
 
         return remove;

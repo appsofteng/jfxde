@@ -45,6 +45,7 @@ public class EditorContent extends BorderPane {
         rootItem = new PathTreeItem(root);
 
         fileTreeBox = new FileTreeBox(rootItem, favorites, p -> editorPane.open(p));
+        fileTreeBox.setOnNewProject((k,p) -> Project.get(k, p).create());
 
         editorActions = new EditorActions(this);
         editorPane = new EditorPane(editorActions);

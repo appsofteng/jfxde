@@ -203,6 +203,15 @@ public class FXPath implements Comparable<FXPath> {
         return pathDescriptor;
     }
 
+    void unwatchPaths() {
+        paths.stream().filter(FXPath::isDirectory).forEach(p -> {
+            if (watchServiceRegister != null) {
+                watchServiceRegister.unwatch(p.getPath());
+                p.unwatchPaths();
+            }
+        });
+    }
+
     void rename(Path newPath, String newName) {
         removeFromCache(getPath());
         var oldPath = getPath();
@@ -219,6 +228,7 @@ public class FXPath implements Comparable<FXPath> {
         var relative = oldParent.relativize(getPath());
         setPath(newParent.resolve(relative));
         getFromCache(getPath(), p -> new WeakReference<>(this));
+        watch();
 
         paths.forEach(p -> p.rename(oldParent, newParent));
     }
@@ -330,7 +340,7 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     public String getName() {
-        return name.get();
+        return name == null ? "" : name.get();
     }
 
     private void setName(String value) {
@@ -463,11 +473,18 @@ public class FXPath implements Comparable<FXPath> {
 
     private void setLoaded(boolean value) {
 
-        if (watchServiceRegister != null && getPath() != null && !loaded && value) {
-            setPath(watchServiceRegister.register(getPath(), directoryWatcher));
+        if (!loaded && value) {
+            loaded = value;
+            watch();
         }
 
         loaded = value;
+    }
+
+    private void watch() {
+        if (watchServiceRegister != null && getPath() != null && isDirectory() && isLoaded()) {
+            setPath(watchServiceRegister.register(getPath(), directoryWatcher));
+        }
     }
 
     public void load(Consumer<ObservableList<FXPath>> consumer) {
@@ -562,9 +579,7 @@ public class FXPath implements Comparable<FXPath> {
             CACHE.put(path, ref);
         }
 
-        if (watchServiceRegister != null && fxpath.isDirectory() && fxpath.isLoaded()) {
-            fxpath.setPath(watchServiceRegister.register(path, fxpath.directoryWatcher));
-        }
+        fxpath.watch();
 
         return fxpath;
     }
