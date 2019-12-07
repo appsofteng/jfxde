@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext;
+package dev.jfxde.jx.tools;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -52,7 +52,7 @@ public class Lexer {
         return tokenOnCaretPosition;
     }
 
-    static Lexer get(String fileName, String language) {
+    public static Lexer get(String fileName, String language) {
         Lexer lexer = null;
 
         InputStream is = Lexer.class.getResourceAsStream(fileName + ".txt");
@@ -78,7 +78,7 @@ public class Lexer {
         return lexer;
     }
 
-    int tokenize(String input, int caretPosition, BiConsumer<Integer, Token> consumer) {
+    public int tokenize(String input, int caretPosition, BiConsumer<Integer, Token> consumer) {
         Matcher matcher = pattern.matcher(input);
         int lastEnd = 0;
         tokens.clear();
@@ -121,11 +121,11 @@ public class Lexer {
         }
     }
 
-    String getOpenTokenPattern() {
+    public String getOpenTokenPattern() {
         return openTokenPattern;
     }
 
-    List<Token> getToken(int caretPosition) {
+    public List<Token> getToken(int caretPosition) {
 
         if (tokens.isEmpty() || caretPosition < tokens.get(0).getStart() || caretPosition > tokens.get(tokens.size() - 1).getEnd()) {
             return List.of();

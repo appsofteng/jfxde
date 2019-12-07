@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import dev.jfxde.api.AppContext;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
+import dev.jfxde.sysapps.editor.data.Project;
 import dev.jfxde.ui.PathTreeItem;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -45,7 +46,7 @@ public class EditorContent extends BorderPane {
         rootItem = new PathTreeItem(root);
 
         fileTreeBox = new FileTreeBox(rootItem, favorites, p -> editorPane.open(p));
-        fileTreeBox.setOnNewProject((k,p) -> Project.get(k, p).create());
+        fileTreeBox.setOnNewProject((k,p) -> Project.get(k).create(p.getPath()));
 
         editorActions = new EditorActions(this);
         editorPane = new EditorPane(editorActions);
