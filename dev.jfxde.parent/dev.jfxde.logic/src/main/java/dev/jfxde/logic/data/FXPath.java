@@ -25,16 +25,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
-import dev.jfxde.j.util.search.Line;
-import dev.jfxde.j.util.search.StringRef;
+import dev.jfxde.j.util.search.Searcher;
 import dev.jfxde.jfx.embed.swing.FXUtils;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -724,7 +721,7 @@ public class FXPath implements Comparable<FXPath> {
             if (Files.probeContentType(getPath()).toLowerCase().startsWith("text")) {
 
                 try (var lines = Files.lines(getPath())) {
-                    find(lines, pattern, sr -> {
+                    Searcher.get().search(lines, pattern, sr -> {
                         pathPointer.add(new StringFilePosition(sr));
                         return !stop.get();
                     });
@@ -733,55 +730,6 @@ public class FXPath implements Comparable<FXPath> {
         } catch (IOException e) {
             LOGGER.log(Level.INFO, e.getMessage(), e);
         }
-    }
-
-    private void find(Stream<String> lines, Pattern pattern, Predicate<StringRef> process) {
-
-        Line[] lineObj = new Line[1];
-        lineObj[0] = new Line("", -1, 0);
-
-        int[] searchStart = new int[1];
-        searchStart[0] = 0;
-
-        String[] search = new String[1];
-        search[0] = "";
-
-        List<Line> searchLines = new ArrayList<>();
-
-        lines.allMatch(line -> {
-            boolean continueSearch = true;
-
-            lineObj[0] = lineObj[0].createNext(line + "\n");
-
-            searchLines.add(lineObj[0]);
-            search[0] += line + "\n";
-
-            Line matchLine = null;
-            Matcher matcher = pattern.matcher(search[0]);
-            int matchEnd = 0;
-
-            while (matcher.find() && continueSearch) {
-                int absMatchStart = searchStart[0] + matcher.start();
-                matchLine = searchLines.stream().filter(ln -> ln.contains(absMatchStart)).findFirst().orElse(null);
-
-                StringRef stringRef = new StringRef(matchLine, absMatchStart - matchLine.getStart(), matcher.group());
-                matchEnd = matcher.end();
-                continueSearch = process.test(stringRef);
-            }
-
-            if (matchLine != null) {
-                int matchLineNumber = matchLine.getNumber();
-                searchLines.removeIf(ln -> ln.getNumber() < matchLineNumber);
-            }
-
-            if (matchEnd > 0) {
-                search[0] = search[0].substring(matchEnd);
-                searchStart[0] += matchEnd;
-            }
-
-            return continueSearch;
-
-        });
     }
 
     @Override

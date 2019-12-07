@@ -1,8 +1,5 @@
 package dev.jfxde.sysapps.editor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.logic.data.FilePosition;
 import javafx.collections.FXCollections;

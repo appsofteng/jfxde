@@ -1,6 +1,7 @@
 package dev.jfxde.sysapps.editor;
 
 import java.nio.file.Files;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.controlsfx.control.action.ActionUtils;
@@ -10,6 +11,7 @@ import org.fxmisc.richtext.LineNumberFactory;
 
 import dev.jfxde.fxmisc.richtext.CodeAreaWrappers;
 import dev.jfxde.fxmisc.richtext.ContextMenuBuilder;
+import dev.jfxde.fxmisc.richtext.ParagraphGraphicFactory;
 import dev.jfxde.j.util.LU;
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.logic.data.FXFiles;
@@ -43,7 +45,8 @@ public class Editor extends StackPane {
         title.bind(Bindings.createStringBinding(() -> getPath().getPath().toString(), getPath().pathProperty()));
         tabTitle.bind(Bindings.createStringBinding(() -> getTabString(), getPath().nameProperty(), edited, modified, deletedExternally));
 
-        area.setParagraphGraphicFactory(LineNumberFactory.get(area));
+        area.setParagraphGraphicFactory(new ParagraphGraphicFactory(area, List.of()));
+
         area.getUndoManager().undoAvailableProperty().addListener((v, o, n) -> setEdited((Boolean) n));
         area.textProperty().addListener((v, o, n) -> setEdited(true));
 
@@ -215,7 +218,7 @@ public class Editor extends StackPane {
         var stringPointer = filePosition.getSelectedPosition();
 
         if (stringPointer != null) {
-            area.moveTo(stringPointer.getStringRef().getLine().getNumber(), stringPointer.getStringRef().getStart());
+            area.moveTo(stringPointer.getStringRef().getLine().getIndex(), stringPointer.getStringRef().getColumn());
         } else {
             area.moveTo(0);
         }
