@@ -35,6 +35,7 @@ import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
 import dev.jfxde.j.util.search.Line;
 import dev.jfxde.j.util.search.StringRef;
+import dev.jfxde.jfx.embed.swing.FXUtils;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -46,6 +47,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public class FXPath implements Comparable<FXPath> {
 
@@ -65,6 +70,7 @@ public class FXPath implements Comparable<FXPath> {
     private List<Consumer<FXPath>> onModified = new ArrayList<>();
 
     private ObjectProperty<Path> path = new SimpleObjectProperty<Path>();
+    private ObjectProperty<Image> image;
     private StringProperty name;
     private String newName;
     private BooleanProperty directory = new SimpleBooleanProperty();
@@ -100,6 +106,7 @@ public class FXPath implements Comparable<FXPath> {
             if (n != null) {
                 Path fileName = n.getFileName();
                 setName(fileName == null ? n.toString() : fileName.toString());
+                setImage(FXUtils.getIcon(getPath()));
             }
         });
     }
@@ -337,6 +344,27 @@ public class FXPath implements Comparable<FXPath> {
 
     public ReadOnlyObjectProperty<Path> pathProperty() {
         return path;
+    }
+
+    private void setImage(Image value) {
+        imageProperty().set(value);
+    }
+
+    private ObjectProperty<Image> imageProperty() {
+        if (image == null) {
+            image = new SimpleObjectProperty<>();
+        }
+
+        return image;
+    }
+
+    public Node getGraphic() {
+
+        ImageView imageView = new ImageView();
+        imageView.imageProperty().bind(imageProperty());
+        Label label = new Label("", imageView);
+
+        return label;
     }
 
     public String getName() {
