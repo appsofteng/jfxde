@@ -10,6 +10,7 @@ import java.security.Permissions;
 import java.security.Policy;
 import java.util.HashSet;
 import java.util.ServiceLoader.Provider;
+import java.util.function.Supplier;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -334,6 +335,11 @@ public class AppProviderDescriptor implements Comparable<AppProviderDescriptor> 
     public Node getSmallIcon() {
 
         return resourceManager.getSmallIcon("jd-small-icon");
+    }
+
+    public Supplier<Node> getSmallIconSupplier() {
+
+        return resourceManager.getSmallIconSupplier("jd-small-icon");
     }
 
     @Override
