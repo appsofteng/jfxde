@@ -7,12 +7,12 @@ import java.util.concurrent.CompletableFuture;
 import org.controlsfx.control.action.ActionUtils;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.LineNumberFactory;
 
 import dev.jfxde.fxmisc.richtext.CodeAreaWrappers;
 import dev.jfxde.fxmisc.richtext.ContextMenuBuilder;
 import dev.jfxde.fxmisc.richtext.ParagraphGraphicFactory;
 import dev.jfxde.j.util.LU;
+import dev.jfxde.j.util.search.SearchResult;
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.logic.data.FXFiles;
 import dev.jfxde.logic.data.FXPath;
@@ -22,9 +22,12 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.scene.layout.StackPane;
+import javafx.collections.ListChangeListener.Change;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.shape.Rectangle;
 
-public class Editor extends StackPane {
+public class Editor extends BorderPane {
 
     private FilePosition filePosition;
     private FXPath path;
@@ -36,7 +39,7 @@ public class Editor extends StackPane {
     private final ReadOnlyStringWrapper title = new ReadOnlyStringWrapper();
     private final ReadOnlyStringWrapper tabTitle = new ReadOnlyStringWrapper();
     private final CodeArea area = new CodeArea();
-
+    private final EditorSideBar sideBar = new EditorSideBar(area);
     private CodeAreaWrappers codeAreaWrappers;
 
     public Editor(FilePosition filePosition, EditorActions actions) {
@@ -67,7 +70,8 @@ public class Editor extends StackPane {
                 .indentation()
                 .find();
 
-        getChildren().addAll(new VirtualizedScrollPane<>(area));
+        setCenter(new VirtualizedScrollPane<>(area));
+        setRight(sideBar);
 
         setListeners();
 
@@ -97,6 +101,21 @@ public class Editor extends StackPane {
                 setDeletedExternally(true);
                 setModified(false);
             });
+        });
+
+        codeAreaWrappers.getFindWrapper().getSearchResults().addListener((Change<? extends SearchResult> c) -> {
+
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    Label mark = new Label();
+                    mark.setMinSize(0, 0);
+                    mark.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+                    mark.getStyleClass().add("jd-find-mark");
+                    c.getAddedSubList().forEach(s -> sideBar.addMark(s.getLine().getIndex(), mark));
+                } else if (c.wasRemoved()) {
+                    c.getRemoved().forEach(s -> sideBar.removeMark(s.getLine().getIndex()));
+                }
+            }
         });
     }
 
@@ -249,7 +268,7 @@ public class Editor extends StackPane {
 
     void goToLine(int line) {
 
-        line = Math.min(Math.max(line, 1),getArea().getParagraphs().size());
+        line = Math.min(Math.max(line, 1), getArea().getParagraphs().size());
 
         getArea().moveTo(line - 1, 0);
     }

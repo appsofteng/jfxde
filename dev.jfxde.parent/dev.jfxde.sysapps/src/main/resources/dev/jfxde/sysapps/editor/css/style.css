@@ -22,3 +22,7 @@
     -fx-border-radius: 2.0;
     -fx-font-smoothing-type: lcd;
 }
+
+.jd-find-mark {
+    -fx-background-color: rgba(255, 0, 255, 0.5);
+}
