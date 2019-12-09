@@ -42,7 +42,7 @@ public class EditorSideBar extends Region {
     @Override
     protected void layoutChildren() {
 
-        double height = getHeight() / area.getParagraphs().size();
+        double height = Math.min(area.getTotalHeightEstimate(), getHeight()) / area.getParagraphs().size();
         double markHeight = Math.max(height - 2, 3);
 
         for (int i : marks.keySet()) {
