@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import dev.jfxde.api.ResourceController;
@@ -145,6 +146,11 @@ public final class ResourceManager extends Manager implements ResourceController
     public Node getSmallIcon(String style) {
 
         return getIcon(SMALL_ICON_NAME, iconAltText, SMALL_ICON_SIZE, style);
+    }
+
+    public Supplier<Node> getSmallIconSupplier(String style) {
+
+        return () -> getSmallIcon(style);
     }
 
     private Node getIcon(String name, String iconAltText, double size, String style) {

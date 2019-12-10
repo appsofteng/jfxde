@@ -1,5 +1,6 @@
 module dev.jfxde.image {
 
+    requires java.compiler;
     requires java.desktop;
     requires java.logging;
     requires java.management;
@@ -8,6 +9,7 @@ module dev.jfxde.image {
     requires java.scripting;
     requires java.sql;
 
+    requires jdk.compiler;
     requires jdk.crypto.ec;
     requires jdk.jsobject;
     requires jdk.net;

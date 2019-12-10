@@ -2,6 +2,7 @@ package dev.jfxde.fxmisc.richtext;
 
 import org.fxmisc.richtext.GenericStyledArea;
 
+import dev.jfxde.jx.tools.Lexer;
 import javafx.scene.control.IndexRange;
 
 public class IndentationWrapper<T extends GenericStyledArea<?,?,?>> extends GenericStyledAreaWrapper<T> {

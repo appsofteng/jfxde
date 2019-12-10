@@ -1,6 +1,7 @@
 package dev.jfxde.jfx.scene.control;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import dev.jfxde.fonts.Fonts;
 import dev.jfxde.jfx.scene.layout.LayoutUtils;
@@ -58,6 +59,7 @@ public abstract class InternalFrame extends Region {
     private BooleanProperty closable = new SimpleBooleanProperty(true);
     private Label titleLabel = new Label();
     private BorderPane titleBar = new BorderPane();
+    private Supplier<Node> iconSupplier = () -> null;
 
     private ContentRegion contentRegion = new ContentRegion();
     private Node focusOwner;
@@ -90,6 +92,8 @@ public abstract class InternalFrame extends Region {
 
         if (this.parent != null) {
             this.parent.getSubframes().add(this);
+            setIconSupplier(this.parent.iconSupplier);
+            setIcon(this.parent.iconSupplier.get());
         } else if (modality == Modality.WINDOW_MODAL) {
             this.modality = Modality.APPLICATION_MODAL;
         }
@@ -291,6 +295,10 @@ public abstract class InternalFrame extends Region {
 
     protected BooleanProperty titleVisibleProperty() {
         return titleBar.visibleProperty();
+    }
+
+    protected void setIconSupplier(Supplier<Node> supplier) {
+        this.iconSupplier = supplier;
     }
 
     protected void setIcon(Node node) {

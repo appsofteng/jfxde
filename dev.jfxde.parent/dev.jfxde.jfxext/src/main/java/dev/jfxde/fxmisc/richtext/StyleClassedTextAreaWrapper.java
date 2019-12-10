@@ -18,16 +18,16 @@ public class StyleClassedTextAreaWrapper extends GenericStyledAreaWrapper<StyleC
         super(area);
     }
 
-    void addStyle(IndexRange range, Collection<String> styleClasses) {
-        changeStyleClass(range, styleClasses, (s, c) -> s.addAll(c));
+    void addStyle(int start, int end, Collection<String> styleClasses) {
+        changeStyleClass(start, end, styleClasses, (s, c) -> s.addAll(c));
     }
 
-    void removeStyle(IndexRange range, Collection<String> styleClasses) {
-        changeStyleClass(range, styleClasses, (s, c) -> s.removeAll(c));
+    void removeStyle(int start, int end, Collection<String> styleClasses) {
+        changeStyleClass(start, end, styleClasses, (s, c) -> s.removeAll(c));
     }
 
-    private void changeStyleClass(IndexRange range, Collection<String> styleClasses, BiConsumer<Collection<String>,Collection<String>> change) {
-        StyleSpans<Collection<String>> styleSpans = getArea().getStyleSpans(range);
+    private void changeStyleClass(int start, int end, Collection<String> styleClasses, BiConsumer<Collection<String>,Collection<String>> change) {
+        StyleSpans<Collection<String>> styleSpans = getArea().getStyleSpans(start, end);
 
         var builder = new StyleSpansBuilder<Collection<String>>();
         styleSpans.stream().forEach(s -> {
@@ -36,7 +36,7 @@ public class StyleClassedTextAreaWrapper extends GenericStyledAreaWrapper<StyleC
             builder.add(style, s.getLength());
         });
 
-        getArea().setStyleSpans(range.getStart(), builder.create());
+        getArea().setStyleSpans(start, builder.create());
     }
 
     Pair<IndexRange, String> getCodeWord(String code, int position) {

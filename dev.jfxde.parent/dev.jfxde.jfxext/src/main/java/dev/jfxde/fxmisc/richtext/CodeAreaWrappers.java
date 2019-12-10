@@ -28,6 +28,7 @@ import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.fxmisc.wellbehaved.event.Nodes;
 
 import dev.jfxde.j.nio.file.XFiles;
+import dev.jfxde.jx.tools.Lexer;
 import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.scene.input.KeyCode;
@@ -118,7 +119,7 @@ public final class CodeAreaWrappers {
                         spans.add(styleSpan);
                     });
 
-                    highlightWrapper.setToken(lexer.getTokenOnCaretPosition());
+                    highlightWrapper.setToken(getLexer().getTokenOnCaretPosition());
                     highlightWrapper.setAreaLength(area.getLength());
 
                     StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();

@@ -2,6 +2,8 @@ package dev.jfxde.fxmisc.richtext;
 
 import org.fxmisc.richtext.GenericStyledArea;
 
+import dev.jfxde.jx.tools.Token;
+
 public class BlockEndWrapper<T extends GenericStyledArea<?, ?, ?>> extends GenericStyledAreaWrapper<T> {
 
     public BlockEndWrapper(T area) {

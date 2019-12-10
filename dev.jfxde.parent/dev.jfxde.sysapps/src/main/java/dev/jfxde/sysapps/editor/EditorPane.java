@@ -139,9 +139,8 @@ public class EditorPane extends StackPane {
         tab.setContent(editor);
 
         tab.closableProperty().bind(editor.changedProperty().not());
-        Label label = new Label();
-        label.textProperty().bind(editor.tabTitleProperty());
-        tab.setGraphic(label);
+        tab.textProperty().bind(editor.tabTitleProperty());
+        tab.setGraphic(editor.getPath().getGraphic());
         addContextMenu(tab);
 
         Tooltip tooltip = new Tooltip();

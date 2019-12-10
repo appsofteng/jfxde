@@ -2,14 +2,14 @@ package dev.jfxde.logic.data;
 
 import java.util.List;
 
-import dev.jfxde.j.util.search.StringRef;
+import dev.jfxde.j.util.search.SearchResult;
 
 public class StringFilePosition extends FilePosition {
 
     private PathFilePosition pathPointer;
-    private StringRef stringRef;
+    private SearchResult stringRef;
 
-    public StringFilePosition(StringRef stringRef) {
+    public StringFilePosition(SearchResult stringRef) {
         this.stringRef = stringRef;
     }
 
@@ -17,7 +17,7 @@ public class StringFilePosition extends FilePosition {
         this.pathPointer = pathPointer;
     }
 
-    public StringRef getStringRef() {
+    public SearchResult getStringRef() {
         return stringRef;
     }
 

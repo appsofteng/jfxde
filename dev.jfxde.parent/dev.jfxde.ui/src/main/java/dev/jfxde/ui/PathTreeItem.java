@@ -2,11 +2,9 @@ package dev.jfxde.ui;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import dev.jfxde.jfx.application.XPlatform;
-import dev.jfxde.jfx.embed.swing.FXUtils;
 import dev.jfxde.logic.data.FXPath;
 import javafx.application.Platform;
 import javafx.beans.Observable;
@@ -20,12 +18,10 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 
 public class PathTreeItem extends TreeItem<FXPath> {
 
-    private Function<FXPath, Node> graphicFactory;
     private boolean dirOnly;
     private ObservableList<TreeItem<FXPath>> allChildren = FXCollections.observableArrayList((i) -> new Observable[] { i.getValue().nameProperty() });
     private ObservableList<TreeItem<FXPath>> sortedChildren;
@@ -44,26 +40,14 @@ public class PathTreeItem extends TreeItem<FXPath> {
         }
     };
 
-    private ChangeListener<String> nameListener = (v, o, n) -> {
-        if (n != null) {
-            setGraphic(graphicFactory.apply(getValue()));
-        }
-    };
-
     public PathTreeItem(FXPath path) {
-        this(path, p -> FXUtils.getIcon(p.getPath()), false);
+        this(path, false);
     }
 
     public PathTreeItem(FXPath path, boolean dirOnly) {
-        this(path, p -> FXUtils.getIcon(p.getPath()), dirOnly);
-    }
-
-    public PathTreeItem(FXPath path, Function<FXPath, Node> graphicFactory, boolean dirOnly) {
         super(path);
-        this.graphicFactory = graphicFactory;
         this.dirOnly = dirOnly;
-        setGraphic(graphicFactory.apply(path));
-        getValue().nameProperty().addListener(nameListener);
+        setGraphic(path.getGraphic());
 
         if (isLoaded()) {
             Platform.runLater(() -> {
@@ -92,7 +76,7 @@ public class PathTreeItem extends TreeItem<FXPath> {
 
     private void addItems(List<? extends FXPath> paths) {
         XPlatform.runFX(() -> paths.stream()
-                .map(p -> new PathTreeItem(p, graphicFactory, dirOnly))
+                .map(p -> new PathTreeItem(p, dirOnly))
                 .forEach(i -> allChildren.add(i)));
     }
 
@@ -113,7 +97,6 @@ public class PathTreeItem extends TreeItem<FXPath> {
         boolean remove = paths.contains(getValue());
         if (remove) {
             getValue().getPaths().removeListener(pathListener);
-            getValue().nameProperty().removeListener(nameListener);
         }
 
         return remove;

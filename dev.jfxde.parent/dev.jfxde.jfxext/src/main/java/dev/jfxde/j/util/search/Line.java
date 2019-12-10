@@ -3,14 +3,14 @@ package dev.jfxde.j.util.search;
 public class Line {
 
     private String value;
-    private int number;
+    private int index;
     private int start;
     private int end;
 
-    public Line(String value, int number, int start) {
+    public Line(String value, int index, int start) {
 
         this.value = value;
-        this.number = number;
+        this.index = index;
         this.start = start;
         this.end = start + value.length();
     }
@@ -19,8 +19,8 @@ public class Line {
         return value;
     }
 
-    public int getNumber() {
-        return number;
+    public int getIndex() {
+        return index;
     }
 
     public int getStart() {
@@ -32,11 +32,29 @@ public class Line {
     }
 
     public Line createNext(String value) {
-
-        return new Line(value, number + 1, end);
+        value += "\n";
+        return new Line(value, index + 1, end);
     }
 
     public boolean contains(int index) {
         return start <= index && index < end;
+    }
+
+    public String getUpper(int index) {
+        String upper = value.substring(value.length() - (end - index));
+
+        return upper;
+    }
+
+    public String getLower(int index) {
+        String upper = value.substring(0, value.length() - (end - index));
+
+        return upper;
+    }
+
+    public void appendEOL() {
+        if (index > 0) {
+
+        }
     }
 }

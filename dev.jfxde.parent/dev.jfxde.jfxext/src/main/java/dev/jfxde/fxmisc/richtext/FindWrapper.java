@@ -1,14 +1,14 @@
 package dev.jfxde.fxmisc.richtext;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.fxmisc.richtext.StyleClassedTextArea;
 
+import dev.jfxde.j.util.search.Searcher;
+import dev.jfxde.j.util.search.SearchResult;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
@@ -25,7 +25,7 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
     private static final String FIND_STYLE_SELECTED = "jd-find-selected";
     private Pattern pattern;
     private IntegerProperty index = new SimpleIntegerProperty(-1);
-    private ObservableList<IndexRange> indices = FXCollections.observableArrayList();
+    private ObservableList<SearchResult> searchResults = FXCollections.observableArrayList();
     private ReadOnlyStringWrapper foundCount = new ReadOnlyStringWrapper();
     private boolean inSelection;
     private IndexRange selection;
@@ -36,7 +36,11 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
         super(area);
 
         area.textProperty().addListener((v, o, n) -> reset());
-        foundCount.bind(Bindings.createStringBinding(() -> getIndex() + 1 + "/" + indices.size(), index, indices));
+        foundCount.bind(Bindings.createStringBinding(() -> getIndex() + 1 + "/" + searchResults.size(), index, searchResults));
+    }
+
+    public ObservableList<SearchResult> getSearchResults() {
+        return searchResults;
     }
 
     void afterReplace() {
@@ -51,7 +55,7 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
 
     public void reset() {
         if (!replace && !replaceAll) {
-            indices.clear();
+            searchResults.clear();
             setIndex(-1);
             pattern = null;
             inSelection = false;
@@ -99,11 +103,11 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
     }
 
     public void replace(String text) {
-        if (getIndex() >= 0 && getIndex() < indices.size()) {
+        if (getIndex() >= 0 && getIndex() < searchResults.size()) {
 
             replace = true;
-            IndexRange range = indices.get(getIndex());
-            getArea().replaceText(range, text);
+            SearchResult range = searchResults.get(getIndex());
+            getArea().replaceText(range.getStart(), range.getEnd(), text);
         }
     }
 
@@ -113,16 +117,16 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
 
         replaceAll = true;
 
-        for (var range : indices) {
+        for (var range : searchResults) {
             getArea().replaceText(range.getStart() + delta, range.getEnd() + delta, text);
 
             delta = getArea().getLength() - length;
         }
 
-        setIndex(indices.size() - 1);
+        setIndex(searchResults.size() - 1);
     }
 
-    private void findAnother(Pattern pattern, boolean inSelection, Supplier<Pair<Integer, IndexRange>> finder) {
+    private void findAnother(Pattern pattern, boolean inSelection, Supplier<Pair<Integer, SearchResult>> finder) {
 
         var selection = getArea().getSelection();
 
@@ -132,44 +136,45 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
 
         find(pattern, inSelection);
 
-        if (indices.isEmpty()) {
+        if (searchResults.isEmpty()) {
             return;
         }
 
-        if (getIndex() >= 0 && getIndex() < indices.size()) {
-            removeStyle(indices.get(getIndex()), List.of(FIND_STYLE_SELECTED));
+        if (getIndex() >= 0 && getIndex() < searchResults.size()) {
+            var range = searchResults.get(getIndex());
+            removeStyle(range.getStart(), range.getEnd(), List.of(FIND_STYLE_SELECTED));
         }
 
-        Pair<Integer, IndexRange> pair = finder.get();
-        IndexRange range = pair.getValue();
+        Pair<Integer, SearchResult> pair = finder.get();
+        SearchResult range = pair.getValue();
         setIndex(pair.getKey());
 
         getArea().moveTo(range.getStart());
         getArea().requestFollowCaret();
 
-        addStyle(range, List.of(FIND_STYLE_SELECTED));
+        addStyle(range.getStart(), range.getEnd(), List.of(FIND_STYLE_SELECTED));
 
         area.requestFocus();
     }
 
-    private Pair<Integer, IndexRange> findPrevious() {
+    private Pair<Integer, SearchResult> findPrevious() {
 
-        Pair<Integer, IndexRange> pair = Stream.iterate(indices.size() - 1, i -> i >= 0, i -> i - 1)
-                .filter(i -> indices.get(i).getStart() < getArea().getCaretPosition())
-                .map(i -> new Pair<>(i, indices.get(i)))
+        Pair<Integer, SearchResult> pair = Stream.iterate(searchResults.size() - 1, i -> i >= 0, i -> i - 1)
+                .filter(i -> searchResults.get(i).getStart() < getArea().getCaretPosition())
+                .map(i -> new Pair<>(i, searchResults.get(i)))
                 .findFirst()
-                .orElse(new Pair<>(indices.size() - 1, indices.get(indices.size() - 1)));
+                .orElse(new Pair<>(searchResults.size() - 1, searchResults.get(searchResults.size() - 1)));
 
         return pair;
     }
 
-    private Pair<Integer, IndexRange> findNext() {
+    private Pair<Integer, SearchResult> findNext() {
 
-        Pair<Integer, IndexRange> pair = Stream.iterate(0, i -> i < indices.size(), i -> i + 1)
-                .filter(i -> indices.get(i).getStart() > getArea().getCaretPosition())
+        Pair<Integer, SearchResult> pair = Stream.iterate(0, i -> i < searchResults.size(), i -> i + 1)
+                .filter(i -> searchResults.get(i).getStart() > getArea().getCaretPosition())
                 .findFirst()
-                .map(i -> new Pair<>(i, indices.get(i)))
-                .orElse(new Pair<>(0, indices.get(0)));
+                .map(i -> new Pair<>(i, searchResults.get(i)))
+                .orElse(new Pair<>(0, searchResults.get(0)));
 
         return pair;
     }
@@ -188,38 +193,28 @@ public class FindWrapper extends StyleClassedTextAreaWrapper {
 
         this.pattern = pattern;
         this.inSelection = inSelection;
-        indices.forEach(i -> removeStyle(i, List.of(FIND_STYLE, FIND_STYLE_SELECTED)));
-        indices.clear();
+        searchResults.forEach(i -> removeStyle(i.getStart(), i.getEnd(), List.of(FIND_STYLE, FIND_STYLE_SELECTED)));
+        searchResults.clear();
 
         if (pattern != null) {
 
-            find(pattern, inSelection, r -> addStyle(r, List.of(FIND_STYLE)));
+            Searcher.get().search(area.getText().lines(), getTextStart(inSelection), getTextEnd(inSelection), pattern, r -> {
+                addStyle(r.getStart(), r.getEnd(), List.of(FIND_STYLE));
+                searchResults.add(r);
+                return true;
+            });
         }
 
-        if (indices.isEmpty()) {
+        if (searchResults.isEmpty()) {
             setIndex(-1);
         }
     }
 
-    private void find(Pattern pattern, boolean inSelection, Consumer<IndexRange> consumer) {
-
-        Matcher matcher = pattern.matcher(getText(inSelection));
-        int textStart = getTextStart(inSelection);
-
-        while (matcher.find()) {
-            int group = matcher.groupCount() == 1 ? 1 : 0;
-            IndexRange range = new IndexRange(textStart + matcher.start(group), textStart + matcher.end(group));
-            indices.add(range);
-            consumer.accept(range);
-        }
-    }
-
-    private String getText(boolean inSelection) {
-
-        return inSelection && selection != null ? getArea().getText(selection) : getArea().getText();
-    }
-
     private int getTextStart(boolean inSelection) {
         return inSelection && selection != null ? selection.getStart() : 0;
+    }
+
+    private int getTextEnd(boolean inSelection) {
+        return inSelection && selection != null ? selection.getEnd() : area.getLength();
     }
 }

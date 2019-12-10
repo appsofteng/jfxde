@@ -23,19 +23,29 @@ public class AutoCompleteField<T> extends Region {
     private TextField textField;
     private AutoCompletionBinding<T> binding;
     private StringConverter<T> converter = (StringConverter<T>) new DefaultStringConverter();
-    private Consumer<T> consumer;
+    private Consumer<T> onCompleted;
+    private Consumer<T> onAction;;
 
     public AutoCompleteField() {
-        this(new TreeSet<>());
+        this("");
+    }
+
+    public AutoCompleteField(String text) {
+        this(text, new TreeSet<>());
     }
 
     public AutoCompleteField(Collection<T> suggestions) {
+        this("", suggestions);
+    }
+
+    public AutoCompleteField(String text, Collection<T> suggestions) {
         this.suggestions = suggestions;
         textField = TextFields.createClearableTextField();
+        textField.setText(text);
         Platform.runLater(this::bindAutoCompletion);
         textField.setOnAction(e -> onSelected());
 
-        textField.focusedProperty().addListener((v,o,n) -> {
+        textField.focusedProperty().addListener((v, o, n) -> {
             if (n) {
                 Platform.runLater(() -> textField.deselect());
             }
@@ -53,7 +63,11 @@ public class AutoCompleteField<T> extends Region {
     private void onSelected() {
 
         if (store()) {
-            onCompleted();
+            if (onAction != null) {
+                onAction.accept(converter.fromString(textField.getText()));
+            } else {
+                onCompleted();
+            }
         }
     }
 
@@ -73,13 +87,17 @@ public class AutoCompleteField<T> extends Region {
         return true;
     }
 
+    public void setOnAction(Consumer<T> onAction) {
+        this.onAction = onAction;
+    }
+
     public void setOnCompleted(Consumer<T> consumer) {
-        this.consumer = consumer;
+        this.onCompleted = consumer;
     }
 
     private void onCompleted() {
-        if (consumer != null) {
-            consumer.accept(converter.fromString(textField.getText()));
+        if (onCompleted != null) {
+            onCompleted.accept(converter.fromString(textField.getText()));
         }
     }
 
@@ -101,7 +119,6 @@ public class AutoCompleteField<T> extends Region {
 
     @Override
     public void requestFocus() {
-        super.requestFocus();
         textField.requestFocus();
     }
 

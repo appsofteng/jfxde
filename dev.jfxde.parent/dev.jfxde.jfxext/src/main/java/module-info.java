@@ -1,5 +1,6 @@
 module dev.jfxde.jfxext {
 
+    requires java.compiler;
     requires java.logging;
     requires transitive java.prefs;
     requires java.desktop;
@@ -32,7 +33,7 @@ module dev.jfxde.jfxext {
     exports dev.jfxde.jfx.animation to dev.jfxde.ui;
     exports dev.jfxde.jfx.application to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
     exports dev.jfxde.jfx.concurrent to dev.jfxde.sysapps, dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.apps;
-    exports dev.jfxde.jfx.embed.swing to dev.jfxde.ui, dev.jfxde.sysapps;
+    exports dev.jfxde.jfx.embed.swing to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
     exports dev.jfxde.jfx.scene.control to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps, dev.jfxde.apps;
     exports dev.jfxde.jfx.scene.control.cell to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;
     exports dev.jfxde.jfx.scene.layout to dev.jfxde.logic, dev.jfxde.ui, dev.jfxde.sysapps;

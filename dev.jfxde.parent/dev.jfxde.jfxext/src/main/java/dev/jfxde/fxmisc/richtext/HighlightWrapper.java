@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.fxmisc.richtext.CodeArea;
 
+import dev.jfxde.jx.tools.Lexer;
+import dev.jfxde.jx.tools.Token;
+
 public class HighlightWrapper extends GenericStyledAreaWrapper<CodeArea> {
 
     private Token token;

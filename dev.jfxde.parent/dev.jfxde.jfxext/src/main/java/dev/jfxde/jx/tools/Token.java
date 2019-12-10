@@ -1,4 +1,4 @@
-package dev.jfxde.fxmisc.richtext;
+package dev.jfxde.jx.tools;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,7 @@ public class Token {
         return start <= caretPosition && caretPosition <= end;
     }
 
-    boolean isDelimiter() {
+    public boolean isDelimiter() {
         return (isOpen(type) || isClose(type)) && oppositeToken != null;
     }
 
@@ -65,7 +65,7 @@ public class Token {
         this.oppositeToken = oppositeToken;
     }
 
-    boolean isClose() {
+    public boolean isClose() {
         return isClose(type);
     }
 
@@ -77,7 +77,7 @@ public class Token {
         return type.toLowerCase().endsWith("close");
     }
 
-    void resetStyle() {
+    public void resetStyle() {
         style.clear();
         style.add(type.toLowerCase());
     }
