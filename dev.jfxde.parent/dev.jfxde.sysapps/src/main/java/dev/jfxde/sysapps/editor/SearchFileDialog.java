@@ -72,7 +72,8 @@ public class SearchFileDialog extends InternalDialog {
 
         searchChoice = new ChoiceBox<>(searches);
 
-        pathField = new AutoCompleteField<String>();
+        pathField = new AutoCompleteField<>("*");
+        setFocusOwner(pathField);
         FXResourceBundle.getBundle().put(pathField.promptTextProperty(), "pathWildcards");
 
         FXResourceBundle.getBundle().put(matchCaseCheck.textProperty(), "matchCase");
@@ -87,8 +88,8 @@ public class SearchFileDialog extends InternalDialog {
         filePointerTree.setPrefHeight(200);
         filePointerTree.setShowRoot(false);
 
-        searchButton.disableProperty().bind(Bindings.createBooleanBinding(() -> pathField.getText().isBlank() && textField.getText().isBlank(),
-                pathField.textProperty(), textField.textProperty())
+        searchButton.disableProperty().bind(Bindings.createBooleanBinding(() -> pathField.getText().isBlank(),
+                pathField.textProperty())
                 .or(Bindings.isEmpty(searches)));
 
         FXResourceBundle.getBundle().put(searchButton.textProperty(), "search");
@@ -134,29 +135,9 @@ public class SearchFileDialog extends InternalDialog {
             }
         });
 
-        searchButton.setOnAction(e -> {
-
-            if (searching) {
-                stop.set(true);
-                FXResourceBundle.getBundle().put(searchButton.textProperty(), "search");
-                searching = false;
-            } else {
-                pathField.store();
-                textField.store();
-                search.setPathPattern(pathField.getText());
-                search.setTextPattern(textField.getText());
-
-                root.getChildren().clear();
-                stop = new AtomicBoolean();
-                FXFiles.search(search.getPaths(), pathField.getText(), getPattern(), this::found, stop)
-                        .thenRun(() -> XPlatform.runFX(() -> {
-                            FXResourceBundle.getBundle().put(searchButton.textProperty(), "search");
-                            searching = false;
-                        }));
-                searching = true;
-                FXResourceBundle.getBundle().put(searchButton.textProperty(), "stop");
-            }
-        });
+        pathField.setOnAction(s -> search());
+        textField.setOnAction(s -> search());
+        searchButton.setOnAction(e -> search());
 
         closeButton.setOnAction(e -> {
             stop.set(true);
@@ -182,6 +163,32 @@ public class SearchFileDialog extends InternalDialog {
             p.getStringFilePositions().forEach(s -> item.getChildren().add(new TreeItem<>(s)));
             root.getChildren().add(item);
         });
+    }
+
+    private void search() {
+        if (searching) {
+            stop.set(true);
+            FXResourceBundle.getBundle().put(searchButton.textProperty(), "search");
+            searching = false;
+        } else {
+            if (pathField.getText().isBlank()) {
+                return;
+            }
+            pathField.store();
+            textField.store();
+            search.setPathPattern(pathField.getText());
+            search.setTextPattern(textField.getText());
+
+            root.getChildren().clear();
+            stop = new AtomicBoolean();
+            FXFiles.search(search.getPaths(), pathField.getText(), getPattern(), this::found, stop)
+                    .thenRun(() -> XPlatform.runFX(() -> {
+                        FXResourceBundle.getBundle().put(searchButton.textProperty(), "search");
+                        searching = false;
+                    }));
+            searching = true;
+            FXResourceBundle.getBundle().put(searchButton.textProperty(), "stop");
+        }
     }
 
     private Pattern getPattern() {
