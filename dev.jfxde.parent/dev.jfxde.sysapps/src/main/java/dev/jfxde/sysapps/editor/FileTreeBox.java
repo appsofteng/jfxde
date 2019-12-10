@@ -68,6 +68,7 @@ public class FileTreeBox extends VBox {
     public void select(TreeItem<FXPath> item) {
         fileTreeView.getSelectionModel().clearSelection();
         fileTreeView.getSelectionModel().select(item);
+        fileTreeView.scrollTo(fileTreeView.getRow(item));
     }
 
     void setOnNewProject(BiConsumer<String, FXPath> onNewProject) {
