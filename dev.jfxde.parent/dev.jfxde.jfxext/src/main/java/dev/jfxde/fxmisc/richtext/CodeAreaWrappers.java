@@ -16,9 +16,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
+
+import javax.tools.Diagnostic;
 
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.GenericStyledArea;
@@ -41,7 +45,8 @@ public final class CodeAreaWrappers {
     private String language;
     private Lexer lexer;
 
-    private  FindWrapper findWrapper;
+    private FindWrapper findWrapper;
+    private CompilationWrapper compilationWrapper;
 
     private CodeAreaWrappers(CodeArea area, String fileName, String language) {
         this.area = area;
@@ -106,6 +111,10 @@ public final class CodeAreaWrappers {
                         return;
                     }
 
+                    if (compilationWrapper != null) {
+                        compilationWrapper.compile();
+                    }
+
                     var plainChange = ch.toPlainTextChange();
                     int insertionEnd = plainChange.getInsertionEnd();
                     int caretPosition = area.getCaretPosition();
@@ -138,6 +147,10 @@ public final class CodeAreaWrappers {
 
                     if (findWrapper != null) {
                         findWrapper.afterReplace();
+                    }
+
+                    if (compilationWrapper != null) {
+                        compilationWrapper.showDiags();
                     }
                 });
 
@@ -193,6 +206,12 @@ public final class CodeAreaWrappers {
 
         Nodes.addInputMap(area, sequence(
                 consume(mousePressed(PRIMARY).onlyIf(e -> e.getClickCount() == 2), e -> findWrapper.findWord())));
+
+        return this;
+    }
+
+    public CodeAreaWrappers compile(Supplier<CompletableFuture<List<Diagnostic<?>>>> supplier) {
+        this.compilationWrapper = new CompilationWrapper(area, supplier);
 
         return this;
     }

@@ -4,9 +4,11 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
 
 import javax.tools.Diagnostic;
+
+import dev.jfxde.j.nio.file.XFiles;
 
 public abstract class Project {
 
@@ -23,9 +25,17 @@ public abstract class Project {
         return project;
     }
 
+    public static Project get(Path path) {
+        String extension = XFiles.getFileExtension(path.toString());
+
+        return get(extension);
+    }
+
     public void create(Path path) {
     }
 
-    void compile(Path path, String code, Consumer<List<Diagnostic<?>>> consumer) {
+    public CompletableFuture<List<Diagnostic<?>>> compile(Path path, String code) {
+
+        return null;
     }
 }

@@ -17,6 +17,7 @@ import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.logic.data.FXFiles;
 import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.logic.data.FilePosition;
+import dev.jfxde.sysapps.editor.data.Project;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
@@ -68,7 +69,8 @@ public class Editor extends BorderPane {
                 .style()
                 .highlighting()
                 .indentation()
-                .find();
+                .find()
+                .compile(() -> Project.get(path.getPath()).compile(path.getPath(), area.getText()));
 
         setCenter(new VirtualizedScrollPane<>(area));
         setRight(sideBar);

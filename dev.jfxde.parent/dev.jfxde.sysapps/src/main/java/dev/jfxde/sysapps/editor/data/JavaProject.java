@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,14 +16,16 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import javax.tools.JavaCompiler.CompilationTask;
 
+import dev.jfxde.j.nio.file.XFiles;
 import dev.jfxde.jx.tools.StringJavaSource;
-
+import dev.jfxde.logic.data.FXFiles;
 
 class JavaProject extends Project {
 
     private static final Logger LOGGER = Logger.getLogger(JavaProject.class.getName());
 
-    private static final String MAIN = "src/main";
+    private static final String SRC = "src";
+    private static final String MAIN = SRC + "/main";
     private static final String MAIN_JAVA = MAIN + "/java";
     private static final String MAIN_RESOURCES = MAIN + "/resources";
     private static final String TEST = "src/test";
@@ -47,21 +50,39 @@ class JavaProject extends Project {
         }
     }
 
-    void compile(Path path, String code, Consumer<List<Diagnostic<?>>> consumer) {
-        if (compiler == null) {
-            compiler = ToolProvider.getSystemJavaCompiler();
-        }
+    public CompletableFuture<List<Diagnostic<?>>> compile(Path path, String code) {
 
-        Iterable<? extends JavaFileObject> compilationUnits = List.of(new StringJavaSource("", code));
+        var future = CompletableFuture.supplyAsync(() ->  {
+            if (compiler == null) {
+                compiler = ToolProvider.getSystemJavaCompiler();
+            }
 
-        List<Diagnostic<?>> diags = Collections.synchronizedList(new ArrayList<>());
-        CompilationTask task = compiler.getTask(null, null, d -> diags.add(d), getCompilerOptions(), null, compilationUnits);
-        task.call();
+            String name = XFiles.getFileName(path.getFileName().toString());
+            Iterable<? extends JavaFileObject> compilationUnits = List.of(new StringJavaSource(name, code));
 
-        consumer.accept(diags);
+            List<Diagnostic<?>> diags = Collections.synchronizedList(new ArrayList<>());
+            CompilationTask task = compiler.getTask(null, null, d -> diags.add(d), getCompilerOptions(path), null, compilationUnits);
+            task.call();
+
+            return diags;
+        });
+
+        return future;
     }
 
-    private Iterable<String> getCompilerOptions() {
-        return List.of();
+    private Iterable<String> getCompilerOptions(Path path) {
+        List<String> result = List.of();
+        Path parent = path;
+
+        while (parent != null && !parent.endsWith(SRC)) {
+            parent = parent.getParent();
+        }
+
+        if (parent != null) {
+            var dest = parent.resolveSibling(TARGET_CLASSES);
+            result = List.of("-d", dest.toString());
+        }
+
+        return result;
     }
 }

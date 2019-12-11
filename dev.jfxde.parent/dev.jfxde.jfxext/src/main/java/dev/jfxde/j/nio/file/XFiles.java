@@ -17,6 +17,10 @@ public final class XFiles {
         return splitFilePath(path)[1];
     }
 
+    public static String getFileName(String path) {
+        return splitFilePath(path)[0];
+    }
+
     private static String[] splitFilePath(String path) {
         String name = path;
         String extension = "";
