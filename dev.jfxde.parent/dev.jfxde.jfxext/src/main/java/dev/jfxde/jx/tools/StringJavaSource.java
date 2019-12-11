@@ -8,7 +8,7 @@ public class StringJavaSource extends SimpleJavaFileObject {
 
     private final String code;
 
-    StringJavaSource(String name, String code) {
+    public StringJavaSource(String name, String code) {
         super(URI.create("string:///" + name.replace('.', '/') + Kind.SOURCE.extension), Kind.SOURCE);
         this.code = code;
     }
