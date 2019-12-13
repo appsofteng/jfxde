@@ -85,6 +85,8 @@ public final class LayoutUtils {
         resizableNode.addEventFilter(MouseEvent.MOUSE_MOVED, e -> {
             if (resizableNode.isResizable() && !isUseComputedSize(preferredSizeNode) && !preferredSizeNode.isDisabled()) {
                 addResizeCursors(resizableNode, cursorDetectionBorderWidth, new Point2D(e.getX(), e.getY()));
+            } else {
+                resizableNode.setCursor(Cursor.DEFAULT);
             }
         });
 
