@@ -40,6 +40,27 @@ public class PathTreeItem extends TreeItem<FXPath> {
         }
     };
 
+    private ChangeListener<Boolean> pathLoadedListener = (v, o, n) -> {
+        if (n) {
+            XPlatform.runFX(() -> {
+                if (isExpanded()) {
+                    addItems(getValue().getPaths());
+                    setLoaded(true);
+                    getValue().getPaths().addListener(pathListener);
+
+                } else {
+                   allChildren.add(new PathTreeItem());
+                }
+
+                loading = false;
+            });
+        }
+    };
+
+    private PathTreeItem() {
+        super(FXPath.getPseudoPath(List.of()));
+    }
+
     public PathTreeItem(FXPath path) {
         this(path, false);
     }
@@ -49,29 +70,21 @@ public class PathTreeItem extends TreeItem<FXPath> {
         this.dirOnly = dirOnly;
         setGraphic(path.getGraphic());
 
-        if (isLoaded()) {
-            Platform.runLater(() -> {
-                load(getValue().getPaths());
-            });
-        }
-    }
-
-    private void setListeners() {
-
         var filteredChildren = dirOnly ? new FilteredList<>(allChildren, i -> i.getValue().isDirectory()) : allChildren;
         sortedChildren = new SortedList<>(filteredChildren, Comparator.comparing(i -> i.getValue()));
         Bindings.bindContent(super.getChildren(), sortedChildren);
 
-        getValue().getPaths().addListener(pathListener);
-    }
+        path.loadedProperty().addListener(pathLoadedListener);
 
-    private void load(List<? extends FXPath> paths) {
-        XPlatform.runFX(() -> {
-            addItems(paths);
-            setListeners();
-            loading = false;
-            setLoaded(true);
-        });
+        if (path.isLoaded()) {
+            loading = true;
+            Platform.runLater(() -> {
+                addItems(getValue().getPaths());
+                setLoaded(true);
+                loading = false;
+                getValue().getPaths().addListener(pathListener);
+            });
+        }
     }
 
     private void addItems(List<? extends FXPath> paths) {
@@ -82,11 +95,12 @@ public class PathTreeItem extends TreeItem<FXPath> {
 
     private void removeItems(List<? extends FXPath> paths) {
         XPlatform.runFX(() -> {
-            allChildren.removeIf(i -> ((PathTreeItem) i).remove(paths));
+            allChildren.removeIf(i -> {
+                return ((PathTreeItem) i).remove(paths);
+            });
 
             if (super.getChildren().isEmpty() && getParent() != null) {
                 setExpanded(false);
-                loading = false;
                 setLoaded(false);
                 getValue().getPaths().removeListener(pathListener);
             }
@@ -97,8 +111,8 @@ public class PathTreeItem extends TreeItem<FXPath> {
         boolean remove = paths.contains(getValue());
         if (remove) {
             getValue().getPaths().removeListener(pathListener);
+            getValue().loadedProperty().addListener(pathLoadedListener);
         }
-
         return remove;
     }
 
@@ -122,9 +136,18 @@ public class PathTreeItem extends TreeItem<FXPath> {
     }
 
     private void checkLoaded() {
+
         if (!loading && !isLoaded()) {
             loading = true;
-            getValue().load(this::load);
+            if (!getValue().isLoaded()) {
+                getValue().load();
+            } else {
+                allChildren.clear();
+                addItems(getValue().getPaths());
+                setLoaded(true);
+                loading = false;
+                getValue().getPaths().addListener(pathListener);
+            }
         }
     }
 
@@ -138,8 +161,8 @@ public class PathTreeItem extends TreeItem<FXPath> {
 
             loadedListener = (v, o, n) -> {
                 if (n) {
-                    traverseLoaded(predicate);
                     loaded.removeListener(loadedListener);
+                    traverseLoaded(predicate);
                 }
             };
 

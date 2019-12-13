@@ -198,11 +198,11 @@ public final class XFiles {
     }
 
     public static boolean isEmpty(Path dir) {
-        boolean result = false;
+        boolean result = true;
 
         try (var stream = Files.list(dir)) {
 
-            result = stream
+            result = !stream
                     .filter(p -> Files.isReadable(p))
                     .findAny().isPresent();
         } catch (Exception e) {

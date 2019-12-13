@@ -73,7 +73,7 @@ public class FXPath implements Comparable<FXPath> {
     private BooleanProperty directory = new SimpleBooleanProperty();
     private Set<FXPath> parents = new HashSet<>();
     private ObservableList<FXPath> paths = FXCollections.observableArrayList();
-    private volatile boolean loaded;
+    private BooleanProperty loaded = new SimpleBooleanProperty();
     private AtomicBoolean dirLeaf;
     private AtomicBoolean leaf;
     private FXBasicFileAttributes basicFileAttributes;
@@ -188,9 +188,9 @@ public class FXPath implements Comparable<FXPath> {
                 .collect(Collectors.toList());
 
         pseudoPath.setName("");
-        pseudoPath.setDirectory(!pds.isEmpty());
-        pseudoPath.setLeaf(!pseudoPath.isDirectory());
-        pseudoPath.setDirLeaf(!pseudoPath.isDirectory());
+        pseudoPath.setDirectory(true);
+        pseudoPath.setLeaf(pds.isEmpty());
+        pseudoPath.setDirLeaf(pds.isEmpty());
         pseudoPath.setLoaded(true);
         pseudoPath.paths.setAll(pds);
 
@@ -461,7 +461,7 @@ public class FXPath implements Comparable<FXPath> {
     public boolean isLeaf() {
 
         if (leaf == null) {
-            setLeaf(!isDirectory() || !Files.isReadable(getPath()) || !XFiles.isEmpty(getPath()));
+            setLeaf(!isDirectory() || !Files.isReadable(getPath()) || XFiles.isEmpty(getPath()));
         }
 
         return leaf.get();
@@ -493,17 +493,21 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     public boolean isLoaded() {
-        return loaded;
+        return loadedProperty().get();
     }
 
     private void setLoaded(boolean value) {
 
-        if (!loaded && value) {
-            loaded = value;
+        if (!isLoaded() && value) {
+            loadedProperty().set(value);
             watch();
+        } else {
+            loadedProperty().set(value);
         }
+    }
 
-        loaded = value;
+    public BooleanProperty loadedProperty() {
+        return loaded;
     }
 
     private void watch() {
@@ -512,9 +516,9 @@ public class FXPath implements Comparable<FXPath> {
         }
     }
 
-    public void load(Consumer<ObservableList<FXPath>> consumer) {
+    public void load() {
 
-        if (isLeaf()) {
+        if (isLeaf() || isLoaded()) {
             return;
         }
 
@@ -524,8 +528,6 @@ public class FXPath implements Comparable<FXPath> {
                 if (!isLoaded()) {
                     loadSync(paths);
                 }
-
-                consumer.accept(paths);
             } finally {
                 getLock().unlock();
             }
