@@ -24,6 +24,7 @@ import javafx.util.Duration;
 
 public class InternalWindow extends InternalFrame {
 
+    private static final PseudoClass TILED_PSEUDO_CLASS = PseudoClass.getPseudoClass("tiled");
     private static final PseudoClass FULL_PSEUDO_CLASS = PseudoClass.getPseudoClass("full");
     private static final Duration MINIMALIZATION_DURATION = Duration.millis(300);
 
@@ -45,6 +46,7 @@ public class InternalWindow extends InternalFrame {
 
     private ChangeListener<State> stateListener = (v, o, n) -> {
 
+        pseudoClassStateChanged(TILED_PSEUDO_CLASS, n == State.TILED);
         pseudoClassStateChanged(FULL_PSEUDO_CLASS, n == State.FULL);
 
         if (o == State.RESTORED) {

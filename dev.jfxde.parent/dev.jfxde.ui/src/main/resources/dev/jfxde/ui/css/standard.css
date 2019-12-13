@@ -237,6 +237,18 @@
 
 /* Internal window ************************************************************/
 
+.jd-frame {
+	-fx-border-color: rgba(75%, 75%, 75%, 0.5);
+	-fx-border-width: 3;
+    -fx-border-radius: 8;
+    -fx-border-insets: -3;
+}
+
+.jd-frame:maximized, .jd-frame:tiled, .jd-frame:full {
+	-fx-border-width: 0;
+}
+
+
 .jd-frame:active .jd-frame-payload {
 	-fx-background-color: -jd-active-background-color;
 	-fx-border-color: -jd-active-background-color;

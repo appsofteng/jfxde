@@ -39,9 +39,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.RadialGradient;
-import javafx.scene.paint.Stop;
 import javafx.stage.Modality;
 import javafx.util.Duration;
 
@@ -49,6 +46,7 @@ public abstract class InternalFrame extends Region {
 
     private static final double CURSOR_BORDER_WIDTH = 5;
     private static final PseudoClass ACTIVE_PSEUDO_CLASS = PseudoClass.getPseudoClass("active");
+    private static final PseudoClass MAXIMIZED_PSEUDO_CLASS = PseudoClass.getPseudoClass("maximized");
 
     private Pane pane;
     private InternalFrame parent;
@@ -73,7 +71,7 @@ public abstract class InternalFrame extends Region {
     private Timeline modalTimeline;
 
     private BooleanProperty active;
-    private BooleanProperty maximized = new SimpleBooleanProperty();
+    private BooleanProperty maximized;
 
     public InternalFrame(Pane pane) {
         this.pane = pane;
@@ -106,7 +104,6 @@ public abstract class InternalFrame extends Region {
         addButtons();
         setHandlers();
         setMoveable();
-        setBorder();
     }
 
     private static PaneParent findPaneParent(Node node) {
@@ -133,11 +130,11 @@ public abstract class InternalFrame extends Region {
         maximize.getStyleClass().addAll("jd-frame-button", "jd-font-awesome-solid");
         maximize.setFocusTraversable(false);
         maximize.textProperty()
-                .bind(Bindings.when(maximized)
+                .bind(Bindings.when(maximizedProperty())
                         .then(Fonts.Unicode.UPPER_RIGHT_DROP_SHADOWED_WHITE_SQUARE)
                         .otherwise(Fonts.Unicode.WHITE_LARGE_SQUARE));
         maximize.setTooltip(new Tooltip());
-        maximize.getTooltip().textProperty().bind(Bindings.when(maximized)
+        maximize.getTooltip().textProperty().bind(Bindings.when(maximizedProperty())
                 .then(FXResourceBundle.getBundle().getStringBinding("restore"))
                 .otherwise(FXResourceBundle.getBundle().getStringBinding("maximize")));
         maximize.setOnAction(e -> onMaximizeRestore());
@@ -248,14 +245,6 @@ public abstract class InternalFrame extends Region {
         LayoutUtils.makeResizable(this, payload, CURSOR_BORDER_WIDTH);
     }
 
-    private void setBorder() {
-        Stop[] stops = new Stop[] { new Stop(0, Color.rgb(0, 0, 0, 0.6)), new Stop(0.2, Color.rgb(0, 0, 0, 0.5)),
-                new Stop(0.4, Color.rgb(0, 0, 0, 0.4)), new Stop(0.6, Color.rgb(0, 0, 0, 0.3)), new Stop(0.8, Color.rgb(0, 0, 0, 0.2)),
-                new Stop(1, Color.rgb(0, 0, 0, 0.1)) };
-        RadialGradient rg = new RadialGradient(0, 0, 0.5, 0.5, 1, true, CycleMethod.REFLECT, stops);
-        var border = new Border(new BorderStroke(rg, BorderStrokeStyle.SOLID, new CornerRadii(8), new BorderWidths(3), new Insets(-3)));
-        setBorder(border);
-    }
 // More attractive than border but blocks transparency and uses more graphic resources.
 //    private void setEffect() {
 //        DropShadow shadow = new DropShadow();
@@ -427,13 +416,36 @@ public abstract class InternalFrame extends Region {
     }
 
     private boolean isMaximized() {
-        return maximized.get();
+        return maximizedProperty().get();
     }
 
     protected void setMaximized(boolean value) {
-        this.maximized.set(value);
+        maximizedProperty().set(value);
     }
 
+    BooleanProperty maximizedProperty() {
+        if (maximized == null) {
+            maximized = new BooleanPropertyBase() {
+                @Override
+                protected void invalidated() {
+                    pseudoClassStateChanged(MAXIMIZED_PSEUDO_CLASS, get());
+                }
+
+                @Override
+                public String getName() {
+                    return "maximizedPseudoClass";
+                }
+
+                @Override
+                public Object getBean() {
+                    return InternalFrame.this;
+                }
+            };
+        }
+
+        return maximized;
+    }
+    
     protected boolean isRestored() {
         return !isMaximized();
     }
