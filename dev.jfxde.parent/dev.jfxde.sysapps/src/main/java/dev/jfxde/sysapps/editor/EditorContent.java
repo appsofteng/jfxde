@@ -8,6 +8,7 @@ import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.sysapps.editor.data.Project;
 import dev.jfxde.ui.PathTreeItem;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.collections.ListChangeListener.Change;
@@ -46,7 +47,7 @@ public class EditorContent extends BorderPane {
         rootItem = new PathTreeItem(root);
 
         fileTreeBox = new FileTreeBox(rootItem, favorites, p -> editorPane.open(p));
-        fileTreeBox.setOnNewProject((k,p) -> Project.get(k).create(p.getPath()));
+        fileTreeBox.setOnNewProject((k, p) -> Project.get(k).create(p.getPath()));
 
         editorActions = new EditorActions(this);
         editorPane = new EditorPane(editorActions);
@@ -66,7 +67,7 @@ public class EditorContent extends BorderPane {
     }
 
     private void setListeners() {
-        stoppable.bind(editorPane.changedProperty().not());
+        Platform.runLater(() -> stoppable.bind(editorPane.changedProperty().not()));
 
         favorites.getPaths().addListener((Change<? extends FXPath> c) -> {
 
