@@ -7,7 +7,7 @@ import org.fxmisc.richtext.CodeArea;
 import dev.jfxde.jx.tools.Lexer;
 import dev.jfxde.jx.tools.Token;
 
-public class HighlightWrapper extends GenericStyledAreaWrapper<CodeArea> {
+public class HighlightWrapper extends StyleClassedTextAreaWrapper {
 
     private Token token;
     private Lexer lexer;
@@ -42,17 +42,17 @@ public class HighlightWrapper extends GenericStyledAreaWrapper<CodeArea> {
 // Don't do this because the CodeArea merges the styles of adjacent segments and thus changes color of all the adjacent delimiters.
 //            token.getStyle().add("block-delimiter-match");
 //            token.getOppositeToken().getStyle().add("block-delimiter-match");
-            area.setStyle(token.getStart(), token.getEnd(), List.of("block-delimiter-match"));
-            area.setStyle(token.getOppositeToken().getStart(), token.getOppositeToken().getEnd(), List.of("block-delimiter-match"));
+            addStyle(token.getStart(), token.getEnd(), List.of("block-delimiter-match"));
+            addStyle(token.getOppositeToken().getStart(), token.getOppositeToken().getEnd(), List.of("block-delimiter-match"));
         }
     }
 
     private void removeHighlightDelimiter() {
         if (token.isDelimiter()) {
-            token.resetStyle();
-            token.getOppositeToken().resetStyle();
-            area.setStyle(token.getStart(), token.getEnd(), token.getStyle());
-            area.setStyle(token.getOppositeToken().getStart(), token.getOppositeToken().getEnd(), token.getOppositeToken().getStyle());
+//            token.resetStyle();
+//            token.getOppositeToken().resetStyle();
+            removeStyle(token.getStart(), token.getEnd(), List.of("block-delimiter-match"));
+            removeStyle(token.getOppositeToken().getStart(), token.getOppositeToken().getEnd(), List.of("block-delimiter-match"));
         }
     }
 
@@ -64,9 +64,7 @@ public class HighlightWrapper extends GenericStyledAreaWrapper<CodeArea> {
 
         if (token != null && token.isDelimiter()) {
 
-            token.getStyle().clear();
             token.getStyle().add("block-delimiter-match");
-            token.getOppositeToken().getStyle().clear();
             token.getOppositeToken().getStyle().add("block-delimiter-match");
             this.token = token;
         }

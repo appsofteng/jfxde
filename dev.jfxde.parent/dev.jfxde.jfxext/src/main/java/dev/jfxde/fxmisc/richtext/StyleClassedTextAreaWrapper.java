@@ -18,6 +18,14 @@ public class StyleClassedTextAreaWrapper extends GenericStyledAreaWrapper<StyleC
         super(area);
     }
 
+    void addStyle(IndexRange range, Collection<String> styleClasses) {
+        changeStyleClass(range.getStart(), range.getEnd(), styleClasses, (s, c) -> s.addAll(c));
+    }
+    
+    void removeStyle(IndexRange range, Collection<String> styleClasses) {
+        changeStyleClass(range.getStart(), range.getEnd(), styleClasses, (s, c) -> s.addAll(c));
+    }
+    
     void addStyle(int start, int end, Collection<String> styleClasses) {
         changeStyleClass(start, end, styleClasses, (s, c) -> s.addAll(c));
     }

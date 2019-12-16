@@ -11,3 +11,21 @@
     -rtfx-background-color: #90ee90;
 }
 
+.styled-text-area .jd-warning, .styled-text-area .jd-mandatory_warning {
+    -rtfx-underline-color: orange;
+    -rtfx-underline-width: 1;
+}
+
+.styled-text-area .jd-error {
+    -rtfx-underline-color: red;
+    -rtfx-underline-width: 1;
+/*     -rtfx-underline-dash-array: 2;
+    -rtfx-underline-cap: butt; */
+}
+
+.styled-text-area .jd-note, .styled-text-area .jd-other {
+    -rtfx-underline-color: blue;
+    -rtfx-underline-width: 1;
+}
+
+

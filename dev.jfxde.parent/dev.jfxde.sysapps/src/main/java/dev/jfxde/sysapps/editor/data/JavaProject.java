@@ -7,18 +7,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.tools.Diagnostic;
+import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
-import javax.tools.JavaCompiler.CompilationTask;
 
 import dev.jfxde.j.nio.file.XFiles;
 import dev.jfxde.jx.tools.StringJavaSource;
-import dev.jfxde.logic.data.FXFiles;
 
 class JavaProject extends Project {
 
@@ -80,7 +78,7 @@ class JavaProject extends Project {
 
         if (parent != null) {
             var dest = parent.resolveSibling(TARGET_CLASSES);
-            result = List.of("-d", dest.toString());
+            result = List.of("-d", dest.toString(), "-Xlint");
         }
 
         return result;
