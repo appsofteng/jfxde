@@ -25,6 +25,10 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
 
         this.supplier = supplier;
     }
+    
+    public ObservableList<Diagnostic<?>> getDiagnoctics() {
+        return diagnoctics;
+    }
 
     void compile() {
         futures.clear();

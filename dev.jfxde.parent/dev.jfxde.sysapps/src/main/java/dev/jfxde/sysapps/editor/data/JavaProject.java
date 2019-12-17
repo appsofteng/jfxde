@@ -15,7 +15,6 @@ import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 
-import dev.jfxde.j.nio.file.XFiles;
 import dev.jfxde.jx.tools.StringJavaSource;
 
 class JavaProject extends Project {
@@ -33,6 +32,7 @@ class JavaProject extends Project {
     private static final String TARGET_TEST_CLASSES = "target/test-classes";
 
     private javax.tools.JavaCompiler compiler;
+    private CompletableFuture<List<Diagnostic<?>>> future;
 
     @Override
     public void create(Path path) {
@@ -50,37 +50,71 @@ class JavaProject extends Project {
 
     public CompletableFuture<List<Diagnostic<?>>> compile(Path path, String code) {
 
-        var future = CompletableFuture.supplyAsync(() ->  {
-            if (compiler == null) {
-                compiler = ToolProvider.getSystemJavaCompiler();
-            }
-
-            String name = XFiles.getFileName(path.getFileName().toString());
-            Iterable<? extends JavaFileObject> compilationUnits = List.of(new StringJavaSource(name, code));
-
-            List<Diagnostic<?>> diags = Collections.synchronizedList(new ArrayList<>());
-            CompilationTask task = compiler.getTask(null, null, d -> diags.add(d), getCompilerOptions(path), null, compilationUnits);
-            task.call();
-
-            return diags;
-        });
+        if (future == null) {
+            future = CompletableFuture.supplyAsync(() -> compileCode(path, code));
+        } else {
+            future = this.future.thenApplyAsync(i -> compileCode(path, code));
+        }
 
         return future;
     }
 
-    private Iterable<String> getCompilerOptions(Path path) {
-        List<String> result = List.of();
-        Path parent = path;
+    private javax.tools.JavaCompiler getCompiler() {
+        if (compiler == null) {
+            compiler = ToolProvider.getSystemJavaCompiler();
+        }
+        
+        return compiler;
+    }
+    
+    private List<Diagnostic<?>> compileCode(Path path, String code) {
 
+        Iterable<? extends JavaFileObject> compilationUnits = List.of(new StringJavaSource(path.getFileName(), code));
+
+        List<Diagnostic<?>> diags = Collections.synchronizedList(new ArrayList<>());
+        CompilationTask task = getCompiler().getTask(null, null, d -> diags.add(d), getCompilerOptions(path), null, compilationUnits);
+        task.call();
+
+        return diags;
+    }
+
+    private Iterable<String> getCompilerOptions(Path path) {
+        List<String> options = new ArrayList<>();
+        
+        Path projectPath = getProjectPath(path);
+        Path classOutputDir = getClassOutputPath(projectPath);
+
+        if (classOutputDir != null) {
+            options.add("-d");
+            options.add(classOutputDir.toString());
+        }
+        
+        options.add("-Xlint");
+
+        return options;
+    }
+    
+    private Path getClassOutputPath(Path projectPath) {
+        Path outputDir = null;
+        if (projectPath != null) {
+            outputDir = projectPath.resolve(TARGET_CLASSES);
+        }
+        
+        return outputDir;
+    }
+    
+    private Path getProjectPath(Path path) {
+        Path projectPath = null;
+        Path parent = path;
+        
         while (parent != null && !parent.endsWith(SRC)) {
             parent = parent.getParent();
         }
-
+        
         if (parent != null) {
-            var dest = parent.resolveSibling(TARGET_CLASSES);
-            result = List.of("-d", dest.toString(), "-Xlint");
+            projectPath = parent.getParent();
         }
-
-        return result;
+        
+        return projectPath;
     }
 }
