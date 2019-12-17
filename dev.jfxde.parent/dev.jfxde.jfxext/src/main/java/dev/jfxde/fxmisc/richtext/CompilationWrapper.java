@@ -25,17 +25,26 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
 
         this.supplier = supplier;
     }
-    
+
     public ObservableList<Diagnostic<?>> getDiagnoctics() {
         return diagnoctics;
     }
 
     void compile() {
         futures.clear();
-        futures.add(supplier.get());
+        var future = supplier.get();
+
+        if (future != null) {
+            futures.add(future);
+        }
     }
 
     void showDiags() {
+        
+        if (futures.isEmpty()) {
+            return;
+        }
+        
         CompletableFuture<List<Diagnostic<?>>> future = futures.get(0);
 
         future.thenAccept(diags -> XPlatform.runFX(() -> {
@@ -60,9 +69,9 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
         if (start < end) {
             range = new IndexRange(start, end);
         } else {
-           
+
             if (position < getArea().getLength()) {
-                
+
                 String str = getArea().getText(position, position + 1);
                 if (str.matches("\\s")) {
                     range = new IndexRange(Math.max(position - 1, 0), position);
@@ -72,7 +81,7 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
             } else {
                 range = new IndexRange(position - 1, position);
             }
-           
+
         }
 
         return range;

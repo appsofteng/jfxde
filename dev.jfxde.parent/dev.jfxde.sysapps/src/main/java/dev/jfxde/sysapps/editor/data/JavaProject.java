@@ -49,11 +49,17 @@ class JavaProject extends Project {
     }
 
     public CompletableFuture<List<Diagnostic<?>>> compile(Path path, String code) {
+        
+        Path projectPath = getProjectPath(path);
+        
+        if (projectPath == null) {
+            return null;
+        }
 
         if (future == null) {
-            future = CompletableFuture.supplyAsync(() -> compileCode(path, code));
+            future = CompletableFuture.supplyAsync(() -> compile(path, code, projectPath));
         } else {
-            future = this.future.thenApplyAsync(i -> compileCode(path, code));
+            future = this.future.thenApplyAsync(i -> compile(path, code, projectPath));
         }
 
         return future;
@@ -67,21 +73,20 @@ class JavaProject extends Project {
         return compiler;
     }
     
-    private List<Diagnostic<?>> compileCode(Path path, String code) {
+    private List<Diagnostic<?>> compile(Path path, String code, Path projectPath) {
 
         Iterable<? extends JavaFileObject> compilationUnits = List.of(new StringJavaSource(path.getFileName(), code));
 
         List<Diagnostic<?>> diags = Collections.synchronizedList(new ArrayList<>());
-        CompilationTask task = getCompiler().getTask(null, null, d -> diags.add(d), getCompilerOptions(path), null, compilationUnits);
+        CompilationTask task = getCompiler().getTask(null, null, d -> diags.add(d), getCompilerOptions(projectPath), null, compilationUnits);
         task.call();
 
         return diags;
     }
 
-    private Iterable<String> getCompilerOptions(Path path) {
+    private Iterable<String> getCompilerOptions(Path projectPath) {
         List<String> options = new ArrayList<>();
-        
-        Path projectPath = getProjectPath(path);
+             
         Path classOutputDir = getClassOutputPath(projectPath);
 
         if (classOutputDir != null) {
