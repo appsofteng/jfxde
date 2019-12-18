@@ -4,6 +4,8 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import javax.tools.Diagnostic;
+
 import org.controlsfx.control.action.ActionUtils;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
@@ -26,7 +28,6 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.ListChangeListener.Change;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.shape.Rectangle;
 
 public class Editor extends BorderPane {
 
@@ -119,6 +120,24 @@ public class Editor extends BorderPane {
                 }
             }
         });
+
+        codeAreaWrappers.getCompilationWrapper().getDiagnostics().addListener((Change<? extends Diagnostic<?>> c) -> {
+
+            while (c.next()) {
+                if (c.wasAdded()) {
+                    c.getAddedSubList().forEach(d -> {
+                        Label mark = new Label();
+                        mark.setMinSize(0, 0);
+                        mark.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+                        mark.getStyleClass().add("jd-" + d.getKind().name().toLowerCase());
+                        sideBar.addMark((int) d.getLineNumber() - 1, mark);
+                    });
+                } else if (c.wasRemoved()) {
+                    c.getRemoved().forEach(s -> sideBar.removeMark((int) s.getLineNumber() - 1));
+                }
+            }
+        });
+
     }
 
     private String getTabString() {

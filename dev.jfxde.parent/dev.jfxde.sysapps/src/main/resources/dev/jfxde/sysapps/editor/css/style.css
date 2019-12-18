@@ -26,3 +26,15 @@
 .jd-find-mark {
     -fx-background-color: rgba(255, 0, 255, 0.5);
 }
+
+.jd-warning, .jd-mandatory_warning {
+    -fx-background-color: orange;
+}
+
+.jd-error {
+    -fx-background-color: red;
+}
+
+.jd-note, .jd-other {
+    -fx-background-color: blue;
+}

@@ -57,6 +57,10 @@ public final class CodeAreaWrappers {
     public FindWrapper getFindWrapper() {
         return findWrapper;
     }
+    
+    public CompilationWrapper getCompilationWrapper() {
+        return compilationWrapper;
+    }
 
     public static CodeAreaWrappers get(CodeArea area, String language) {
         return new CodeAreaWrappers(area, language, language);

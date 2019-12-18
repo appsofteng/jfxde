@@ -18,7 +18,7 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
 
     private Supplier<CompletableFuture<List<Diagnostic<?>>>> supplier;
     private List<CompletableFuture<List<Diagnostic<?>>>> futures = new ArrayList<>();
-    private ObservableList<Diagnostic<?>> diagnoctics = FXCollections.observableArrayList();
+    private ObservableList<Diagnostic<?>> diagnostics = FXCollections.observableArrayList();
 
     public CompilationWrapper(StyleClassedTextArea area, Supplier<CompletableFuture<List<Diagnostic<?>>>> supplier) {
         super(area);
@@ -26,8 +26,8 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
         this.supplier = supplier;
     }
 
-    public ObservableList<Diagnostic<?>> getDiagnoctics() {
-        return diagnoctics;
+    public ObservableList<Diagnostic<?>> getDiagnostics() {
+        return diagnostics;
     }
 
     void compile() {
@@ -48,6 +48,9 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
         CompletableFuture<List<Diagnostic<?>>> future = futures.get(0);
 
         future.thenAccept(diags -> XPlatform.runFX(() -> {
+            
+            diagnostics.clear();
+            diagnostics.addAll(diags);
 
             if (!futures.contains(future)) {
                 return;
@@ -55,14 +58,13 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
 
             diags.forEach(d -> addStyle(getDiagRange(d), List.of("jd-" + d.getKind().name().toLowerCase())));
 
-            diagnoctics.setAll(diags);
         }));
     }
 
     private IndexRange getDiagRange(Diagnostic<?> diagnostic) {
 
         IndexRange range = null;
-        int start = (int) diagnostic.getStartPosition();
+        int start = (int) Math.max(diagnostic.getStartPosition(), 0);;
         int end = (int) diagnostic.getEndPosition();
         int position = (int) diagnostic.getPosition();
 
@@ -81,7 +83,6 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
             } else {
                 range = new IndexRange(position - 1, position);
             }
-
         }
 
         return range;
