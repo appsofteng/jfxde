@@ -1,5 +1,6 @@
 package dev.jfxde.fxmisc.richtext;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -8,11 +9,16 @@ import java.util.function.Supplier;
 import javax.tools.Diagnostic;
 
 import org.fxmisc.richtext.StyleClassedTextArea;
+import org.fxmisc.richtext.event.MouseOverTextEvent;
 
 import dev.jfxde.jfx.application.XPlatform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Point2D;
 import javafx.scene.control.IndexRange;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
+import javafx.scene.text.Text;
 
 public class CompilationWrapper extends StyleClassedTextAreaWrapper {
 
@@ -24,6 +30,44 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
         super(area);
 
         this.supplier = supplier;
+        setListeners();
+    }
+    
+    private void setListeners() {
+        TextArea textArea = new TextArea();
+        textArea.setEditable(false);
+        
+        Text helperHeightText = new Text("Yy");
+        helperHeightText.setFont(textArea.getFont());
+        helperHeightText.textProperty().bind(textArea.textProperty());
+        helperHeightText.setLineSpacing(1);
+        
+        Tooltip tooltip = new Tooltip();
+        tooltip.setGraphic(textArea);
+        tooltip.setAutoHide(true);
+        
+        area.setMouseOverTextDelay(Duration.ofSeconds(1));
+        area.addEventHandler(MouseOverTextEvent.MOUSE_OVER_TEXT_BEGIN, e -> {
+            int i = e.getCharacterIndex();
+            Diagnostic<?> diag = diagnostics.stream()
+                    .filter(d -> {
+                        var range = getDiagRange(d);
+                        return range.getStart() <= i && i < range.getEnd();
+                    })
+                    .findFirst().orElse(null);            
+            
+            if (diag != null) {
+                area.setMouseOverTextDelay(Duration.ofMillis(1));
+                Point2D position = e.getScreenPosition();
+                textArea.setText(diag.getCode() + "\n" + diag.getMessage(null));
+                double prefTextHeight = helperHeightText.getBoundsInParent().getHeight() + 4;
+                textArea.setPrefHeight(prefTextHeight);
+                tooltip.show(area, position.getX(), position.getY());
+            } else {
+                tooltip.hide();
+                area.setMouseOverTextDelay(Duration.ofSeconds(1));
+            }
+        });       
     }
 
     public ObservableList<Diagnostic<?>> getDiagnostics() {
@@ -50,13 +94,13 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
         future.thenAccept(diags -> XPlatform.runFX(() -> {
             
             diagnostics.clear();
-            diagnostics.addAll(diags);
 
             if (!futures.contains(future)) {
                 return;
             }
 
             diags.forEach(d -> addStyle(getDiagRange(d), List.of("jd-" + d.getKind().name().toLowerCase())));
+            diagnostics.addAll(diags);
 
         }));
     }
