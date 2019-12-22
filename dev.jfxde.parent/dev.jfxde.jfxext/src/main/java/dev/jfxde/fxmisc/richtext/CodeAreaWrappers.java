@@ -214,7 +214,7 @@ public final class CodeAreaWrappers {
         return this;
     }
 
-    public CodeAreaWrappers compile(Supplier<CompletableFuture<List<Diagnostic<?>>>> supplier) {
+    public CodeAreaWrappers compile(Supplier<CompletableFuture<List<Diagnostic<Path>>>> supplier) {
         this.compilationWrapper = new CompilationWrapper(area, supplier);
 
         return this;

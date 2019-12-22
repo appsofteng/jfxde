@@ -53,6 +53,8 @@ public class Fonts {
 
     public static class Unicode {
 
+        public static final String WARNING_SIGN = "\u26a0";
+        public static final String NEGATIVE_SQUARED_CROSS_MARK = "\u274e";
         public static final String FULLWIDTH_PLUS_SIGN = "\uFF0B";
         public static final String WHITE_LARGE_SQUARE = "\u2b1c";
         public static final String NORTH_WEST_ARROW_TO_CORNER = "\u21f1";
@@ -61,5 +63,6 @@ public class Fonts {
         public static final String TWO_JOINED_SQUARES = "\u29c9";
         public static final String FLOPPY_DISK = "\uD83D\uDCBE";
         public static final String OPEN_FILE_FOLDER = "\uD83D\uDCC2";
+        public static final String CIRCLED_INFORMATION_SOURCE = "\ud83d\udec8";
     }
 }

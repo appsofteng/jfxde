@@ -29,10 +29,15 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javax.tools.Diagnostic;
+
+import dev.jfxde.fonts.Fonts;
 import dev.jfxde.j.nio.file.WatchServiceRegister;
 import dev.jfxde.j.nio.file.XFiles;
 import dev.jfxde.j.util.search.Searcher;
+import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.embed.swing.FXUtils;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -45,6 +50,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -58,6 +64,14 @@ public class FXPath implements Comparable<FXPath> {
     private final static Map<Path, WeakReference<FXPath>> CACHE = new WeakHashMap<>();
     private static WatchServiceRegister watchServiceRegister;
     private static final ReentrantLock LOCK = new ReentrantLock();
+    private static final Map<Diagnostic.Kind, String> DIAGNOSTIC_KIND_SIGNS = Map.of(Diagnostic.Kind.ERROR, Fonts.Unicode.NEGATIVE_SQUARED_CROSS_MARK,
+            Diagnostic.Kind.MANDATORY_WARNING,
+            Fonts.Unicode.WARNING_SIGN, Diagnostic.Kind.WARNING, Fonts.Unicode.WARNING_SIGN, Diagnostic.Kind.NOTE,
+            Fonts.Unicode.CIRCLED_INFORMATION_SOURCE, Diagnostic.Kind.OTHER, "");
+    private static final Map<Diagnostic.Kind, String> DIAGNOSTIC_KIND_STYLES = Map.of(Diagnostic.Kind.ERROR, "-fx-text-fill: red;",
+            Diagnostic.Kind.MANDATORY_WARNING, "-fx-text-fill: orange;",
+            Diagnostic.Kind.WARNING, "-fx-text-fill: orange;",
+            Diagnostic.Kind.NOTE, "-fx-text-fill: blue;", Diagnostic.Kind.OTHER, "");
 
     private Consumer<List<WatchEvent<?>>> directoryWatcher;
     private List<Predicate<FXPath>> onDelete = new ArrayList<>();
@@ -68,6 +82,7 @@ public class FXPath implements Comparable<FXPath> {
 
     private ObjectProperty<Path> path = new SimpleObjectProperty<Path>();
     private ObjectProperty<Image> image;
+    private ObjectProperty<Diagnostic.Kind> diagnosticKind;
     private StringProperty name;
     private String newName;
     private BooleanProperty directory = new SimpleBooleanProperty();
@@ -195,6 +210,32 @@ public class FXPath implements Comparable<FXPath> {
         pseudoPath.paths.setAll(pds);
 
         return pseudoPath;
+    }
+
+    public static FXPath get(Path path) {
+        FXPath fxpath = getFromCache(path);
+
+        if (fxpath == null) {
+            Path parent = path.getParent();
+            FXPath fxparent = null;
+            if (parent != null) {
+                fxparent = get(parent);
+            }
+            fxpath = getFromCache(fxparent, path, Files.isDirectory(path));
+        }
+
+        if (fxpath.getParent() == null) {
+            Path parent = path.getParent();
+
+            if (parent != null) {
+                FXPath fxparent = get(parent);
+                if (fxparent != null) {
+                    fxparent.add(fxpath);
+                }
+            }
+        }
+
+        return fxpath;
     }
 
     static FXPath createDirectory(FXPath parent, Path path) {
@@ -355,13 +396,47 @@ public class FXPath implements Comparable<FXPath> {
         return image;
     }
 
+    private Diagnostic.Kind getDiagnosticKind() {
+        return diagnosticKindProperty().get();
+    }
+
+    private void setDiagnosticKind(Diagnostic.Kind value) {
+        diagnosticKindProperty().set(value);
+    }
+
+    private ObjectProperty<Diagnostic.Kind> diagnosticKindProperty() {
+        if (diagnosticKind == null) {
+            diagnosticKind = new SimpleObjectProperty<>();
+        }
+
+        return diagnosticKind;
+    }
+
     public Node getGraphic() {
 
         ImageView imageView = new ImageView();
         imageView.imageProperty().bind(imageProperty());
         Label label = new Label("", imageView);
+        label.setContentDisplay(ContentDisplay.RIGHT);
+        label.textProperty()
+                .bind(Bindings.createObjectBinding(() -> DIAGNOSTIC_KIND_SIGNS.getOrDefault(getDiagnosticKind(), ""), diagnosticKindProperty()));
+        label.styleProperty()
+                .bind(Bindings.createStringBinding(() -> DIAGNOSTIC_KIND_STYLES.getOrDefault(getDiagnosticKind(), ""), diagnosticKindProperty()));
 
         return label;
+    }
+
+    public void mark(Diagnostic<Path> diagnostic) {
+
+        XPlatform.runFX(() -> {
+            if (diagnostic == null) {
+                setDiagnosticKind(null);
+            } else {
+                setDiagnosticKind(diagnostic.getKind());
+            }
+
+            parents.forEach(p -> p.mark(diagnostic));
+        });
     }
 
     public String getName() {

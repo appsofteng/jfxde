@@ -281,10 +281,16 @@ public class Editor extends BorderPane {
                 }));
     }
 
-    void save() {
+    CompletableFuture<Void> save() {
+        CompletableFuture<Void> future = null;
+        
         if (isChanged()) {
-            FXFiles.save(path, area.getText()).thenRun(() -> XPlatform.runFX(() -> unchange()));
+            future = FXFiles.save(path, area.getText()).thenRun(() -> XPlatform.runFX(() -> unchange()));
+        } else {
+            future = CompletableFuture.completedFuture(null);
         }
+        
+        return future;
     }
 
     void goToLine(int line) {

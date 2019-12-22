@@ -19,6 +19,7 @@ module dev.jfxde.sysapps {
     requires dev.jfxde.jfxext;
     requires java.json.bind;
     requires dev.jfxde.fonts;
+    requires java.compiler;
 
     provides dev.jfxde.api.App with dev.jfxde.sysapps.appmanager.AppManagerApp,
             dev.jfxde.sysapps.console.ConsoleApp, dev.jfxde.sysapps.exceptionlog.ExceptionLogApp,

@@ -1,5 +1,6 @@
 package dev.jfxde.fxmisc.richtext;
 
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +23,11 @@ import javafx.scene.text.Text;
 
 public class CompilationWrapper extends StyleClassedTextAreaWrapper {
 
-    private Supplier<CompletableFuture<List<Diagnostic<?>>>> supplier;
-    private List<CompletableFuture<List<Diagnostic<?>>>> futures = new ArrayList<>();
-    private ObservableList<Diagnostic<?>> diagnostics = FXCollections.observableArrayList();
+    private Supplier<CompletableFuture<List<Diagnostic<Path>>>> supplier;
+    private List<CompletableFuture<List<Diagnostic<Path>>>> futures = new ArrayList<>();
+    private ObservableList<Diagnostic<Path>> diagnostics = FXCollections.observableArrayList();
 
-    public CompilationWrapper(StyleClassedTextArea area, Supplier<CompletableFuture<List<Diagnostic<?>>>> supplier) {
+    public CompilationWrapper(StyleClassedTextArea area, Supplier<CompletableFuture<List<Diagnostic<Path>>>> supplier) {
         super(area);
 
         this.supplier = supplier;
@@ -70,7 +71,7 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
         });       
     }
 
-    public ObservableList<Diagnostic<?>> getDiagnostics() {
+    public ObservableList<Diagnostic<Path>> getDiagnostics() {
         return diagnostics;
     }
 
@@ -89,7 +90,7 @@ public class CompilationWrapper extends StyleClassedTextAreaWrapper {
             return;
         }
         
-        CompletableFuture<List<Diagnostic<?>>> future = futures.get(0);
+        CompletableFuture<List<Diagnostic<Path>>> future = futures.get(0);
 
         future.thenAccept(diags -> XPlatform.runFX(() -> {
             

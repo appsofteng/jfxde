@@ -1,11 +1,18 @@
 package dev.jfxde.sysapps.editor;
 
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+import javax.tools.Diagnostic;
 
 import dev.jfxde.jfx.application.XPlatform;
 import dev.jfxde.jfx.util.FXResourceBundle;
 import dev.jfxde.logic.data.FXPath;
 import dev.jfxde.logic.data.FilePosition;
+import dev.jfxde.sysapps.editor.data.Project;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -18,7 +25,6 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Tab;
@@ -39,6 +45,7 @@ public class EditorPane extends StackPane {
     private final ObjectProperty<Editor> selectedEditor = new SimpleObjectProperty<>();
     private final ReadOnlyBooleanWrapper changed = new ReadOnlyBooleanWrapper();
     private FindDialog findDialog;
+    private Map<Path,List<Diagnostic<Path>>> diags = Map.of();
 
     public EditorPane(EditorActions actions) {
         this.actions = actions;
@@ -120,7 +127,7 @@ public class EditorPane extends StackPane {
             tab = createEditorTab(filePosition);
             tabPane.getTabs().add(tab);
         } else {
-            ((Editor)tab.getContent()).moveToPotition(filePosition);
+            ((Editor) tab.getContent()).moveToPotition(filePosition);
         }
 
         tabPane.getSelectionModel().select(tab);
@@ -155,18 +162,19 @@ public class EditorPane extends StackPane {
 
         MenuItem reload = new MenuItem();
         FXResourceBundle.getBundle().put(reload.textProperty(), "reload");
-        reload.disableProperty().bind(((Editor)tab.getContent()).deletedExternallyProperty());
-        reload.setOnAction(e -> ((Editor)tab.getContent()).load());
+        reload.disableProperty().bind(((Editor) tab.getContent()).deletedExternallyProperty());
+        reload.setOnAction(e -> ((Editor) tab.getContent()).load());
 
         MenuItem closeOthers = new MenuItem();
         FXResourceBundle.getBundle().put(closeOthers.textProperty(), "closeOthers");
-        closeOthers.disableProperty().bind(Bindings.isEmpty(closableEditors).or(Bindings.size(closableEditors).isEqualTo(1).and(tab.closableProperty())));
-        closeOthers.setOnAction(e -> tabPane.getTabs().removeIf(t -> t != tab && !((Editor)t.getContent()).isChanged()));
+        closeOthers.disableProperty()
+                .bind(Bindings.isEmpty(closableEditors).or(Bindings.size(closableEditors).isEqualTo(1).and(tab.closableProperty())));
+        closeOthers.setOnAction(e -> tabPane.getTabs().removeIf(t -> t != tab && !((Editor) t.getContent()).isChanged()));
 
         MenuItem closeAll = new MenuItem();
         FXResourceBundle.getBundle().put(closeAll.textProperty(), "closeAll");
         closeAll.disableProperty().bind(Bindings.isEmpty(closableEditors));
-        closeAll.setOnAction(e -> tabPane.getTabs().removeIf(t -> !((Editor)t.getContent()).isChanged()));
+        closeAll.setOnAction(e -> tabPane.getTabs().removeIf(t -> !((Editor) t.getContent()).isChanged()));
 
         MenuItem close = new MenuItem();
         FXResourceBundle.getBundle().put(close.textProperty(), "closeWithoutSaving");
@@ -177,11 +185,25 @@ public class EditorPane extends StackPane {
     }
 
     void save() {
-        tabPane.getTabs().stream().filter(Tab::isSelected).forEach(t -> ((Editor) t.getContent()).save());
+        save(List.of(getSelectedEditor()));
     }
 
     void saveAll() {
-        tabPane.getTabs().forEach(t -> ((Editor) t.getContent()).save());
+        save(editors);
+    }
+
+    private void save(List<Editor> editors) {
+        var futures = editors.stream().map(Editor::save).toArray(s -> new CompletableFuture[s]);
+
+        CompletableFuture.allOf(futures).thenRunAsync(() -> compile(editors));
+    }
+
+    void compile(List<Editor> editors) {
+
+        List<Path> paths = editors.stream().map(e -> e.getPath().getPath()).collect(Collectors.toList());
+        diags.keySet().forEach(k -> FXPath.get(k).mark(null));
+        diags = Project.compile(paths);
+        diags.keySet().forEach(k -> FXPath.get(k).mark(diags.get(k).get(0)));
     }
 
     void find() {
@@ -208,7 +230,7 @@ public class EditorPane extends StackPane {
 
     void goToLine() {
         new GoToDialog(this)
-        .setOnGo(getSelectedEditor()::goToLine)
-        .show();
+                .setOnGo(getSelectedEditor()::goToLine)
+                .show();
     }
 }
