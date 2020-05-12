@@ -15,13 +15,36 @@ import javax.tools.Diagnostic;
 import dev.jfxde.j.nio.file.XFiles;
 
 public abstract class Project {
+    
+    private String kind;
+    private Path path;
+    
+    public Project() {
+    }
+    
+    public Project(String kind, Path path) {
+        this.kind = kind;
+        this.path = getProjectPath(path);
+    }
 
-    private static final Map<String, Project> CACHE = new HashMap<>();
+    Path getProjectPath(Path path) {
+        return path;
+    }
 
     public static Project get(String kind) {
+        return get(kind, null);
+    }
+
+    public static Project get(Path path) {
+        String extension = XFiles.getFileExtension(path.toString());
+
+        return get(extension, path);
+    }
+    
+    private static Project get(String kind, Path path) {
         Project project = null;
         if ("java".equals(kind)) {
-            project = CACHE.computeIfAbsent(kind, k -> new JavaProject());
+            project = new JavaProject(kind, path);
         } else {
             project = new EmptyProject();
         }
@@ -29,17 +52,11 @@ public abstract class Project {
         return project;
     }
 
-    public static Project get(Path path) {
-        String extension = XFiles.getFileExtension(path.toString());
-
-        return get(extension);
-    }
-
     public void create(Path path) {
     }
     
-    Path getProjectPath(Path path) {
-        return null;
+    Path getPath() {
+        return path;
     }
 
     public static Map<Path,List<Diagnostic<Path>>> compile(List<Path> paths) {
@@ -49,7 +66,7 @@ public abstract class Project {
         
         for (Path path : paths) {
             Project project = Project.get(path);
-            Path projectPath = project.getProjectPath(path);
+            Path projectPath = project.getPath();
             
             projects.put(projectPath, project);
             projectPaths.computeIfAbsent(projectPath, k -> new ArrayList<>()).add(path);
@@ -68,12 +85,10 @@ public abstract class Project {
     }
     
     public CompletableFuture<List<Diagnostic<Path>>> compile(Path path, String code) {
-
         return null;
     }    
     
     List<Diagnostic<Path>> compile(Path projectPath, List<Path> paths, List<Diagnostic<Path>> diags) {
-        
         return null;
     }
 }

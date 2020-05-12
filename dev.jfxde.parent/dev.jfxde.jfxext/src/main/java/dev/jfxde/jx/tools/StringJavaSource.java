@@ -7,7 +7,7 @@ import javax.tools.SimpleJavaFileObject;
 public class StringJavaSource extends SimpleJavaFileObject {
 
     private final String code;
-    
+
     public StringJavaSource(Path path, String code) {
         super(path.toUri(), Kind.SOURCE);
         this.code = code;

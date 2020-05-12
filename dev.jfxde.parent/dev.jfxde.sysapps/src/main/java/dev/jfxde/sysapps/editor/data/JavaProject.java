@@ -7,12 +7,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.tools.Diagnostic;
+import javax.tools.FileObject;
+import javax.tools.ForwardingJavaFileManager;
+import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
@@ -33,8 +36,12 @@ class JavaProject extends Project {
     private static final String TARGET_CLASSES = "target/classes";
     private static final String TARGET_TEST_CLASSES = "target/test-classes";
 
-    private javax.tools.JavaCompiler compiler;
+    private static JavaCompiler compiler;
     private CompletableFuture<List<Diagnostic<Path>>> future;
+
+    public JavaProject(String kind, Path path) {
+        super(kind, path);
+    }
 
     @Override
     public void create(Path path) {
@@ -52,44 +59,58 @@ class JavaProject extends Project {
 
     @Override
     public CompletableFuture<List<Diagnostic<Path>>> compile(Path path, String code) {
-        
-        Path projectPath = getProjectPath(path);
-        
+
+        Path projectPath = getPath();
+
         if (projectPath == null) {
             return null;
         }
 
-        Function<StandardJavaFileManager,Iterable<? extends JavaFileObject>> compilationUnits = fm -> List.of(new StringJavaSource(path.getFileName(), code));
-        List<Diagnostic<Path>> diags = Collections.synchronizedList(new ArrayList<>());     
+        Iterable<? extends JavaFileObject> compilationUnits = List.of(new StringJavaSource(path, code));
+        List<Diagnostic<Path>> diags = Collections.synchronizedList(new ArrayList<>());
 
-        return compileAsync(projectPath, compilationUnits, diags);
-    }
-
-    @Override
-    List<Diagnostic<Path>> compile(Path projectPath, List<Path> paths, List<Diagnostic<Path>> diags) {
-              
-        Function<StandardJavaFileManager,Iterable<? extends JavaFileObject>> compilationUnits = fm -> fm.getJavaFileObjectsFromPaths(paths);
-                
-        return compile(projectPath, compilationUnits, diags);
-    }
-
-    private CompletableFuture<List<Diagnostic<Path>>> compileAsync(Path projectPath, Function<StandardJavaFileManager,Iterable<? extends JavaFileObject>> compilationUnitFunction, List<Diagnostic<Path>> diags) {
-                
         if (future == null) {
-            future = CompletableFuture.supplyAsync(() -> compile(projectPath, compilationUnitFunction, diags));
+            future = CompletableFuture.supplyAsync(() -> compile(projectPath, compilationUnits, diags));
         } else {
-            future = future.thenApplyAsync(i -> compile(projectPath, compilationUnitFunction, diags));
+            future = future.thenApplyAsync(i -> compile(projectPath, compilationUnits, diags));
         }
 
         return future;
     }
-    
-    private List<Diagnostic<Path>> compile(Path projectPath, Function<StandardJavaFileManager,Iterable<? extends JavaFileObject>> compilationUnitFunction, List<Diagnostic<Path>> diags) {
-        
-        StandardJavaFileManager fileManager = getCompiler().getStandardFileManager(d -> diags.add(new DiagnosticWrapper<>(d, Path.of(d.getSource().toUri()))), null, null);
-        Iterable<? extends JavaFileObject> compilationUnits = compilationUnitFunction.apply(fileManager);
-        
-        CompilationTask task = getCompiler().getTask(null, fileManager, d -> diags.add(new DiagnosticWrapper<>(d, Path.of(d.getSource().toUri()))), getCompilerOptions(projectPath), null, compilationUnits);
+
+    private List<Diagnostic<Path>> compile(Path projectPath, Iterable<? extends JavaFileObject> compilationUnits, List<Diagnostic<Path>> diags) {
+
+        StandardJavaFileManager stdFileManager = getCompiler()
+                .getStandardFileManager(d -> diags.add(new DiagnosticWrapper<>(d, Path.of(d.getSource().toUri()))), null, null);
+
+        JavaFileManager fileManager = new ForwardingJavaFileManager<>(stdFileManager) {
+            public boolean contains(JavaFileManager.Location location, FileObject fo) throws IOException {
+
+                if (fo instanceof StringJavaSource) {
+                    return true;
+                } else {
+
+                    return super.contains(location, fo);
+                }
+            }
+        };
+
+        CompilationTask task = getCompiler().getTask(null, fileManager, d -> diags.add(new DiagnosticWrapper<>(d, Path.of(d.getSource().toUri()))),
+                getCompilerOptions(projectPath), null, compilationUnits);
+        task.call();
+
+        return diags;
+    }
+
+    @Override
+    List<Diagnostic<Path>> compile(Path projectPath, List<Path> paths, List<Diagnostic<Path>> diags) {
+
+        StandardJavaFileManager fileManager = getCompiler()
+                .getStandardFileManager(d -> diags.add(new DiagnosticWrapper<>(d, Path.of(d.getSource().toUri()))), null, null);
+        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromPaths(paths);
+
+        CompilationTask task = getCompiler().getTask(null, fileManager, d -> diags.add(new DiagnosticWrapper<>(d, Path.of(d.getSource().toUri()))),
+                getCompilerOptions(projectPath), null, compilationUnits);
         task.call();
 
         try {
@@ -97,54 +118,62 @@ class JavaProject extends Project {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        
+
         return diags;
     }
-    
-    private javax.tools.JavaCompiler getCompiler() {
+
+    private JavaCompiler getCompiler() {
         if (compiler == null) {
             compiler = ToolProvider.getSystemJavaCompiler();
         }
-        
+
         return compiler;
     }
-    
-    private Iterable<String> getCompilerOptions(Path projectPath) {
-        List<String> options = new ArrayList<>();
-             
-        Path classOutputDir = getClassOutputPath(projectPath);
 
-        if (classOutputDir != null) {
-            options.add("-d");
-            options.add(classOutputDir.toString());
-        }
-        
-        options.add("-Xlint");
+    private Iterable<String> getCompilerOptions(Path projectPath) {
+
+        Path destinationtDir = getDestinationPath(projectPath);
+
+        List<String> options = new JavaOptions()
+                .addSourcePath(getSourcePath(projectPath))
+                .setDestinationDirectory(destinationtDir)
+                .add("-Xlint")
+                .build();
 
         return options;
     }
-    
-    private Path getClassOutputPath(Path projectPath) {
+
+    private Path getSourcePath(Path projectPath) {
+        Path path = null;
+        if (projectPath != null) {
+            path = projectPath.resolve(MAIN_JAVA);
+        }
+
+        return path;
+    }
+
+    private Path getDestinationPath(Path projectPath) {
         Path outputDir = null;
         if (projectPath != null) {
             outputDir = projectPath.resolve(TARGET_CLASSES);
         }
-        
+
         return outputDir;
     }
-    
+
+    @Override
     Path getProjectPath(Path path) {
         Path projectPath = null;
         Path parent = path;
-        
+
         while (parent != null && !parent.endsWith(SRC)) {
             parent = parent.getParent();
         }
-        
+
         if (parent != null) {
             projectPath = parent.getParent();
         }
-        
+
         return projectPath;
     }
 }

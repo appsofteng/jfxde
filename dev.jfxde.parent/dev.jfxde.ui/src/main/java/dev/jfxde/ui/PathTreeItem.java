@@ -44,18 +44,24 @@ public class PathTreeItem extends TreeItem<FXPath> {
         if (n) {
             XPlatform.runFX(() -> {
                 if (isExpanded()) {
+                    allChildren.clear();
                     addItems(getValue().getPaths());
                     setLoaded(true);
                     getValue().getPaths().addListener(pathListener);
-
-                } else {
-                   allChildren.add(new PathTreeItem());
-                }
+                } 
 
                 loading = false;
             });
         }
     };
+    
+    private ChangeListener<Boolean> leafListener = (v, o, n) -> {
+        if (!n) {
+            XPlatform.runFX(() -> {
+                   allChildren.add(new PathTreeItem());
+            });
+        }
+    };    
 
     private PathTreeItem() {
         super(FXPath.getPseudoPath(List.of()));
@@ -75,6 +81,11 @@ public class PathTreeItem extends TreeItem<FXPath> {
         Bindings.bindContent(super.getChildren(), sortedChildren);
 
         path.loadedProperty().addListener(pathLoadedListener);
+        if (dirOnly) {
+            path.dirLeafProperty().addListener(leafListener);
+        } else {
+            path.leafProperty().addListener(leafListener);
+        }
 
         if (path.isLoaded()) {
             loading = true;
@@ -112,6 +123,11 @@ public class PathTreeItem extends TreeItem<FXPath> {
         if (remove) {
             getValue().getPaths().removeListener(pathListener);
             getValue().loadedProperty().addListener(pathLoadedListener);
+            if (dirOnly) {
+                getValue().dirLeafProperty().removeListener(leafListener);
+            } else {
+                getValue().leafProperty().removeListener(leafListener);
+            }
         }
         return remove;
     }

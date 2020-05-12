@@ -89,8 +89,8 @@ public class FXPath implements Comparable<FXPath> {
     private Set<FXPath> parents = new HashSet<>();
     private ObservableList<FXPath> paths = FXCollections.observableArrayList();
     private BooleanProperty loaded = new SimpleBooleanProperty();
-    private AtomicBoolean dirLeaf;
-    private AtomicBoolean leaf;
+    private BooleanProperty dirLeaf;
+    private BooleanProperty leaf;
     private FXBasicFileAttributes basicFileAttributes;
 
     private FXPath() {
@@ -517,39 +517,48 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     public boolean isDirLeaf() {
-
-        if (dirLeaf == null) {
-            setDirLeaf(!isDirectory() || !Files.isReadable(getPath()) || !XFiles.hasSubDirs(getPath()));
-        }
-
-        return dirLeaf.get();
+        return getDirLeafProperty().get();
     }
 
     private void setDirLeaf(boolean value) {
-        if (dirLeaf == null) {
-            dirLeaf = new AtomicBoolean();
-        }
 
-        dirLeaf.set(value);
+        getDirLeafProperty().set(value);
     }
 
+    private BooleanProperty getDirLeafProperty() {
+        if (dirLeaf == null) {
+            dirLeaf = new SimpleBooleanProperty(getPath() != null && (!isDirectory() || !isReadable() || !XFiles.hasSubDirs(getPath())));
+        }
+        
+        return dirLeaf;
+    }
+    
+    public ReadOnlyBooleanProperty dirLeafProperty() {
+        return getDirLeafProperty();
+    }
+    
     public boolean isLeaf() {
 
-        if (leaf == null) {
-            setLeaf(!isDirectory() || !Files.isReadable(getPath()) || XFiles.isEmpty(getPath()));
-        }
-
-        return leaf.get();
+        return getLeafProperty().get();
     }
 
     private void setLeaf(boolean value) {
-        if (leaf == null) {
-            leaf = new AtomicBoolean();
-        }
 
-        leaf.set(value);
+        getLeafProperty().set(value);
     }
 
+    private BooleanProperty getLeafProperty() {
+        if (leaf == null) {
+            leaf = new SimpleBooleanProperty(getPath() != null && (!isDirectory() || !isReadable() || XFiles.isEmpty(getPath())));
+        }
+        
+        return leaf;
+    }
+    
+    public ReadOnlyBooleanProperty leafProperty() {
+        return getLeafProperty();
+    }
+    
     private boolean isRoot() {
         return this == ROOT.get();
     }
@@ -586,7 +595,7 @@ public class FXPath implements Comparable<FXPath> {
     }
 
     private void watch() {
-        if (watchServiceRegister != null && getPath() != null && isDirectory() && isLoaded()) {
+        if (watchServiceRegister != null && getPath() != null && isDirectory()) {
             setPath(watchServiceRegister.register(getPath(), directoryWatcher));
         }
     }
